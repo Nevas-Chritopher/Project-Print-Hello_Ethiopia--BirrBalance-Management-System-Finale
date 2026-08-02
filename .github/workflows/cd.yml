@@ -1,0 +1,92 @@
+# =============================================================================
+# CD — Continuous Deployment
+# Runs only after CI passes on the main branch.
+# Builds production artifacts and optionally deploys when secrets are configured.
+# =============================================================================
+
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & deploy production
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ── Backend production build ──────────────────────────────────────────
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma client (backend)
+        working-directory: backend
+        env:
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/postgres
+        run: npx prisma generate
+
+      - name: Package backend
+        working-directory: backend
+        run: |
+          mkdir -p ../artifacts/backend
+          cp -r src prisma server.js package.json package-lock.json ../artifacts/backend/
+
+      # ── Frontend production build ─────────────────────────────────────────
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Package frontend
+        working-directory: frontend
+        run: |
+          mkdir -p ../artifacts/frontend
+          cp -r dist package.json package-lock.json ../artifacts/frontend/
+
+      - name: Upload production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build-${{ github.sha }}
+          path: artifacts/
+          retention-days: 30
+
+      # ── Optional deployment (enable by adding GitHub Secrets) ─────────────
+      # Uncomment and configure secrets when you choose a hosting provider.
+      #
+      # Required secrets (examples):
+      #   RENDER_DEPLOY_HOOK_BACKEND  — Render deploy hook URL for the API
+      #   RENDER_DEPLOY_HOOK_FRONTEND — Render deploy hook URL for the frontend
+      #
+      # - name: Deploy backend to Render
+      #   if: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND != '' }}
+      #   run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}"
+      #
+      # - name: Deploy frontend to Render
+      #   if: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND != '' }}
+      #   run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}"

@@ -1,0 +1,50 @@
+{
+  "name": "esrom-birr-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Backend REST API for the ESROM BirrBalance Management System. This system manages employee meal balances, cafeteria transactions, and financial reporting between a company and its partnered cafés.",
+  "main": "index.js",
+  "scripts": {
+  "start": "node server.js",
+  "dev": "dotenvx run -- tsx watch server.js",
+  "test": "node --loader tsx --test tests/*.test.js",
+  "prisma:generate": "prisma generate",
+  "prisma:migrate": "prisma migrate deploy"
+   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eyoba146/esrom-birr-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eyoba146/esrom-birr-backend/issues"
+  },
+  "homepage": "https://github.com/eyoba146/esrom-birr-backend#readme",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "crypto-js": "^4.2.0",
+    "csv-stringify": "^6.8.0",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.0.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
+    "node-cron": "^4.5.0",
+    "nodemon": "^3.1.14",
+    "pdfkit": "^0.19.1",
+    "prisma": "^7.8.0",
+    "save-dev": "^0.0.1-security"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^2.15.1",
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4"
+  }
+}

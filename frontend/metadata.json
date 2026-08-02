@@ -1,0 +1,6 @@
+{
+  "name": "ESROM BirrBalance Management System",
+  "description": "Progressive Web Application (PWA) to manage employee meal balances and cafeteria transactions.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
