@@ -3,36 +3,36 @@
 
 :root, [data-theme="light"] {
   /* Backgrounds */
-  --bg-page:           #F5E9D7;   /* warm cream page background */
-  --bg-card:           #FFFDF9;   /* soft cream card background */
-  --bg-card-hover:     #F8EFE2;   /* warm cream hover */
-  --bg-sidebar:        #FFF9F2;   /* creamy sidebar */
-  --bg-sidebar-active: #F1D8B6;   /* chocolate-tinted active highlight */
-  --bg-input:          #FBF5EC;   /* warm input background */
-  --bg-modal:          #FFFDF9;   /* warm modal */
-  --bg-table-header:   #F7EBDD;   /* pale coffee cream */
-  --bg-table-alt:      #FBF7F1;   /* alternating row */
-  --bg-badge:          #F2E0C8;   /* soft cocoa badge */
+  --bg-page:           #F0F4FF;   /* soft blue-tinted white page background */
+  --bg-card:           #FFFFFF;   /* pure white cards */
+  --bg-card-hover:     #F8FAFF;   /* very subtle blue on card hover */
+  --bg-sidebar:        #FFFFFF;   /* white sidebar */
+  --bg-sidebar-active: #EEF2FF;   /* soft indigo highlight for active nav item */
+  --bg-input:          #F8FAFC;   /* light input background */
+  --bg-modal:          #FFFFFF;   /* white modals */
+  --bg-table-header:   #F1F5FF;   /* light blue-gray table header */
+  --bg-table-alt:      #F8FAFF;   /* alternating table row */
+  --bg-badge:          #EEF2FF;   /* default badge background */
 
   /* Brand Colors */
-  --brand-primary:     #6B3816;   /* rich chocolate — buttons, active states */
-  --brand-secondary:   #A96C40;   /* warm cocoa accent */
-  --brand-gradient:    linear-gradient(135deg, #6B3816 0%, #A96C40 100%);
+  --brand-primary:     #1E3A8A;   /* deep royal blue — buttons, active states */
+  --brand-secondary:   #3B82F6;   /* bright accent blue — highlights, links */
+  --brand-gradient:    linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
 
   /* Text */
-  --text-primary:      #3F2714;   /* deep espresso headings */
-  --text-secondary:    #5C3A1F;   /* warm brown body text */
-  --text-subtle:       #8C6A4A;   /* muted cocoa labels */
-  --text-disabled:     #C9B399;   /* soft taupe disabled */
-  --text-inverse:      #FFFDF9;   /* warm white text on dark backgrounds */
-  --text-link:         #8A4B1C;   /* cocoa link */
-  --text-sidebar:      #6A3F20;   /* sidebar nav text */
-  --text-sidebar-active: #6B3816; /* active sidebar item text */
+  --text-primary:      #0F172A;   /* near black — headings */
+  --text-secondary:    #334155;   /* dark slate — body text */
+  --text-subtle:       #64748B;   /* medium gray — labels, captions */
+  --text-disabled:     #CBD5E1;   /* light gray — disabled states */
+  --text-inverse:      #FFFFFF;   /* white text on dark backgrounds */
+  --text-link:         #3B82F6;   /* blue links */
+  --text-sidebar:      #334155;   /* sidebar nav text */
+  --text-sidebar-active: #1E3A8A; /* active sidebar item text */
 
   /* Borders */
-  --border-default:    #E8D8C4;   /* creamy subtle border */
-  --border-focus:      #7B4B2A;   /* cocoa focus ring */
-  --border-strong:     #D7BC9A;   /* softer divider */
+  --border-default:    #E2E8F0;   /* subtle card and input borders */
+  --border-focus:      #3B82F6;   /* blue border on focused inputs */
+  --border-strong:     #CBD5E1;   /* slightly stronger dividers */
 
   /* Status Colors */
   --success:           #16A34A;   /* green */
@@ -75,36 +75,36 @@
 
 [data-theme="dark"] {
   /* Backgrounds */
-  --bg-page:           #1A120C;   /* deep espresso page background */
-  --bg-card:           #24170F;   /* cocoa card background */
-  --bg-card-hover:     #2B1D12;   /* warm dark card hover */
-  --bg-sidebar:        #1D130D;   /* midnight cocoa sidebar */
-  --bg-sidebar-active: #4F2C14;   /* dark chocolate highlight */
-  --bg-input:          #2A1C11;   /* dark input field */
-  --bg-modal:          #24170F;   /* dark warm modal */
-  --bg-table-header:   #2D1E12;   /* dark table header */
-  --bg-table-alt:      #261A10;   /* alternating row */
-  --bg-badge:          #4A2B14;   /* dark badge */
+  --bg-page:           #080F1E;   /* very deep navy page background */
+  --bg-card:           #0D1B2E;   /* dark navy cards */
+  --bg-card-hover:     #102240;   /* slightly lighter on hover */
+  --bg-sidebar:        #070E1C;   /* deepest navy sidebar */
+  --bg-sidebar-active: #1E3A8A22; /* translucent blue active state */
+  --bg-input:          #0F1F35;   /* dark navy input fields */
+  --bg-modal:          #0D1B2E;   /* dark navy modals */
+  --bg-table-header:   #0A1628;   /* darkest navy table header */
+  --bg-table-alt:      #0B1525;   /* subtle alternating row */
+  --bg-badge:          #1E3A8A33; /* translucent blue badge */
 
   /* Brand Colors */
-  --brand-primary:     #A96C40;   /* warm cocoa — buttons, active states */
-  --brand-secondary:   #D2A06A;   /* golden caramel accent */
-  --brand-gradient:    linear-gradient(135deg, #6B3816 0%, #A96C40 100%);
+  --brand-primary:     #3B82F6;   /* bright blue — buttons, active states */
+  --brand-secondary:   #60A5FA;   /* lighter blue — highlights */
+  --brand-gradient:    linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
 
   /* Text */
-  --text-primary:      #F9ECDD;   /* warm cream headings */
-  --text-secondary:    #F3D7B5;   /* soft biscuit body text */
-  --text-subtle:       #C9A27D;   /* muted cocoa label */
-  --text-disabled:     #7A5B41;   /* dark muted */
-  --text-inverse:      #1A120C;   /* dark text on light backgrounds */
-  --text-link:         #F0B57E;   /* warm amber link */
-  --text-sidebar:      #E4C6A4;   /* sidebar text */
-  --text-sidebar-active: #F3D2A2; /* active sidebar item */
+  --text-primary:      #F0F6FF;   /* bright white-blue — headings */
+  --text-secondary:    #CBD5E1;   /* light slate — body text */
+  --text-subtle:       #64748B;   /* medium gray — labels */
+  --text-disabled:     #334155;   /* dark gray — disabled */
+  --text-inverse:      #0F172A;   /* dark text on light backgrounds */
+  --text-link:         #60A5FA;   /* light blue links */
+  --text-sidebar:      #94A3B8;   /* sidebar nav text */
+  --text-sidebar-active: #60A5FA; /* active sidebar item */
 
   /* Borders */
-  --border-default:    #4B2F1B;   /* dark cocoa border */
-  --border-focus:      #D2A06A;   /* golden focus ring */
-  --border-strong:     #6C4123;   /* stronger divider */
+  --border-default:    #1E3A5F;   /* dark blue borders */
+  --border-focus:      #3B82F6;   /* bright blue on focus */
+  --border-strong:     #2D4E7A;   /* stronger dividers */
 
   /* Status Colors */
   --success:           #22C55E;   /* bright green */

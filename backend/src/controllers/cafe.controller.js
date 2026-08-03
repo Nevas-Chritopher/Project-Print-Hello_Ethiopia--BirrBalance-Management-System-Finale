@@ -10,6 +10,7 @@ import {
   getCafeOrders,
   getCafeStatistics,
   getCafeWaiters,
+  getActiveCafes,
   getMenuItems,
   getOperationalReport,
   getPublicMenuItems,
@@ -40,6 +41,11 @@ export const listPublicMenuItems = asyncHandler(async (req, res) => {
   }
   const items = await getPublicMenuItems(cafeId);
   return successResponse(res, items, "Menu items fetched successfully");
+});
+
+export const listActiveCafes = asyncHandler(async (_req, res) => {
+  const cafes = await getActiveCafes();
+  return successResponse(res, cafes, "Active cafes fetched successfully");
 });
 
 export const listCafeOrders = asyncHandler(async (req, res) => {

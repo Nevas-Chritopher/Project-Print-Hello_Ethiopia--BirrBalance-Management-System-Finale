@@ -128,6 +128,12 @@ export const getPublicMenuItems = async (cafeId) => {
   return items.map(formatMenuItem);
 };
 
+export const getActiveCafes = async () => prisma.cafes.findMany({
+  where: { is_active: true },
+  orderBy: { name: "asc" },
+  select: { id: true, name: true, location: true },
+});
+
 const deleteImageFile = (imageUrl) => {
   if (!imageUrl) return;
 

@@ -61,6 +61,7 @@ export const ModelName = {
   login_history: 'login_history',
   menu_items: 'menu_items',
   monthly_allocations: 'monthly_allocations',
+  monthly_payment_schedules: 'monthly_payment_schedules',
   notifications: 'notifications',
   qr_sessions: 'qr_sessions',
   order_items: 'order_items',
@@ -206,6 +207,22 @@ export const Monthly_allocationsScalarFieldEnum = {
 } as const
 
 export type Monthly_allocationsScalarFieldEnum = (typeof Monthly_allocationsScalarFieldEnum)[keyof typeof Monthly_allocationsScalarFieldEnum]
+
+
+export const Monthly_payment_schedulesScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  payout_day: 'payout_day',
+  department_id: 'department_id',
+  applies_to_all: 'applies_to_all',
+  is_active: 'is_active',
+  created_by: 'created_by',
+  last_processed_month: 'last_processed_month',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type Monthly_payment_schedulesScalarFieldEnum = (typeof Monthly_payment_schedulesScalarFieldEnum)[keyof typeof Monthly_payment_schedulesScalarFieldEnum]
 
 
 export const NotificationsScalarFieldEnum = {

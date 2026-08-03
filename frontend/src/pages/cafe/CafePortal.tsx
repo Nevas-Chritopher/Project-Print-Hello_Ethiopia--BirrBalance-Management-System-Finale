@@ -45,7 +45,6 @@ export default function CafePortal() {
     if (path.includes('orders')) return 'orders';
     if (path.includes('waiters')) return 'waiters';
     if (path.includes('analytics')) return 'analytics';
-    if (path.includes('reports')) return 'reports';
     return 'dashboard'; // default
   };
 
@@ -146,11 +145,6 @@ export default function CafePortal() {
       )}
       {activeTab === 'analytics' && (
         <CafeEmployeeUsageAnalytics />
-      )}
-      {activeTab === 'reports' && (
-        <CafeOperationalReports
-          orders={orders}
-        />
       )}
     </div>
   );

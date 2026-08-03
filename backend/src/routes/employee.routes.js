@@ -10,7 +10,7 @@ import {
   createFeedback,
   changePassword,
 } from "../controllers/employee.controller.js";
-import { listPublicMenuItems } from "../controllers/cafe.controller.js";
+import { listActiveCafes, listPublicMenuItems } from "../controllers/cafe.controller.js";
 
 const router = express.Router();
 
@@ -20,6 +20,7 @@ router.use(requireRole(ROLES.EMPLOYEE));
 router.get("/profile", getProfile);
 router.get("/balance", getBalance);
 router.get("/orders", getOrders);
+router.get("/cafes", listActiveCafes);
 router.get("/cafes/:cafeId/menu", listPublicMenuItems);
 router.post("/orders", createOnlineOrder);
 router.post("/generate-qr", generateQR);

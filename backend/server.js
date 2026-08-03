@@ -1,12 +1,14 @@
 import app from "./src/app.js";
 import prisma from "./src/config/db.js";
 import { startExpireBalancesJob } from "./src/jobs/expireBalances.job.js";
+import { startMonthlyPaymentsJob } from "./src/jobs/monthlyPayments.job.js";
 
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   startExpireBalancesJob();
+  startMonthlyPaymentsJob();
 });
 
 const shutdown = async (signal) => {

@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 
 export default function EmployeePortal() {
-  const { user, apiGet, apiPost, apiPut, setGlobalLoading, refreshData, activeCafe } = useApp();
+  const { user, apiGet, apiPost, apiPut, setGlobalLoading, refreshData } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -64,12 +64,53 @@ export default function EmployeePortal() {
 
   // States
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [cafes, setCafes] = useState<any[]>([]);
+  const [selectedCafeId, setSelectedCafeId] = useState<number | null>(null);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [allocationHistory, setAllocationHistory] = useState<any[]>([]);
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning', message: string } | null>(null);
 
   const loadEmployeeData = async () => {
-  const profileData = apiGet('/api/employee/profile');
+    try {
+      const cafesData = await apiGet('/api/employee/cafes');
+      const activeCafes = cafesData.data || [];
+      setCafes(activeCafes);
+      const savedCafeId = Number(localStorage.getItem('employeeActiveCafeId'));
+      const cafeId = activeCafes.some((c: any) => c.id === selectedCafeId)
+        ? selectedCafeId
+        : activeCafes.some((c: any) => c.id === savedCafeId)
+          ? savedCafeId
+          : activeCafes[0]?.id ?? null;
+
+      if (cafeId) {
+        setSelectedCafeId(cafeId);
+        localStorage.setItem('employeeActiveCafeId', String(cafeId));
+        const itemsData = await apiGet(`/api/employee/cafes/${cafeId}/menu`);
+        setMenuItems((itemsData.data || []).filter((i: any) => i.is_available));
+      } else {
+        setMenuItems([]);
+      }
+
+      const ordersData = await apiGet('/api/employee/orders');
+      setMyOrders((ordersData.data?.items || []).map((o: any) => ({
+        id: o.id,
+        status: o.status,
+        amount: Number(o.total_amount),
+        date: o.created_at,
+        cafeName: o.cafes?.name,
+        items: (o.order_items || []).map((i: any) => ({
+          itemId: i.menu_item_id,
+          name: i.item_name_snapshot || i.menu_items?.name,
+          quantity: i.quantity,
+          price: Number(i.unit_price_snapshot)
+        }))
+      })));
+
+      const profileData = await apiGet('/api/employee/profile');
+      setAllocationHistory(profileData.data?.allocations || []);
+    } catch (e) {
+      console.error('Error loading employee portal data', e);
+    }
   };
 
   useEffect(() => {
@@ -77,6 +118,10 @@ export default function EmployeePortal() {
       loadEmployeeData();
     }
   }, [user, location.pathname]);
+
+  useEffect(() => {
+    if (user?.role === 'employee' && selectedCafeId !== null) loadEmployeeData();
+  }, [selectedCafeId]);
 
   if (!user || user.role !== 'employee') return null;
 
@@ -100,6 +145,9 @@ export default function EmployeePortal() {
           setToast={setToast}
           refreshData={refreshData}
           allocationHistory={allocationHistory}
+          cafes={cafes}
+          selectedCafeId={selectedCafeId}
+          onCafeChange={setSelectedCafeId}
         />
       )}
       {activeTab === 'profile' && (
@@ -533,7 +581,10 @@ function EmployeePlaceOrder({
   apiPost,
   setToast,
   refreshData,
-  allocationHistory
+  allocationHistory,
+  cafes,
+  selectedCafeId,
+  onCafeChange
 }: {
   user: any;
   menuItems: any[];
@@ -542,6 +593,9 @@ function EmployeePlaceOrder({
   setToast: (toast: any) => void;
   refreshData: () => Promise<void>;
   allocationHistory: any[];
+  cafes: any[];
+  selectedCafeId: number | null;
+  onCafeChange: (cafeId: number) => void;
 }) {
   const [cart, setCart] = useState<{ item: any; quantity: number }[]>([]);
   const [successOrder, setSuccessOrder] = useState<any | null>(null);
@@ -554,15 +608,10 @@ function EmployeePlaceOrder({
 
   const [activeCat, setActiveCat] = useState<'All' | 'Food' | 'Beverage' | 'Snack'>('All');
 
-  // Persistent Active Cafe Selector State
-  const [activeCafe, setActiveCafe] = useState<string>(() => {
-    return localStorage.getItem('activeCafe') || 'Main Corporate Cafe';
-  });
-
-  const handleCafeChange = (cafeName: string) => {
-    setActiveCafe(cafeName);
-    localStorage.setItem('activeCafe', cafeName);
-  };
+  useEffect(() => {
+    // A cart can never span cafeterias; discard it when the employee switches.
+    setCart([]);
+  }, [selectedCafeId]);
 
   const monthlyAllowance = allocationHistory && allocationHistory.length > 0 ? allocationHistory[0].amount : 1000;
   const isLowBalance = user.balance < (monthlyAllowance * 0.2);
@@ -603,6 +652,10 @@ function EmployeePlaceOrder({
   };
 
   const handleCheckout = async () => {
+    if (!selectedCafeId || cart.length === 0) {
+      setToast({ type: 'warning', message: 'Select a café and add a menu item before checking out.' });
+      return;
+    }
     const total = getCartTotal();
     if (total > user.balance) {
       setToast({ type: 'error', message: "Overdraft! You don't have enough ETB to pay for this meal tray." });
@@ -611,7 +664,7 @@ function EmployeePlaceOrder({
 
     setIsSubmitting(true);
     try {
-      const cafeId = cart[0]?.item.cafe_id;
+      const cafeId = selectedCafeId;
       const res = await apiPost('/api/employee/orders', {
         cafe_id: cafeId,
         items: cart.map(c => ({
@@ -623,28 +676,30 @@ function EmployeePlaceOrder({
       // Clear tray
       setCart([]);
 
-      // Real-time balance refetch in AppContext
-      await refreshData();
-      await onReload();
-
+      // Show the confirmation as soon as the payment API succeeds. Refreshing
+      // background data must not hide a successful order if one of those
+      // secondary requests is temporarily unavailable.
+      const orderResult = res.data ?? res;
+      const remainingBalance = Number(orderResult.remainingBalance ?? user.balance - total);
       setSuccessOrder({
-        id: res.data?.orderUuid || res.data?.orderId,
-        amount: res.data?.totalAmount ?? total,
+        id: orderResult.orderUuid || orderResult.orderId,
+        amount: Number(orderResult.totalAmount ?? total),
         cafeId
       });
-
-      // Trigger beautiful real-time success toast
       setToast({
         type: 'success',
-        message: `${formatETB(total)} deducted. Remaining: ${formatETB(user.balance - total)}`
+        message: `${formatETB(total)} payment confirmed. Remaining: ${formatETB(remainingBalance)}`
       });
 
+      // Real-time balance refetch in AppContext
+      await Promise.allSettled([refreshData(), onReload()]);
+
       // Trigger amber warning toast if balance drops below 20%
-      if ((user.balance - total) < (monthlyAllowance * 0.2)) {
+      if (remainingBalance < (monthlyAllowance * 0.2)) {
         setTimeout(() => {
           setToast({
             type: 'warning',
-            message: `Your balance is running low. ${formatETB(user.balance - total)} remaining`
+            message: `Your balance is running low. ${formatETB(remainingBalance)} remaining`
           });
         }, 3000);
       }
@@ -694,13 +749,15 @@ function EmployeePlaceOrder({
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cafeteria:</span>
           <select
             id="cafe-selector"
-            value={activeCafe}
-            onChange={(e) => handleCafeChange(e.target.value)}
+            value={selectedCafeId ?? ''}
+            onChange={(e) => onCafeChange(Number(e.target.value))}
             className="text-xs font-black text-primary bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-1 focus:ring-accent dark:text-white shadow-sm cursor-pointer min-h-[44px]"
           >
-            <option value="Main Corporate Cafe">🏢 Main Corporate Cafe</option>
-            <option value="Annex Building Cafe">🏬 Annex Building Cafe</option>
-            <option value="IT Plaza Cafe">💻 IT Plaza Cafe</option>
+            {cafes.map((cafe) => (
+              <option key={cafe.id} value={cafe.id}>
+                {cafe.name}{cafe.location ? ` — ${cafe.location}` : ''}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -1200,7 +1257,10 @@ function EmployeeOrdersPage({
   apiPost,
   setToast,
   refreshData,
-  allocationHistory
+  allocationHistory,
+  cafes,
+  selectedCafeId,
+  onCafeChange
 }: {
   user: any;
   menuItems: any[];
@@ -1210,6 +1270,9 @@ function EmployeeOrdersPage({
   setToast: (toast: any) => void;
   refreshData: () => Promise<void>;
   allocationHistory: any[];
+  cafes: any[];
+  selectedCafeId: number | null;
+  onCafeChange: (cafeId: number) => void;
 }) {
   const location = useLocation();
   const [subTab, setSubTab] = useState<'order-now' | 'order-history'>(() => {
@@ -1262,6 +1325,9 @@ function EmployeeOrdersPage({
           setToast={setToast}
           refreshData={refreshData}
           allocationHistory={allocationHistory}
+          cafes={cafes}
+          selectedCafeId={selectedCafeId}
+          onCafeChange={onCafeChange}
         />
       ) : (
         <EmployeeOrdersHistory
@@ -2159,30 +2225,6 @@ function EmployeeTransactionsPage({
           </>
         )}
       </div>
-
-      {/* 5. Export Row (Align to Right) */}
-      {totalRows > 0 && (
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <button
-            onClick={handleExportXLSX}
-            className="export-btn flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold rounded-xl text-primary dark:text-white border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" /> Export XLSX
-          </button>
-          <button
-            onClick={handleExportPDF}
-            className="export-btn flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold rounded-xl text-primary dark:text-white border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" /> Export PDF
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className="export-btn flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold rounded-xl text-primary dark:text-white border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" /> Export CSV
-          </button>
-        </div>
-      )}
 
       {/* Order Details Drawer / Modal overlay */}
       {selectedOrder && (

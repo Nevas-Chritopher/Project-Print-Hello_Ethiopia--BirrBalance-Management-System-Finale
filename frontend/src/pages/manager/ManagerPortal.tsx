@@ -107,7 +107,6 @@ export default function ManagerPortal() {
     if (path.includes('cafes')) return 'cafes';
     if (path.includes('departments')) return 'departments';
     if (path.includes('balance')) return 'balance';
-    if (path.includes('reports')) return 'reports';
     if (path.includes('feedback')) return 'feedback';
     if (path.includes('audit')) return 'audit';
     if (path.includes('messages')) return 'messages';
@@ -273,14 +272,6 @@ export default function ManagerPortal() {
           apiPost={apiPost}
         />
       )}
-      {activeTab === 'reports' && (
-        <ManagerReportsPage
-          employeesList={employeesList}
-          recentOrders={recentOrders}
-          departmentsList={departmentsList}
-          waitersList={waitersList}
-        />
-      )}
       {activeTab === 'feedback' && (
         <ManagerFeedbackPage
           feedbacks={feedbacks}
@@ -373,11 +364,6 @@ function ManagerCafesPage({
     await onReload();
   };
 
-  const deleteCafe = async (cafeId: number) => {
-    await apiDelete(`/api/company-manager/cafes/${cafeId}`);
-    await onReload();
-  };
-
   return (
     <div className="space-y-6 animate-fadeIn">
       <div><h1 className="text-2xl font-extrabold text-primary tracking-tight">Cafes</h1><p className="mt-1 text-xs font-medium uppercase tracking-wider text-subtle-text">Create and view company cafeterias</p></div>
@@ -413,16 +399,7 @@ function ManagerCafesPage({
                   <p className="font-bold text-primary">{cafe.name}</p>
                   <p className="text-xs text-subtle-text">{cafe.location || 'No location set'}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{cafe.is_active === false ? 'Inactive' : 'Active'}</span>
-                  <button
-                    type="button"
-                    onClick={() => deleteCafe(Number(cafe.id))}
-                    className="rounded-xl border border-red-200 px-3 py-2 text-[11px] font-bold text-danger hover:bg-red-50"
-                  >
-                    Delete
-                  </button>
-                </div>
+                <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{cafe.is_active === false ? 'Inactive' : 'Active'}</span>
               </div>
               <div className="mt-3 space-y-2">
                 {cafeManagers.length === 0 ? (
@@ -823,6 +800,7 @@ function ManagerEmployeesPage({
 
   // Filter list
   const filteredEmployees = employeesList.filter((emp) => {
+    if (!emp.roles?.includes('employee')) return false;
     const matchesSearch = emp.fullName.toLowerCase().includes(search.toLowerCase()) || emp.employeeId.toLowerCase().includes(search.toLowerCase());
     if (filterTab === 'Active') return matchesSearch && emp.isActive && !emp.isAwaitingSetup;
     if (filterTab === 'Inactive') return matchesSearch && !emp.isActive;
@@ -1619,10 +1597,7 @@ function ManagerBalancePage({
   const [option, setOption] = useState<'department' | 'employee'>('department');
   const [targetId, setTargetId] = useState('');
   const [amount, setAmount] = useState('');
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [successAllocMsg, setSuccessAllocMsg] = useState('');
 
@@ -1631,14 +1606,18 @@ function ManagerBalancePage({
   const [showEmpDropdown, setShowEmpDropdown] = useState(false);
 
   const filteredEmpTargets = employeesList.filter((e) =>
-    e.fullName.toLowerCase().includes(searchEmp.toLowerCase()) || e.employeeId.toLowerCase().includes(searchEmp.toLowerCase())
+    e.roles?.includes('employee') && (
+      e.fullName.toLowerCase().includes(searchEmp.toLowerCase()) || e.employeeId.toLowerCase().includes(searchEmp.toLowerCase())
+    )
   );
 
   // Financial preview
   const getAffectedCount = () => {
     if (!amount || isNaN(Number(amount))) return 0;
     if (option === 'department') {
-      return employeesList.filter((e) => e.department === targetId && e.isActive).length;
+      return employeesList.filter((e) =>
+        e.isActive && e.roles?.includes('employee') && (targetId === 'all' || String(e.departmentId) === targetId)
+      ).length;
     }
     return targetId ? 1 : 0;
   };
@@ -1649,7 +1628,7 @@ function ManagerBalancePage({
   };
 
  const handleAllocate = async () => {
-  if (!amount || !targetId || !month) return;
+  if (!amount || !targetId || !paymentDate) return;
   try {
     let successCount = 0;
     let failCount = 0;
@@ -1658,27 +1637,23 @@ function ManagerBalancePage({
       await apiPost('/api/company-manager/balances/allocations', {
         user_id: Number(targetId),
         amount: Number(amount),
-        month,
+        month: paymentDate.slice(0, 7),
       });
       successCount = 1;
     } else {
-      // Department: backend only supports one employee per call, so loop
-      const targets = employeesList.filter((e) => e.department === targetId && e.isActive);
-      for (const emp of targets) {
-        try {
-          await apiPost('/api/company-manager/balances/allocations', {
-            user_id: Number(emp.id),
-            amount: Number(amount),
-            month,
-          });
-          successCount++;
-        } catch (e) {
-          failCount++;
-        }
-      }
+      const schedule = await apiPost('/api/company-manager/balances/schedules', {
+        amount: Number(amount),
+        payment_date: paymentDate,
+        applies_to_all: targetId === 'all',
+        department_id: targetId === 'all' ? null : Number(targetId),
+      });
+      successCount = getAffectedCount();
+      setSuccessAllocMsg(`Automatic monthly payment scheduled for ${successCount} employee(s) on day ${new Date(paymentDate + 'T00:00:00').getDate()}.`);
     }
 
-    if (failCount > 0) {
+    if (option === 'department') {
+      // The schedule confirmation was already shown above.
+    } else if (failCount > 0) {
       setSuccessAllocMsg(`Allocated to ${successCount} employees, ${failCount} failed (likely already allocated for this month).`);
     } else {
       setSuccessAllocMsg(`Allocated ${formatETB(Number(amount))} successfully to ${successCount} employee(s)!`);
@@ -1755,6 +1730,7 @@ function ManagerBalancePage({
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
                 >
                   <option value="">-- Choose Department --</option>
+                  <option value="all">All Departments</option>
                   {departmentsList.map((d) => (
                     <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
@@ -1811,14 +1787,15 @@ function ManagerBalancePage({
             </div>
              {/* Month */}
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-700">Allocation Month</label>
+              <label className="font-bold text-slate-700">Monthly Payment Date</label>
               <input
-                id="alloc-month-input"
-                type="month"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
+                id="alloc-payment-date-input"
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
+              <p className="text-[10px] text-slate-400">For a department or all employees, this date sets the day they are automatically funded every month.</p>
             </div>
 
             {/* Financial Commitment Preview section */}

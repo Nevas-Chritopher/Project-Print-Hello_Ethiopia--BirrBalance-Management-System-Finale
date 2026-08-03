@@ -1,9 +1,11 @@
 import { successResponse } from "../utils/response.js";
+import { processMonthlyPayments } from "../jobs/monthlyPayments.job.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { parsePagination } from "../validators/common.validators.js";
 import { sendReportResponse } from "../utils/report.js";
 import {
   assignMonthlyBalance,
+  createMonthlyPaymentSchedule,
   createDepartment,
   createCafe,
   createEmployee,
@@ -25,6 +27,7 @@ import {
 import {
   validateAllocationCreate,
   validateAllocationUpdate,
+  validateMonthlyPaymentSchedule,
   validateCompanyReportQuery,
   validateCafeCreate,
   validateCafeManagerCreate,
@@ -126,6 +129,14 @@ export const getDepartments = asyncHandler(async (req, res) => {
 export const allocateBalance = asyncHandler(async (req, res) => {
   const allocation = await assignMonthlyBalance(req.user, validateAllocationCreate(req.body), req.ip);
   return successResponse(res, allocation, "Monthly balance allocated successfully", 201);
+});
+
+export const scheduleMonthlyPayment = asyncHandler(async (req, res) => {
+  const schedule = await createMonthlyPaymentSchedule(req.user, validateMonthlyPaymentSchedule(req.body), req.ip);
+  if (schedule.payout_day === new Date().getUTCDate()) {
+    await processMonthlyPayments();
+  }
+  return successResponse(res, schedule, "Monthly payment schedule created successfully", 201);
 });
 
 export const editAllocation = asyncHandler(async (req, res) => {

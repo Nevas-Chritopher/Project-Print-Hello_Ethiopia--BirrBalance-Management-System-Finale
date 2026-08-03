@@ -407,7 +407,11 @@ export const listDepartments = async (actor, ipAddress) => {
 
 export const assignMonthlyBalance = async (actor, payload, ipAddress) => {
   const { start, month } = getMonthRange(payload.month);
-  await getUserOrThrow(payload.user_id);
+  const employee = await prisma.users.findFirst({
+    where: { id: payload.user_id, user_roles: { some: { roles: { name: "employee" } } } },
+    select: { id: true },
+  });
+  if (!employee) throw new AppError("Balance can only be allocated to an employee", 400);
 
   return prisma.$transaction(async (tx) => {
     const existing = await tx.monthly_allocations.findUnique({
@@ -453,6 +457,22 @@ export const assignMonthlyBalance = async (actor, payload, ipAddress) => {
 
     return allocation;
   });
+};
+
+export const createMonthlyPaymentSchedule = async (actor, payload, ipAddress) => {
+  if (payload.department_id) await ensureDepartmentExists(payload.department_id);
+  const schedule = await prisma.monthly_payment_schedules.create({
+    data: { ...payload, created_by: actor.id },
+  });
+  await writeAuditLog({
+    userId: actor.id,
+    action: "company.balance.schedule.create",
+    entityType: "monthly_payment_schedules",
+    entityId: schedule.id,
+    description: `Scheduled ETB ${payload.amount} on day ${payload.payout_day} each month`,
+    ipAddress,
+  });
+  return schedule;
 };
 
 export const updateMonthlyAllocation = async (actor, allocationId, payload, ipAddress) => {

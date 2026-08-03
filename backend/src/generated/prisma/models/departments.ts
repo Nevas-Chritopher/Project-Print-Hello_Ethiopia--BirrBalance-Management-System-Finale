@@ -201,6 +201,7 @@ export type departmentsWhereInput = {
   name?: Prisma.StringFilter<"departments"> | string
   created_at?: Prisma.DateTimeNullableFilter<"departments"> | Date | string | null
   users?: Prisma.UsersListRelationFilter
+  monthly_payment_schedules?: Prisma.Monthly_payment_schedulesListRelationFilter
 }
 
 export type departmentsOrderByWithRelationInput = {
@@ -208,6 +209,7 @@ export type departmentsOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
   users?: Prisma.usersOrderByRelationAggregateInput
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesOrderByRelationAggregateInput
 }
 
 export type departmentsWhereUniqueInput = Prisma.AtLeast<{
@@ -218,6 +220,7 @@ export type departmentsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.departmentsWhereInput | Prisma.departmentsWhereInput[]
   created_at?: Prisma.DateTimeNullableFilter<"departments"> | Date | string | null
   users?: Prisma.UsersListRelationFilter
+  monthly_payment_schedules?: Prisma.Monthly_payment_schedulesListRelationFilter
 }, "id" | "name">
 
 export type departmentsOrderByWithAggregationInput = {
@@ -244,6 +247,7 @@ export type departmentsCreateInput = {
   name: string
   created_at?: Date | string | null
   users?: Prisma.usersCreateNestedManyWithoutDepartmentsInput
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesCreateNestedManyWithoutDepartmentsInput
 }
 
 export type departmentsUncheckedCreateInput = {
@@ -251,12 +255,14 @@ export type departmentsUncheckedCreateInput = {
   name: string
   created_at?: Date | string | null
   users?: Prisma.usersUncheckedCreateNestedManyWithoutDepartmentsInput
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesUncheckedCreateNestedManyWithoutDepartmentsInput
 }
 
 export type departmentsUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   users?: Prisma.usersUpdateManyWithoutDepartmentsNestedInput
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesUpdateManyWithoutDepartmentsNestedInput
 }
 
 export type departmentsUncheckedUpdateInput = {
@@ -264,6 +270,7 @@ export type departmentsUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   users?: Prisma.usersUncheckedUpdateManyWithoutDepartmentsNestedInput
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesUncheckedUpdateManyWithoutDepartmentsNestedInput
 }
 
 export type departmentsCreateManyInput = {
@@ -314,6 +321,22 @@ export type DepartmentsNullableScalarRelationFilter = {
   isNot?: Prisma.departmentsWhereInput | null
 }
 
+export type departmentsCreateNestedOneWithoutMonthly_payment_schedulesInput = {
+  create?: Prisma.XOR<Prisma.departmentsCreateWithoutMonthly_payment_schedulesInput, Prisma.departmentsUncheckedCreateWithoutMonthly_payment_schedulesInput>
+  connectOrCreate?: Prisma.departmentsCreateOrConnectWithoutMonthly_payment_schedulesInput
+  connect?: Prisma.departmentsWhereUniqueInput
+}
+
+export type departmentsUpdateOneWithoutMonthly_payment_schedulesNestedInput = {
+  create?: Prisma.XOR<Prisma.departmentsCreateWithoutMonthly_payment_schedulesInput, Prisma.departmentsUncheckedCreateWithoutMonthly_payment_schedulesInput>
+  connectOrCreate?: Prisma.departmentsCreateOrConnectWithoutMonthly_payment_schedulesInput
+  upsert?: Prisma.departmentsUpsertWithoutMonthly_payment_schedulesInput
+  disconnect?: Prisma.departmentsWhereInput | boolean
+  delete?: Prisma.departmentsWhereInput | boolean
+  connect?: Prisma.departmentsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.departmentsUpdateToOneWithWhereWithoutMonthly_payment_schedulesInput, Prisma.departmentsUpdateWithoutMonthly_payment_schedulesInput>, Prisma.departmentsUncheckedUpdateWithoutMonthly_payment_schedulesInput>
+}
+
 export type departmentsCreateNestedOneWithoutUsersInput = {
   create?: Prisma.XOR<Prisma.departmentsCreateWithoutUsersInput, Prisma.departmentsUncheckedCreateWithoutUsersInput>
   connectOrCreate?: Prisma.departmentsCreateOrConnectWithoutUsersInput
@@ -330,15 +353,59 @@ export type departmentsUpdateOneWithoutUsersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.departmentsUpdateToOneWithWhereWithoutUsersInput, Prisma.departmentsUpdateWithoutUsersInput>, Prisma.departmentsUncheckedUpdateWithoutUsersInput>
 }
 
+export type departmentsCreateWithoutMonthly_payment_schedulesInput = {
+  name: string
+  created_at?: Date | string | null
+  users?: Prisma.usersCreateNestedManyWithoutDepartmentsInput
+}
+
+export type departmentsUncheckedCreateWithoutMonthly_payment_schedulesInput = {
+  id?: number
+  name: string
+  created_at?: Date | string | null
+  users?: Prisma.usersUncheckedCreateNestedManyWithoutDepartmentsInput
+}
+
+export type departmentsCreateOrConnectWithoutMonthly_payment_schedulesInput = {
+  where: Prisma.departmentsWhereUniqueInput
+  create: Prisma.XOR<Prisma.departmentsCreateWithoutMonthly_payment_schedulesInput, Prisma.departmentsUncheckedCreateWithoutMonthly_payment_schedulesInput>
+}
+
+export type departmentsUpsertWithoutMonthly_payment_schedulesInput = {
+  update: Prisma.XOR<Prisma.departmentsUpdateWithoutMonthly_payment_schedulesInput, Prisma.departmentsUncheckedUpdateWithoutMonthly_payment_schedulesInput>
+  create: Prisma.XOR<Prisma.departmentsCreateWithoutMonthly_payment_schedulesInput, Prisma.departmentsUncheckedCreateWithoutMonthly_payment_schedulesInput>
+  where?: Prisma.departmentsWhereInput
+}
+
+export type departmentsUpdateToOneWithWhereWithoutMonthly_payment_schedulesInput = {
+  where?: Prisma.departmentsWhereInput
+  data: Prisma.XOR<Prisma.departmentsUpdateWithoutMonthly_payment_schedulesInput, Prisma.departmentsUncheckedUpdateWithoutMonthly_payment_schedulesInput>
+}
+
+export type departmentsUpdateWithoutMonthly_payment_schedulesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  users?: Prisma.usersUpdateManyWithoutDepartmentsNestedInput
+}
+
+export type departmentsUncheckedUpdateWithoutMonthly_payment_schedulesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  users?: Prisma.usersUncheckedUpdateManyWithoutDepartmentsNestedInput
+}
+
 export type departmentsCreateWithoutUsersInput = {
   name: string
   created_at?: Date | string | null
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesCreateNestedManyWithoutDepartmentsInput
 }
 
 export type departmentsUncheckedCreateWithoutUsersInput = {
   id?: number
   name: string
   created_at?: Date | string | null
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesUncheckedCreateNestedManyWithoutDepartmentsInput
 }
 
 export type departmentsCreateOrConnectWithoutUsersInput = {
@@ -360,12 +427,14 @@ export type departmentsUpdateToOneWithWhereWithoutUsersInput = {
 export type departmentsUpdateWithoutUsersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesUpdateManyWithoutDepartmentsNestedInput
 }
 
 export type departmentsUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesUncheckedUpdateManyWithoutDepartmentsNestedInput
 }
 
 
@@ -375,10 +444,12 @@ export type departmentsUncheckedUpdateWithoutUsersInput = {
 
 export type DepartmentsCountOutputType = {
   users: number
+  monthly_payment_schedules: number
 }
 
 export type DepartmentsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | DepartmentsCountOutputTypeCountUsersArgs
+  monthly_payment_schedules?: boolean | DepartmentsCountOutputTypeCountMonthly_payment_schedulesArgs
 }
 
 /**
@@ -398,12 +469,20 @@ export type DepartmentsCountOutputTypeCountUsersArgs<ExtArgs extends runtime.Typ
   where?: Prisma.usersWhereInput
 }
 
+/**
+ * DepartmentsCountOutputType without action
+ */
+export type DepartmentsCountOutputTypeCountMonthly_payment_schedulesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.monthly_payment_schedulesWhereInput
+}
+
 
 export type departmentsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   created_at?: boolean
   users?: boolean | Prisma.departments$usersArgs<ExtArgs>
+  monthly_payment_schedules?: boolean | Prisma.departments$monthly_payment_schedulesArgs<ExtArgs>
   _count?: boolean | Prisma.DepartmentsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["departments"]>
 
@@ -428,6 +507,7 @@ export type departmentsSelectScalar = {
 export type departmentsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "created_at", ExtArgs["result"]["departments"]>
 export type departmentsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.departments$usersArgs<ExtArgs>
+  monthly_payment_schedules?: boolean | Prisma.departments$monthly_payment_schedulesArgs<ExtArgs>
   _count?: boolean | Prisma.DepartmentsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type departmentsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -437,6 +517,7 @@ export type $departmentsPayload<ExtArgs extends runtime.Types.Extensions.Interna
   name: "departments"
   objects: {
     users: Prisma.$usersPayload<ExtArgs>[]
+    monthly_payment_schedules: Prisma.$monthly_payment_schedulesPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -837,6 +918,7 @@ readonly fields: departmentsFieldRefs;
 export interface Prisma__departmentsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   users<T extends Prisma.departments$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.departments$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  monthly_payment_schedules<T extends Prisma.departments$monthly_payment_schedulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.departments$monthly_payment_schedulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$monthly_payment_schedulesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1283,6 +1365,30 @@ export type departments$usersArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.UsersScalarFieldEnum | Prisma.UsersScalarFieldEnum[]
+}
+
+/**
+ * departments.monthly_payment_schedules
+ */
+export type departments$monthly_payment_schedulesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the monthly_payment_schedules
+   */
+  select?: Prisma.monthly_payment_schedulesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the monthly_payment_schedules
+   */
+  omit?: Prisma.monthly_payment_schedulesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_payment_schedulesInclude<ExtArgs> | null
+  where?: Prisma.monthly_payment_schedulesWhereInput
+  orderBy?: Prisma.monthly_payment_schedulesOrderByWithRelationInput | Prisma.monthly_payment_schedulesOrderByWithRelationInput[]
+  cursor?: Prisma.monthly_payment_schedulesWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Monthly_payment_schedulesScalarFieldEnum | Prisma.Monthly_payment_schedulesScalarFieldEnum[]
 }
 
 /**

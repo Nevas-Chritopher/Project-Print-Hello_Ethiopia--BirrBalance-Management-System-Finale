@@ -117,6 +117,23 @@ export const validateAllocationUpdate = (body) => ({
   amount: toPositiveMoney(body.amount, "amount"),
 });
 
+export const validateMonthlyPaymentSchedule = (body) => {
+  const paymentDate = requireString(body.payment_date, "payment_date", 10);
+  const parsed = new Date(`${paymentDate}T00:00:00Z`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(paymentDate) || Number.isNaN(parsed.getTime())) {
+    throw new AppError("payment_date must be a valid date in YYYY-MM-DD format", 400);
+  }
+  const departmentId = body.department_id ? toPositiveInt(body.department_id, "department_id") : null;
+  const appliesToAll = body.applies_to_all === true;
+  if (!appliesToAll && !departmentId) throw new AppError("Select a department or all employees", 400);
+  return {
+    amount: toPositiveMoney(body.amount, "amount"),
+    payout_day: parsed.getUTCDate(),
+    department_id: departmentId,
+    applies_to_all: appliesToAll,
+  };
+};
+
 export const validatePasswordReset = (body) => ({
   user_id: toPositiveInt(body.user_id, "user_id"),
   new_password: validatePassword(body.new_password, "new_password"),

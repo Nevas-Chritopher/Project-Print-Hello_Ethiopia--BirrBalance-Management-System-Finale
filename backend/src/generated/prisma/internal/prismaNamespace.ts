@@ -394,6 +394,7 @@ export const ModelName = {
   login_history: 'login_history',
   menu_items: 'menu_items',
   monthly_allocations: 'monthly_allocations',
+  monthly_payment_schedules: 'monthly_payment_schedules',
   notifications: 'notifications',
   qr_sessions: 'qr_sessions',
   order_items: 'order_items',
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "audit_logs" | "balance_transactions" | "cafe_staff" | "cafes" | "departments" | "employee_qr_codes" | "feedback" | "login_history" | "menu_items" | "monthly_allocations" | "notifications" | "qr_sessions" | "order_items" | "orders" | "password_reset_tokens" | "refresh_tokens" | "roles" | "user_roles" | "users"
+    modelProps: "audit_logs" | "balance_transactions" | "cafe_staff" | "cafes" | "departments" | "employee_qr_codes" | "feedback" | "login_history" | "menu_items" | "monthly_allocations" | "monthly_payment_schedules" | "notifications" | "qr_sessions" | "order_items" | "orders" | "password_reset_tokens" | "refresh_tokens" | "roles" | "user_roles" | "users"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1159,6 +1160,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.monthly_allocationsCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.Monthly_allocationsCountAggregateOutputType> | number
+        }
+      }
+    }
+    monthly_payment_schedules: {
+      payload: Prisma.$monthly_payment_schedulesPayload<ExtArgs>
+      fields: Prisma.monthly_payment_schedulesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.monthly_payment_schedulesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.monthly_payment_schedulesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>
+        }
+        findFirst: {
+          args: Prisma.monthly_payment_schedulesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.monthly_payment_schedulesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>
+        }
+        findMany: {
+          args: Prisma.monthly_payment_schedulesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>[]
+        }
+        create: {
+          args: Prisma.monthly_payment_schedulesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>
+        }
+        createMany: {
+          args: Prisma.monthly_payment_schedulesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.monthly_payment_schedulesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>[]
+        }
+        delete: {
+          args: Prisma.monthly_payment_schedulesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>
+        }
+        update: {
+          args: Prisma.monthly_payment_schedulesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>
+        }
+        deleteMany: {
+          args: Prisma.monthly_payment_schedulesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.monthly_payment_schedulesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.monthly_payment_schedulesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>[]
+        }
+        upsert: {
+          args: Prisma.monthly_payment_schedulesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_payment_schedulesPayload>
+        }
+        aggregate: {
+          args: Prisma.Monthly_payment_schedulesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMonthly_payment_schedules>
+        }
+        groupBy: {
+          args: Prisma.monthly_payment_schedulesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Monthly_payment_schedulesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.monthly_payment_schedulesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Monthly_payment_schedulesCountAggregateOutputType> | number
         }
       }
     }
@@ -1987,6 +2062,22 @@ export const Monthly_allocationsScalarFieldEnum = {
 export type Monthly_allocationsScalarFieldEnum = (typeof Monthly_allocationsScalarFieldEnum)[keyof typeof Monthly_allocationsScalarFieldEnum]
 
 
+export const Monthly_payment_schedulesScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  payout_day: 'payout_day',
+  department_id: 'department_id',
+  applies_to_all: 'applies_to_all',
+  is_active: 'is_active',
+  created_by: 'created_by',
+  last_processed_month: 'last_processed_month',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type Monthly_payment_schedulesScalarFieldEnum = (typeof Monthly_payment_schedulesScalarFieldEnum)[keyof typeof Monthly_payment_schedulesScalarFieldEnum]
+
+
 export const NotificationsScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -2408,6 +2499,7 @@ export type GlobalOmitConfig = {
   login_history?: Prisma.login_historyOmit
   menu_items?: Prisma.menu_itemsOmit
   monthly_allocations?: Prisma.monthly_allocationsOmit
+  monthly_payment_schedules?: Prisma.monthly_payment_schedulesOmit
   notifications?: Prisma.notificationsOmit
   qr_sessions?: Prisma.qr_sessionsOmit
   order_items?: Prisma.order_itemsOmit

@@ -1,0 +1,47 @@
+import cron from "node-cron";
+import prisma from "../config/db.js";
+import { assignMonthlyBalance } from "../services/company.service.js";
+
+export const processMonthlyPayments = async () => {
+  const now = new Date();
+  const month = now.toISOString().slice(0, 7);
+  const day = now.getUTCDate();
+  const schedules = await prisma.monthly_payment_schedules.findMany({
+    where: { is_active: true, payout_day: day, last_processed_month: { not: month } },
+  });
+
+  for (const schedule of schedules) {
+    const employees = await prisma.users.findMany({
+      where: {
+        is_active: true,
+        ...(schedule.applies_to_all ? {} : { department_id: schedule.department_id }),
+        user_roles: { some: { roles: { name: "employee" } } },
+      },
+      select: { id: true },
+    });
+
+    for (const employee of employees) {
+      try {
+        await assignMonthlyBalance({ id: schedule.created_by ?? null }, {
+          user_id: employee.id,
+          amount: schedule.amount,
+          month,
+        }, null);
+      } catch (error) {
+        // Existing allocations are expected if an administrator funded the same month manually.
+        if (error?.statusCode !== 409) console.error("Monthly payment allocation failed:", error);
+      }
+    }
+    await prisma.monthly_payment_schedules.update({
+      where: { id: schedule.id },
+      data: { last_processed_month: month, updated_at: new Date() },
+    });
+  }
+};
+
+export const startMonthlyPaymentsJob = () => {
+  cron.schedule("5 0 * * *", () => {
+    processMonthlyPayments().catch((error) => console.error("Monthly payment job failed:", error));
+  });
+  console.log("Monthly payment cron job scheduled.");
+};

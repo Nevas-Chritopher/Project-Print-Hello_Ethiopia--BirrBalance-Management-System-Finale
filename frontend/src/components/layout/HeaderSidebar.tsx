@@ -64,7 +64,6 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           { label: 'Cafes', path: '/manager/cafes', icon: Building2 },
           { label: t('nav.departments'), path: '/manager/departments', icon: Building2 },
           { label: t('nav.balance'), path: '/manager/balance', icon: Wallet },
-          { label: t('nav.reports'), path: '/manager/reports', icon: FileText },
           { label: t('nav.feedback'), path: '/manager/feedback', icon: MessageSquare },
           { label: t('nav.auditLogs'), path: '/manager/audit', icon: ClipboardList },
           { label: t('nav.messages'), path: '/manager/messages', icon: MessageSquare },
@@ -76,7 +75,6 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           { label: t('nav.orders'), path: '/cafe/orders', icon: ClipboardList },
           { label: t('nav.waiters'), path: '/cafe/waiters', icon: Users },
           { label: t('nav.analytics'), path: '/cafe/analytics', icon: LayoutDashboard },
-          { label: t('nav.reports'), path: '/cafe/reports', icon: FileText },
         ];
       case 'employee':
         return [
@@ -235,7 +233,6 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           { label: t('nav.employees'), path: '/manager/employees' },
           { label: t('nav.departments'), path: '/manager/departments' },
           { label: t('nav.balance'), path: '/manager/balance' },
-          { label: t('nav.reports'), path: '/manager/reports' },
           { label: t('nav.feedback'), path: '/manager/feedback' },
           { label: t('nav.auditLogs'), path: '/manager/audit' },
           { label: t('nav.messages'), path: '/manager/messages' },
@@ -247,7 +244,6 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           { label: t('nav.orders'), path: '/cafe/orders' },
           { label: t('nav.waiters'), path: '/cafe/waiters' },
           { label: t('nav.analytics'), path: '/cafe/analytics' },
-          { label: t('nav.reports'), path: '/cafe/reports' },
         ];
       case 'employee':
         return [
@@ -423,7 +419,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     <button
                       onClick={() => {
                         setShowNotificationsMenu(false);
-                        navigate(user.role === 'employee' ? '/employee/notifications' : '/manager/reports');
+                        navigate(user.role === 'employee' ? '/employee/notifications' : '/manager/dashboard');
                       }}
                       className="text-xs font-bold text-secondary dark:text-accent-blue hover:underline"
                     >

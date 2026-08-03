@@ -6,6 +6,7 @@ import {
   addCafeManager,
   addEmployee,
   allocateBalance,
+  scheduleMonthlyPayment,
   deactivateEmployee,
   deleteEmployee,
   deleteCafe,
@@ -47,6 +48,7 @@ router.patch("/departments/:id", editDepartment);
 router.delete("/departments/:id", removeDepartment);
 
 router.post("/balances/allocations", allocateBalance);
+router.post("/balances/schedules", scheduleMonthlyPayment);
 router.patch("/balances/allocations/:id", editAllocation);
 
 router.get("/reports/monthly", monthlyReport);

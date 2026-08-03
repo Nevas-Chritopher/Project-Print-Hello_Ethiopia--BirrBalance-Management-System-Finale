@@ -95,6 +95,11 @@ export type menu_items = Prisma.menu_itemsModel
  */
 export type monthly_allocations = Prisma.monthly_allocationsModel
 /**
+ * Model monthly_payment_schedules
+ * 
+ */
+export type monthly_payment_schedules = Prisma.monthly_payment_schedulesModel
+/**
  * Model notifications
  * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
  */
