@@ -40,13 +40,32 @@ export const getProfile = asyncHandler(async (req, res) => {
     getEmployeeLedgerEntries(req.user.id),
   ]);
 
-  const { token, expiresAt } = generateQRToken(req.user.id);
+  const { token, expiresAt } = generateQRToken(req.user.id, null);
   const tokenHash = hashQRToken(token);
-  await prisma.employee_qr_codes.upsert({
+
+  const existingQr = await prisma.employee_qr_codes.findUnique({
     where: { user_id: req.user.id },
-    create: { user_id: req.user.id, token_hash: tokenHash, is_active: true, expires_at: expiresAt },
-    update: { token_hash: tokenHash, is_active: true, expires_at: expiresAt },
   });
+
+  if (!existingQr) {
+    await prisma.employee_qr_codes.create({
+      data: {
+        user_id: req.user.id,
+        token_hash: tokenHash,
+        is_active: true,
+        expires_at: expiresAt,
+      },
+    });
+  } else if (!existingQr.is_active || existingQr.token_hash !== tokenHash || (existingQr.expires_at && existingQr.expires_at <= new Date())) {
+    await prisma.employee_qr_codes.update({
+      where: { user_id: req.user.id },
+      data: {
+        token_hash: tokenHash,
+        is_active: true,
+        expires_at: expiresAt,
+      },
+    });
+  }
 
   return successResponse(
     res,
@@ -177,7 +196,7 @@ export const markNotificationRead = asyncHandler(async (req, res) => {
 });
 
 export const generateQR = asyncHandler(async (req, res) => {
-  const { token, expiresAt } = generateQRToken(req.user.id);
+  const { token, expiresAt } = generateQRToken(req.user.id, null);
   const tokenHash = hashQRToken(token);
 
   const existing = await prisma.employee_qr_codes.findUnique({
@@ -185,14 +204,16 @@ export const generateQR = asyncHandler(async (req, res) => {
   });
 
   if (existing) {
-    await prisma.employee_qr_codes.update({
-      where: { user_id: req.user.id },
-      data: {
-        token_hash: tokenHash,
-        is_active: true,
-        expires_at: expiresAt,
-      },
-    });
+    if (!existing.is_active || existing.token_hash !== tokenHash || (existing.expires_at && existing.expires_at <= new Date())) {
+      await prisma.employee_qr_codes.update({
+        where: { user_id: req.user.id },
+        data: {
+          token_hash: tokenHash,
+          is_active: true,
+          expires_at: expiresAt,
+        },
+      });
+    }
   } else {
     await prisma.employee_qr_codes.create({
       data: {

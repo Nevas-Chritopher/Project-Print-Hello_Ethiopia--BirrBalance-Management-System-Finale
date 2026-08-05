@@ -5,27 +5,52 @@ import { AppError } from "../utils/AppError.js";
 
 const QR_TOKEN_TTL_MINUTES = 10;
 const QR_SESSION_TTL_MINUTES = 3;
+const QR_TOKEN_VERSION = "v1";
 
 export const hashQRToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 export const hashQRSessionId = (sessionId) => crypto.createHash("sha256").update(sessionId).digest("hex");
 
-export const generateQRToken = (employeeId, ttlMinutes = QR_TOKEN_TTL_MINUTES) => {
-  const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
-  const payload = JSON.stringify({
-    employee_id: employeeId,
-    nonce: crypto.randomBytes(16).toString("hex"),
-    issued_at: new Date().toISOString(),
-    expires_at: expiresAt.toISOString(),
-  });
+const createStableQRToken = (employeeId) => {
+  const payload = `${QR_TOKEN_VERSION}:${employeeId}`;
+  const signature = crypto.createHmac("sha256", env.AES_SECRET).update(payload).digest("hex");
+  return `${payload}:${signature}`;
+};
 
-  return {
-    token: CryptoJS.AES.encrypt(payload, env.AES_SECRET).toString(),
-    expiresAt,
-  };
+export const generateQRToken = (employeeId, ttlMinutes = null) => {
+  const token = createStableQRToken(employeeId);
+  const expiresAt = ttlMinutes === null ? null : new Date(Date.now() + ttlMinutes * 60 * 1000);
+  return { token, expiresAt };
+};
+
+const parseStableQRToken = (token) => {
+  const parts = token.split(":");
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const [version, employeeId, signature] = parts;
+  if (version !== QR_TOKEN_VERSION || !/^[0-9]+$/.test(employeeId) || signature.length !== 64) {
+    return null;
+  }
+
+  const expectedSignature = crypto.createHmac("sha256", env.AES_SECRET).update(`${version}:${employeeId}`).digest("hex");
+  const signatureBuffer = Buffer.from(signature, "hex");
+  const expectedBuffer = Buffer.from(expectedSignature, "hex");
+
+  if (signatureBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
+    return null;
+  }
+
+  return { employee_id: Number(employeeId) };
 };
 
 export const decryptQRToken = (token) => {
   try {
+    const stablePayload = parseStableQRToken(token);
+    if (stablePayload) {
+      return stablePayload;
+    }
+
     const bytes = CryptoJS.AES.decrypt(token, env.AES_SECRET);
     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
 
