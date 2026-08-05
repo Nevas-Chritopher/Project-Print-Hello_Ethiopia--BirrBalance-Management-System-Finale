@@ -69,8 +69,12 @@ function normalizeApiData<T = any>(data: any): T {
   return data;
 }
 
-export function normalizeRole(role?: string | null) {
+export function normalizeRole(role?: string | string[] | null) {
   if (!role) return null;
+  if (Array.isArray(role)) {
+    const normalizedRoles = role.map((r) => normalizeRole(r)).filter(Boolean) as string[];
+    return normalizedRoles[0] ?? null;
+  }
 
   const normalizedRole = String(role).toLowerCase().trim();
   if (normalizedRole === 'company_manager' || normalizedRole === 'manager') return 'manager';
@@ -254,13 +258,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const activeToken = localStorage.getItem('token') || token;
     if (!activeToken || isOffline) return;
 
-    const storedRole = localStorage.getItem('role');
+    const storedRole = normalizeRole(localStorage.getItem('role'));
     const storedUserStr = localStorage.getItem('user');
 
     if (storedRole && storedRole !== 'employee') {
       if (storedUserStr) {
         try {
-          setUser(JSON.parse(storedUserStr));
+          const storedUser = JSON.parse(storedUserStr);
+          setUser({ ...storedUser, role: storedRole });
         } catch (e) {
           console.error('Error parsing stored user', e);
         }

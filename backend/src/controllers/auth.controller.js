@@ -91,6 +91,14 @@ export const login = asyncHandler(async (req, res) => {
     );
   });
 
+  const role = roles.includes("company_manager")
+    ? "company_manager"
+    : roles.includes("cafe_manager")
+      ? "cafe_manager"
+      : roles.includes("waiter")
+        ? "waiter"
+        : "employee";
+
   return successResponse(
     res,
     {
@@ -101,6 +109,8 @@ export const login = asyncHandler(async (req, res) => {
         fullname: user.fullname,
         employee_external_id: user.employee_external_id,
         roles,
+        role,
+        cafe_id: user.cafe_staff?.cafe_id ?? null,
       },
     },
     "Login successful",

@@ -57,7 +57,7 @@ function Layout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Mobile Floating Menu Button for Employee, Manager, and Cafe */}
-        {user && (user.role === 'employee' || user.role === 'manager' || user.role === 'cafe') && (
+        {user && (normalizeRole(user.role) === 'employee' || normalizeRole(user.role) === 'manager' || normalizeRole(user.role) === 'cafe') && (
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="md:hidden fixed top-4 left-4 z-30 p-2.5 rounded-xl bg-card text-text-primary shadow-md border border-border-default hover:bg-card-hover transition-all focus:outline-none min-h-[44px] min-w-[44px]"
@@ -67,7 +67,7 @@ function Layout() {
         )}
 
         {/* Top Header navbar (Hidden for employees, managers, and cafe) */}
-        {user?.role !== 'employee' && user?.role !== 'manager' && user?.role !== 'cafe' && (
+        {normalizeRole(user?.role) !== 'employee' && normalizeRole(user?.role) !== 'manager' && normalizeRole(user?.role) !== 'cafe' && (
           <TopNav onMenuClick={() => setMobileSidebarOpen(true)} />
         )}
 
@@ -101,9 +101,9 @@ function NotFound() {
       return;
     }
     const path = 
-      user.role === 'manager' ? '/manager/dashboard' :
-      user.role === 'cafe' ? '/cafe/dashboard' :
-      user.role === 'employee' ? '/employee/dashboard' :
+      normalizeRole(user.role) === 'manager' ? '/manager/dashboard' :
+      normalizeRole(user.role) === 'cafe' ? '/cafe/dashboard' :
+      normalizeRole(user.role) === 'employee' ? '/employee/dashboard' :
       '/waiter/panel';
     navigate(path);
   };

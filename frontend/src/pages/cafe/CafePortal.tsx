@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
+import { normalizeRole, useApp } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import {
   ClipboardList,
@@ -104,12 +104,12 @@ export default function CafePortal() {
   };
 
   useEffect(() => {
-    if (user && user.role === 'cafe') {
+    if (user && normalizeRole(user.role) === 'cafe') {
       loadCafeData();
     }
   }, [user, location.pathname]);
 
-  if (!user || user.role !== 'cafe') return null;
+  if (!user || normalizeRole(user.role) !== 'cafe') return null;
 
   return (
     <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-6 md:py-10 space-y-8 font-sans">

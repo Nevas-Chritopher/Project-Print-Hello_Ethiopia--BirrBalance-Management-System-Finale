@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
+import { useApp, normalizeRole } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
@@ -161,7 +161,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
         {/* Subtle separator above settings and logout */}
         <div className="border-t border-border-default my-3 xl:block md:hidden block" />
 
-        {(user.role === 'employee' || user.role === 'manager' || user.role === 'cafe') && (
+        {(normalizeRole(user.role) === 'employee' || normalizeRole(user.role) === 'manager' || normalizeRole(user.role) === 'cafe') && (
           <div className="theme-toggle-wrapper mb-3 xl:flex md:hidden flex" onClick={toggleTheme}>
             <span>{theme === 'light' ? '☀️ Light' : '🌙 Dark'}</span>
             <button
@@ -229,7 +229,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
   if (!user) return null;
 
   const getLinks = () => {
-    switch (user.role) {
+    switch (normalizeRole(user.role)) {
       case 'manager':
         return [
           { label: t('nav.overview'), path: '/manager/dashboard' },
@@ -425,7 +425,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                     <button
                       onClick={() => {
                         setShowNotificationsMenu(false);
-                        navigate(user.role === 'employee' ? '/employee/notifications' : '/manager/dashboard');
+                        navigate(normalizeRole(user.role) === 'employee' ? '/employee/notifications' : '/manager/dashboard');
                       }}
                       className="text-xs font-bold text-secondary dark:text-accent-blue hover:underline"
                     >
@@ -466,11 +466,11 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       {user.role}
                     </span>
                   </div>
-                  {user.role !== 'waiter' && <div className="p-2 space-y-0.5">
+                  {normalizeRole(user.role) !== 'waiter' && <div className="p-2 space-y-0.5">
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
-                        navigate(user.role === 'employee' ? '/employee/profile' : '#');
+                        navigate(normalizeRole(user.role) === 'employee' ? '/employee/profile' : '#');
                       }}
                       className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                     >
