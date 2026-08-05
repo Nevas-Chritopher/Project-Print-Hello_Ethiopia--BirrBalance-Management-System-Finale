@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
@@ -992,6 +993,7 @@ function ManagerEmployeesPage({
   const [isResettingQr, setIsResettingQr] = useState(false);
   const [printQr, setPrintQr] = useState<any | null>(null);
   const [printAllQrs, setPrintAllQrs] = useState<any[] | null>(null);
+  const [printPassword, setPrintPassword] = useState('');
 
   // Filter list
   const filteredEmployees = employeesList.filter((emp) => {
@@ -1171,6 +1173,7 @@ function ManagerEmployeesPage({
   const generatePrintableQr = async (emp: any) => {
     try {
       const response = await apiPost(`/api/company-manager/employees/${emp.id}/qr`, {});
+      setPrintPassword('');
       setPrintQr(response.data ?? response);
     } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR code.'); }
   };
@@ -1180,6 +1183,97 @@ function ManagerEmployeesPage({
       const response = await apiPost('/api/company-manager/employees/qr-codes', {});
       setPrintAllQrs(response.data ?? response ?? []);
     } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR codes.'); }
+  };
+
+  const getPrintableQrSvg = (): string | null => {
+    if (!printQr) return null;
+    const svgElement = document.querySelector('#print-qr-svg') as SVGSVGElement | null;
+    if (!svgElement) return null;
+
+    const serializer = new XMLSerializer();
+    const qrSvg = serializer.serializeToString(svgElement);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(qrSvg, 'image/svg+xml');
+    const svgRoot = doc.documentElement;
+    const width = Number(svgRoot.getAttribute('width') || '220');
+    const height = Number(svgRoot.getAttribute('height') || '220');
+    const lines = [
+      `ID: ${printQr.employee_external_id}`,
+      printQr.fullname,
+      printQr.department ? `Department: ${printQr.department}` : null,
+      printPassword ? `Password: ${printPassword}` : null,
+    ].filter(Boolean) as string[];
+    const textHeight = lines.length * 18 + 16;
+    const wrapperHeight = height + textHeight + 24;
+    const inner = svgRoot.innerHTML;
+
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${wrapperHeight}" viewBox="0 0 ${width} ${wrapperHeight}">\n  <rect width="100%" height="100%" fill="#ffffff" />\n  <g transform="translate(0,0)">${inner}</g>\n  ${lines.map((line, index) => `<text x="${width / 2}" y="${height + 18 + index * 18}" text-anchor="middle" font-family="Arial" font-size="12" fill="#0F172A">${line}</text>`).join('')}\n</svg>`;
+  };
+
+  const renderPrintableQrCanvas = async () => {
+    const svgText = getPrintableQrSvg();
+    if (!svgText) return null;
+
+    const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.src = url;
+
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Unable to load generated QR SVG.'));
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      URL.revokeObjectURL(url);
+      return null;
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    return canvas;
+  };
+
+  const downloadManagerQrSVG = () => {
+    const svgText = getPrintableQrSvg();
+    if (!svgText) return;
+
+    const blob = new Blob([svgText], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `Hello_Ethiopia_QR_${printQr?.employee_external_id || 'employee'}.svg`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadManagerQrPNG = async () => {
+    const canvas = await renderPrintableQrCanvas();
+    if (!canvas) return;
+
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `Hello_Ethiopia_QR_${printQr?.employee_external_id || 'employee'}.png`;
+    link.href = url;
+    link.click();
+  };
+
+  const downloadManagerQrPDF = async () => {
+    const canvas = await renderPrintableQrCanvas();
+    if (!canvas) return;
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a6' });
+    const pdfWidth = 105;
+    const pdfHeight = (canvas.height / canvas.width) * pdfWidth;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`Hello_Ethiopia_QR_${printQr?.employee_external_id || 'employee'}.pdf`);
   };
 
   return (
@@ -1567,10 +1661,67 @@ function ManagerEmployeesPage({
         </div>
       )}
       {printQr && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"><div className="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><h2 className="text-lg font-black text-primary">Employee QR Code</h2><p className="mt-4 font-bold text-primary">{printQr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">ID: {printQr.employee_external_id}</p><div className="my-5 inline-block rounded-2xl border border-slate-200 p-5"><QRCodeSVG value={printQr.qr_token} size={220} /></div><p className="mt-3 text-[10px] text-slate-400">Valid until {new Date(printQr.expires_at).toLocaleDateString()}</p><div className="mt-6 flex gap-3"><button onClick={() => setPrintQr(null)} className="flex-1 rounded-xl border border-slate-200 py-3 text-xs font-bold">Close</button><button onClick={() => window.print()} className="flex-1 rounded-xl bg-primary py-3 text-xs font-bold text-white">Print</button></div></div></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl">
+            <h2 className="text-lg font-black text-primary">Employee QR Code</h2>
+            <p className="mt-4 font-bold text-primary">{printQr.fullname}</p>
+            <p className="mt-1 text-xs font-mono text-slate-500">ID: {printQr.employee_external_id}</p>
+            {printQr.department && (
+              <p className="text-xs font-mono text-slate-500 mt-1">Department: {printQr.department}</p>
+            )}
+            <div className="mt-4 text-left">
+              <label className="block text-xs font-bold text-slate-700">Password to include</label>
+              <input
+                type="password"
+                value={printPassword}
+                onChange={(e) => setPrintPassword(e.target.value)}
+                placeholder="Optional password to include"
+                className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              />
+              <p className="mt-2 text-[10px] text-slate-500">If set, this password will appear on the printed card and downloaded files.</p>
+            </div>
+            <div className="my-5 inline-block rounded-2xl border border-slate-200 p-5">
+              <QRCodeSVG id="print-qr-svg" value={printQr.qr_token} size={220} />
+            </div>
+            <p className="mt-3 text-[10px] text-slate-400">Valid until {new Date(printQr.expires_at).toLocaleDateString()}</p>
+            {printPassword && <p className="mt-2 text-xs text-slate-600">Password: {printPassword}</p>}
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => { setPrintQr(null); setPrintPassword(''); }}
+                className="rounded-xl border border-slate-200 py-3 text-xs font-bold"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="rounded-xl bg-primary py-3 text-xs font-bold text-white"
+              >
+                Print
+              </button>
+              <button
+                onClick={downloadManagerQrPNG}
+                className="rounded-xl border border-slate-200 py-3 text-xs font-bold"
+              >
+                Download PNG
+              </button>
+              <button
+                onClick={downloadManagerQrPDF}
+                className="rounded-xl bg-secondary py-3 text-xs font-bold text-white"
+              >
+                Download PDF
+              </button>
+              <button
+                onClick={downloadManagerQrSVG}
+                className="rounded-xl border border-slate-200 py-3 text-xs font-bold"
+              >
+                Download SVG
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       {printAllQrs && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-6"><div className="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-black text-primary">Employee QR Codes</h2><p className="text-xs text-slate-500">Name and ID are printed before each QR code.</p></div><div className="flex gap-2"><button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button><button onClick={() => window.print()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All</button></div></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{printAllQrs.map((qr) => <div key={qr.id} className="break-inside-avoid rounded-2xl border border-slate-200 p-5 text-center"><p className="font-bold text-primary">{qr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">ID: {qr.employee_external_id}</p><div className="mt-4"><QRCodeSVG value={qr.qr_token} size={180} /></div></div>)}</div></div></div>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-6"><div className="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-black text-primary">Employee QR Codes</h2><p className="text-xs text-slate-500">Name, ID and department are printed before each QR code.</p></div><div className="flex gap-2"><button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button><button onClick={() => window.print()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All</button></div></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{printAllQrs.map((qr) => <div key={qr.id} className="break-inside-avoid rounded-2xl border border-slate-200 p-5 text-center"><p className="font-bold text-primary">{qr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">ID: {qr.employee_external_id}</p>{qr.department && <p className="text-xs font-mono text-slate-500">Department: {qr.department}</p>}<div className="mt-4"><QRCodeSVG value={qr.qr_token} size={180} /></div></div>)}</div></div></div>
       )}
     </div>
   );

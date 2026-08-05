@@ -261,11 +261,14 @@ function EmployeeDashboard({
   qrToken: string;
 }) {
   const { t } = useTranslation();
+  const displayName = (user?.fullName || user?.fullname || '').trim();
+  const displayDepartment = user?.department || '';
   const employee = user ? {
     ...user,
-    firstName: (user.fullName || user.fullname || '').trim().split(/\s+/)[0] || ''
+    firstName: displayName.split(/\s+/)[0] || ''
   } : null;
   const navigate = useNavigate();
+  const [qrPassword, setQrPassword] = useState('');
 
   // Dynamic low balance check
   const monthlyAllowance = allocationHistory && allocationHistory.length > 0 ? allocationHistory[0].amount : 1000;
@@ -276,10 +279,47 @@ function EmployeeDashboard({
     return Number.isFinite(daysSince) && daysSince <= 7;
   }).length;
 
+  const createDownloadCardCanvas = (sourceCanvas: HTMLCanvasElement) => {
+    const width = sourceCanvas.width;
+    const textLines = [
+      `Name: ${user.fullname}`,
+      `ID: ${user.employeeId}`,
+      `Department: ${user.department}`,
+      qrPassword ? `Password: ${qrPassword}` : null,
+    ].filter(Boolean) as string[];
+
+    const lineHeight = 18;
+    const padding = 16;
+    const textHeight = textLines.length * lineHeight + 8;
+    const targetCanvas = document.createElement('canvas');
+    targetCanvas.width = width;
+    targetCanvas.height = sourceCanvas.height + padding + textHeight + padding;
+    const ctx = targetCanvas.getContext('2d');
+    if (!ctx) return sourceCanvas;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, targetCanvas.width, targetCanvas.height);
+    ctx.drawImage(sourceCanvas, 0, 0);
+
+    ctx.fillStyle = '#0F172A';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(textLines[0], width / 2, sourceCanvas.height + padding);
+
+    ctx.font = 'normal 12px Arial';
+    textLines.slice(1).forEach((line, index) => {
+      ctx.fillText(line, width / 2, sourceCanvas.height + padding + lineHeight * (index + 1));
+    });
+
+    return targetCanvas;
+  };
+
   const downloadPNG = () => {
     const canvas = document.querySelector('#employee-qr-canvas') as HTMLCanvasElement;
     if (!canvas) return;
-    const url = canvas.toDataURL('image/png');
+    const target = createDownloadCardCanvas(canvas);
+    const url = target.toDataURL('image/png');
     const link = document.createElement('a');
     link.download = `Hello_Ethiopia_QR_${user.employeeId}.png`;
     link.href = url;
@@ -307,16 +347,21 @@ function EmployeeDashboard({
     pdf.setTextColor(15, 23, 42);
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(user.fullname, 52.5, 95, { align: 'center' });
+    pdf.text(`Name: ${displayName}`, 52.5, 95, { align: 'center' });
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(user.employeeId, 52.5, 102, { align: 'center' });
-    pdf.text(user.department, 52.5, 109, { align: 'center' });
+    pdf.text(`ID: ${user.employeeId}`, 52.5, 102, { align: 'center' });
+    if (displayDepartment) {
+      pdf.text(`Department: ${displayDepartment}`, 52.5, 109, { align: 'center' });
+    }
+    if (qrPassword) {
+      pdf.text(`Password: ${qrPassword}`, 52.5, 116, { align: 'center' });
+    }
 
     // Footer note
     pdf.setFontSize(8);
     pdf.setTextColor(100, 116, 139);
-    pdf.text('Present this card at the cafeteria counter', 52.5, 125, { align: 'center' });
+    pdf.text('Present this card at the cafeteria counter', 52.5, 130, { align: 'center' });
 
     pdf.save(`Hello_Ethiopia_QR_${user.employeeId}.pdf`);
   };
@@ -326,7 +371,27 @@ function EmployeeDashboard({
     if (!svgElement) return;
     const serializer = new XMLSerializer();
     const svgStr = serializer.serializeToString(svgElement);
-    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgStr, 'image/svg+xml');
+    const svgRoot = doc.documentElement;
+    const width = Number(svgRoot.getAttribute('width') || '220');
+    const height = Number(svgRoot.getAttribute('height') || '220');
+    const inner = svgRoot.innerHTML;
+    const textLines = [
+      `Name: ${user.fullname}`,
+      `ID: ${user.employeeId}`,
+      `Department: ${user.department}`,
+      qrPassword ? `Password: ${qrPassword}` : null,
+    ].filter(Boolean) as string[];
+    const wrapperHeight = height + textLines.length * 18 + 24;
+    const output = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${wrapperHeight}" viewBox="0 0 ${width} ${wrapperHeight}">
+  <rect width="100%" height="100%" fill="#ffffff" />
+  <g transform="translate(0,0)">${inner}</g>
+  ${textLines.map((line, index) => `<text x="${width / 2}" y="${height + 20 + index * 18}" text-anchor="middle" font-family="Arial" font-size="12" fill="#0F172A">${line}</text>`).join('')}
+</svg>`;
+
+    const blob = new Blob([output], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.download = `Hello_Ethiopia_QR_${user.employeeId}.svg`;
@@ -339,12 +404,13 @@ function EmployeeDashboard({
     const canvas = document.querySelector('#employee-qr-canvas') as HTMLCanvasElement;
     if (!canvas) return;
     const imgData = canvas.toDataURL('image/png');
+    const passwordLine = qrPassword ? `<div class="details">Password: ${qrPassword}</div>` : '';
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     printWindow.document.write(`
       <html>
         <head>
-          <title>Hello_Ethiopia QR Code - ${user.fullname}</title>
+          <title>Hello_Ethiopia QR Code - ${displayName}</title>
           <style>
             body {
               display: flex;
@@ -393,8 +459,10 @@ function EmployeeDashboard({
         <body>
           <div class="header">Hello_Ethiopia BirrBalance</div>
           <img src="${imgData}" />
-          <div class="name">${user.fullname}</div>
-          <div class="details">${user.employeeId} · ${user.department}</div>
+          <div class="name">Name: ${displayName}</div>
+          <div class="details">ID: ${user.employeeId}</div>
+          ${displayDepartment ? `<div class="details">Department: ${displayDepartment}</div>` : ''}
+          ${passwordLine}
           <div class="note">Present this card at the cafeteria counter.<br/>Do not share your QR code with others.</div>
         </body>
       </html>
@@ -517,6 +585,17 @@ function EmployeeDashboard({
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
               {user.department}
             </p>
+          </div>
+
+          <div className="w-full max-w-sm">
+            <label className="block text-xs font-bold text-slate-700 mb-2">Password to include</label>
+            <input
+              type="text"
+              value={qrPassword}
+              onChange={(e) => setQrPassword(e.target.value)}
+              placeholder="Enter password to include"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-accent"
+            />
           </div>
 
           {/* Download and print action grid */}
