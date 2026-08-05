@@ -1,4 +1,5 @@
 import { successResponse } from "../utils/response.js";
+import prisma from "../config/db.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { sendReportResponse } from "../utils/report.js";
 import { AppError } from "../utils/AppError.js";
@@ -25,8 +26,12 @@ import {
   validateMenuItemId,
   validateMenuItemUpdate,
   validateWaiterCreate,
+  validateWaiterUpdate,
 } from "../validators/cafe.validators.js";
-import { createEmployee } from "../services/company.service.js";
+import { createEmployee, removeEmployee, updateEmployee, issueAllPrintableEmployeeQrs } from "../services/company.service.js";
+import { generateDepartmentUsageReport } from "../services/company.service.js";
+import { validateDepartmentUsageReportQuery } from "../validators/company.validators.js";
+import { validateId } from "../validators/company.validators.js";
 import { getMonthRange } from "../utils/date.js";
 
 export const listMenuItems = asyncHandler(async (req, res) => {
@@ -68,6 +73,36 @@ export const addCafeWaiter = asyncHandler(async (req, res) => {
     cafe_id: req.user.cafeId,
   }, req.ip);
   return successResponse(res, waiter, "Waiter created successfully", 201);
+});
+
+export const removeCafeWaiter = asyncHandler(async (req, res) => {
+  if (!req.user.cafeId) throw new AppError("Cafe manager is not assigned to a cafe", 403);
+  const waiterId = validateId(req.params, "waiter id");
+  const waiter = await prisma.users.findFirst({
+    where: {
+      id: waiterId,
+      cafe_staff: { cafe_id: req.user.cafeId },
+      user_roles: { some: { roles: { name: "waiter" } } },
+    },
+    select: { id: true },
+  });
+  if (!waiter) throw new AppError("Waiter not found in your cafe", 404);
+  const removed = await removeEmployee(req.user, waiterId, req.ip);
+  return successResponse(res, removed, "Waiter deleted successfully");
+});
+
+export const editCafeWaiter = asyncHandler(async (req, res) => {
+  if (!req.user.cafeId) throw new AppError("Cafe manager is not assigned to a cafe", 403);
+  const waiterId = validateId(req.params, "waiter id");
+  const waiter = await prisma.users.findFirst({ where: { id: waiterId, cafe_staff: { cafe_id: req.user.cafeId }, user_roles: { some: { roles: { name: "waiter" } } } }, select: { id: true } });
+  if (!waiter) throw new AppError("Waiter not found in your cafe", 404);
+  const updated = await updateEmployee(req.user, waiterId, validateWaiterUpdate(req.body), req.ip);
+  return successResponse(res, updated, "Waiter updated successfully");
+});
+
+export const generateAllEmployeeQrs = asyncHandler(async (req, res) => {
+  const qrCodes = await issueAllPrintableEmployeeQrs(req.user, req.ip);
+  return successResponse(res, qrCodes, "Printable employee QR codes generated successfully");
 });
 
 export const listCafeFeedback = asyncHandler(async (req, res) => {
@@ -119,5 +154,16 @@ export const cafeOperationalReport = asyncHandler(async (req, res) => {
     return successResponse(res, report.data, "Cafe operational report generated successfully");
   }
 
+  return sendReportResponse(res, report);
+});
+
+export const cafeDepartmentUsageReport = asyncHandler(async (req, res) => {
+  const report = await generateDepartmentUsageReport(
+    req.user,
+    validateDepartmentUsageReportQuery(req.query),
+    req.ip,
+    req.user.cafeId,
+  );
+  if (report.format === "json") return successResponse(res, report.data, "Cafe department usage report generated successfully");
   return sendReportResponse(res, report);
 });

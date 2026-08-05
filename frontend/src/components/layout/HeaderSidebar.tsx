@@ -36,10 +36,10 @@ export function EsromLogo({ className = "h-8", light = false, collapsedResponsiv
       </div>
       <div className={`flex flex-col ${collapsedResponsive ? 'xl:flex md:hidden' : 'flex'}`}>
         <span className="font-black text-lg leading-none tracking-tight text-text-primary">
-          Hello_Ethiopia
+          Print(&quot;Hello_Ethiopia&quot;)
         </span>
         <span className="text-[9px] font-bold tracking-widest uppercase text-text-subtle">
-          BirrBalance
+          BirrBalance Management System
         </span>
       </div>
     </div>
@@ -64,9 +64,10 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           { label: 'Cafes', path: '/manager/cafes', icon: Building2 },
           { label: t('nav.departments'), path: '/manager/departments', icon: Building2 },
           { label: t('nav.balance'), path: '/manager/balance', icon: Wallet },
-          { label: t('nav.feedback'), path: '/manager/feedback', icon: MessageSquare },
+          { label: 'Reports', path: '/manager/reports', icon: FileText },
+          { label: 'Messages', path: '/manager/messages', icon: MessageSquare },
           { label: t('nav.auditLogs'), path: '/manager/audit', icon: ClipboardList },
-          { label: t('nav.messages'), path: '/manager/messages', icon: MessageSquare },
+          { label: 'Profile & Admins', path: '/manager/profile', icon: Settings },
         ];
       case 'cafe':
         return [
@@ -75,6 +76,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           { label: t('nav.orders'), path: '/cafe/orders', icon: ClipboardList },
           { label: t('nav.waiters'), path: '/cafe/waiters', icon: Users },
           { label: t('nav.analytics'), path: '/cafe/analytics', icon: LayoutDashboard },
+          { label: 'Reports', path: '/cafe/reports', icon: FileText },
         ];
       case 'employee':
         return [
@@ -82,6 +84,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
           { label: t('nav.myOrders'), path: '/employee/orders', icon: ClipboardList },
           { label: t('nav.transactions'), path: '/employee/transactions', icon: History },
           { label: t('nav.myProfile'), path: '/employee/profile', icon: UserIcon },
+          { label: 'Messages', path: '/employee/messages', icon: MessageSquare },
           { label: t('nav.notifications'), path: '/employee/notifications', icon: Bell },
         ];
       default:
@@ -233,9 +236,10 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           { label: t('nav.employees'), path: '/manager/employees' },
           { label: t('nav.departments'), path: '/manager/departments' },
           { label: t('nav.balance'), path: '/manager/balance' },
-          { label: t('nav.feedback'), path: '/manager/feedback' },
+          { label: 'Reports', path: '/manager/reports' },
+          { label: 'Messages', path: '/manager/messages' },
           { label: t('nav.auditLogs'), path: '/manager/audit' },
-          { label: t('nav.messages'), path: '/manager/messages' },
+          { label: 'Profile & Admins', path: '/manager/profile' },
         ];
       case 'cafe':
         return [
@@ -244,6 +248,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           { label: t('nav.orders'), path: '/cafe/orders' },
           { label: t('nav.waiters'), path: '/cafe/waiters' },
           { label: t('nav.analytics'), path: '/cafe/analytics' },
+          { label: 'Reports', path: '/cafe/reports' },
         ];
       case 'employee':
         return [
@@ -251,6 +256,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
           { label: t('nav.myOrders'), path: '/employee/orders' },
           { label: t('nav.transactions'), path: '/employee/transactions' },
           { label: t('nav.myProfile'), path: '/employee/profile' },
+          { label: 'Messages', path: '/employee/messages' },
         ];
       default:
         return [];

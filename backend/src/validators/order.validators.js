@@ -1,5 +1,5 @@
 import { AppError } from "../utils/AppError.js";
-import { requireString, toPositiveInt } from "./common.validators.js";
+import { requireString, toPositiveInt, toPositiveMoney } from "./common.validators.js";
 
 const MAX_ITEMS_PER_ORDER = 20;
 const MAX_QUANTITY_PER_ITEM = 10;
@@ -31,17 +31,24 @@ const validateOrderItems = (items) => {
   });
 };
 
+const validateOrderPayment = (body) => {
+  if (body.manual_total !== undefined && body.manual_total !== null && body.manual_total !== "") {
+    return { items: [], manual_total: toPositiveMoney(body.manual_total, "manual_total") };
+  }
+  return { items: validateOrderItems(body.items), manual_total: undefined };
+};
+
 export const validateOnlineOrder = (body) => ({
   cafe_id: toPositiveInt(body.cafe_id, "cafe_id"),
   items: validateOrderItems(body.items),
 });
 
-export const validateOfflineOrder = (body) => ({
+export const validateOfflineOrder = (body, { requireQrSession = true } = {}) => ({
   employee_id: toPositiveInt(body.employee_id, "employee_id"),
   cafe_id: toPositiveInt(body.cafe_id, "cafe_id"),
-  qr_session_id: requireString(body.qr_session_id, "qr_session_id", 128),
+  qr_session_id: requireQrSession ? requireString(body.qr_session_id, "qr_session_id", 128) : undefined,
   password: requireString(body.password, "password", 100),
-  items: validateOrderItems(body.items),
+  ...validateOrderPayment(body),
 });
 
 export const validateOrderId = (params) => toPositiveInt(params.id, "order id");

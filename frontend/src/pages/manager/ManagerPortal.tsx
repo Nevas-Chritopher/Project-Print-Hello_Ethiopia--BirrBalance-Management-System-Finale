@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
+import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
@@ -51,7 +52,6 @@ const normalizeEmployee = (e: any) => ({
   isActive: e.is_active ?? true,
   isAwaitingSetup: e.isAwaitingSetup ?? false,
   balance: e.balance ?? 0,
-  balanceTier: e.balanceTier ?? '',
   roles: e.roles ?? [],
 });
 
@@ -87,6 +87,8 @@ const normalizeAuditLog = (l: any) => ({
 
 const normalizeFeedback = (f: any) => ({
   id: f.id,
+  employeeId: f.users?.employee_external_id ?? f.user_id ?? '',
+  userId: f.users?.id ?? f.user_id ?? null,
   employeeName: f.users?.fullname ?? f.employeeName ?? 'Unknown',
   orderId: f.order_id ?? f.orderId ?? '',
   rating: f.rating ?? 0,
@@ -107,9 +109,10 @@ export default function ManagerPortal() {
     if (path.includes('cafes')) return 'cafes';
     if (path.includes('departments')) return 'departments';
     if (path.includes('balance')) return 'balance';
-    if (path.includes('feedback')) return 'feedback';
-    if (path.includes('audit')) return 'audit';
+    if (path.includes('reports')) return 'reports';
     if (path.includes('messages')) return 'messages';
+    if (path.includes('audit')) return 'audit';
+    if (path.includes('profile')) return 'profile';
     return 'overview'; // default /manager/dashboard
   };
 
@@ -121,14 +124,13 @@ export default function ManagerPortal() {
   const [departmentsList, setDepartmentsList] = useState<any[]>([]);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
-  const [feedbacks, setFeedbacks] = useState<any[]>([]);
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [employeeMessages, setEmployeeMessages] = useState<any[]>([]);
   const [waitersList, setWaitersList] = useState<any[]>([]);
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
   // Financial report data for the chart
   const [financialData, setFinancialData] = useState<any>(null);
+  const [departmentUsageData, setDepartmentUsageData] = useState<any>({ departments: [], employees: [] });
 
   // Reload portal data — calls correct backend endpoints and normalizes response shapes
   const loadPortalData = async () => {
@@ -136,14 +138,15 @@ export default function ManagerPortal() {
     setPortalError(null);
     try {
       const currentMonth = new Date().toISOString().slice(0, 7);
-      const [empsRes, cafesRes, deptsRes, logsRes, feedsRes, finRes, monthlyRes] = await Promise.all([
-        apiGet('/api/company-manager/employees?limit=500'),
-        apiGet('/api/company-manager/cafes'),
-        apiGet('/api/company-manager/departments'),
-        apiGet('/api/audit-logs?limit=50'),
-        apiGet(`/api/company-manager/feedback?month=${currentMonth}&limit=100`),
+      const [empsRes, cafesRes, deptsRes, logsRes, messagesRes, finRes, monthlyRes, usageRes] = await Promise.all([
+        apiGet('/api/company-manager/employees?limit=500').catch(() => ({ data: { items: [] } })),
+        apiGet('/api/company-manager/cafes').catch(() => ({ data: [] })),
+        apiGet('/api/company-manager/departments').catch(() => ({ data: [] })),
+        apiGet('/api/audit-logs?limit=50').catch(() => ({ data: { items: [] } })),
+        apiGet('/api/notifications?limit=100').catch(() => null),
         apiGet(`/api/company-manager/reports/financial?month=${currentMonth}&format=json`).catch(() => null),
         apiGet(`/api/company-manager/reports/monthly?month=${currentMonth}&format=json`).catch(() => null),
+        apiGet(`/api/company-manager/reports/department-usage?month=${currentMonth}&format=json`).catch(() => null),
       ]);
 
       const rawEmps = empsRes?.data?.items ?? empsRes?.items ?? [];
@@ -157,10 +160,11 @@ export default function ManagerPortal() {
       const rawLogs = logsRes?.data?.items ?? logsRes?.items ?? [];
       setAuditLogs(rawLogs.map(normalizeAuditLog));
 
-      const rawFeeds = feedsRes?.data?.items ?? feedsRes?.items ?? [];
-      setFeedbacks(rawFeeds.map(normalizeFeedback));
+      const rawMessages = messagesRes?.data?.items ?? messagesRes?.items ?? [];
+      setEmployeeMessages(rawMessages.filter((message: any) => String(message.title ?? '').startsWith('Message from ')));
 
       setFinancialData(finRes?.data ?? null);
+      setDepartmentUsageData(usageRes?.data ?? { departments: [], employees: [] });
 
       const rawOrders = monthlyRes?.data?.rows ?? [];
       const mappedOrders = rawOrders.map((row: any, idx: number) => ({
@@ -177,8 +181,6 @@ export default function ManagerPortal() {
       }));
       setRecentOrders(mappedOrders);
 
-      setConversations([]);
-      setMessages([]);
       setWaitersList(normalizedEmps.filter((e: any) => (e.roles || []).includes('waiter')));
     } catch (e: any) {
       console.error('Error loading manager data', e);
@@ -230,6 +232,7 @@ export default function ManagerPortal() {
           recentOrders={recentOrders}
           auditLogs={auditLogs}
           financialData={financialData}
+          departmentUsageData={departmentUsageData}
           isLoading={portalLoading}
           onRefresh={loadPortalData}
         />
@@ -262,6 +265,7 @@ export default function ManagerPortal() {
           onReload={loadPortalData}
           apiPost={apiPost}
           apiPatch={apiPatch}
+          apiDelete={apiDelete}
         />
       )}
       {activeTab === 'balance' && (
@@ -272,33 +276,186 @@ export default function ManagerPortal() {
           apiPost={apiPost}
         />
       )}
-      {activeTab === 'feedback' && (
-        <ManagerFeedbackPage
-          feedbacks={feedbacks}
-        />
-      )}
+      {activeTab === 'reports' && <ManagerReportsPage employeesList={employeesList} recentOrders={recentOrders} departmentsList={departmentsList} waitersList={waitersList} />}
+      {activeTab === 'messages' && <ManagerIncomingMessagesPage messages={employeeMessages} />}
       {activeTab === 'audit' && (
         <ManagerAuditLogsPage
           auditLogs={auditLogs}
         />
       )}
-      {activeTab === 'messages' && (
-  <>
-    <ManagerMessagesPage
-      conversations={conversations}
-      messages={messages}
-      apiPost={apiPost}
-      onReload={loadPortalData}
-      employeesList={employeesList}
-    />
-
-    {/* Messages UI reuses notifications API for outbound alerts */}
-
-  </>
-
-)}
+      {activeTab === 'profile' && <ManagerProfilePage employeesList={employeesList} apiPost={apiPost} apiPatch={apiPatch} apiDelete={apiDelete} onReload={loadPortalData} />}
     </div>
   );
+}
+
+function ManagerProfilePage({ employeesList, apiPost, apiPatch, apiDelete, onReload }: { employeesList: any[]; apiPost: (path: string, body: any) => Promise<any>; apiPatch: (path: string, body: any) => Promise<any>; apiDelete: (path: string) => Promise<any>; onReload: () => Promise<void> }) {
+  const [password, setPassword] = useState({ old_password: '', new_password: '' });
+  const [admin, setAdmin] = useState({ employee_external_id: '', fullname: '', phone_number: '', password: '' });
+  const [editingAdmin, setEditingAdmin] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ fullname: '', phone_number: '', password: '' });
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeAdminAction, setActiveAdminAction] = useState<string | null>(null);
+
+  const companyManagers = (employeesList || []).filter((emp) => (emp.roles || []).includes('company_manager'));
+
+  const changePassword = async (event: React.FormEvent) => {
+    event.preventDefault(); setError(''); setMessage(''); setIsSubmitting(true); setActiveAdminAction('change-password');
+    try {
+      await apiPatch('/api/company-manager/profile/password', password);
+      setPassword({ old_password: '', new_password: '' });
+      setMessage('Password updated successfully.');
+    } catch (e: any) {
+      setError(e.message || 'Unable to update password.');
+    } finally {
+      setIsSubmitting(false); setActiveAdminAction(null);
+    }
+  };
+
+  const addAdmin = async (event: React.FormEvent) => {
+    event.preventDefault(); setError(''); setMessage(''); setIsSubmitting(true); setActiveAdminAction('add-admin');
+    try {
+      await apiPost('/api/company-manager/admins', admin);
+      setAdmin({ employee_external_id: '', fullname: '', phone_number: '', password: '' });
+      setMessage('Company manager added successfully.');
+      await onReload();
+    } catch (e: any) {
+      setError(e.message || 'Unable to add company manager.');
+    } finally {
+      setIsSubmitting(false); setActiveAdminAction(null);
+    }
+  };
+
+  const startEditAdmin = (adminAccount: any) => {
+    setEditingAdmin(adminAccount);
+    setEditForm({ fullname: adminAccount.fullName || '', phone_number: adminAccount.phone || '', password: '' });
+  };
+
+  const saveAdminChanges = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editingAdmin) return;
+    setError(''); setMessage(''); setIsSubmitting(true); setActiveAdminAction(`save-${editingAdmin.id}`);
+    try {
+      const payload: any = { fullname: editForm.fullname, phone_number: editForm.phone_number };
+      if (editForm.password) payload.password = editForm.password;
+      await apiPatch(`/api/company-manager/employees/${editingAdmin.id}`, payload);
+      setEditingAdmin(null);
+      setEditForm({ fullname: '', phone_number: '', password: '' });
+      setMessage('Admin updated successfully.');
+      await onReload();
+    } catch (e: any) {
+      setError(e.message || 'Unable to update admin.');
+    } finally {
+      setIsSubmitting(false); setActiveAdminAction(null);
+    }
+  };
+
+  const resetAdminPassword = async (adminAccount: any) => {
+    const newPassword = window.prompt(`Set a new password for ${adminAccount.fullName || adminAccount.employeeId || 'this admin'}`);
+    if (!newPassword) return;
+    setError(''); setMessage(''); setIsSubmitting(true); setActiveAdminAction(`reset-${adminAccount.id}`);
+    try {
+      await apiPost('/api/company-manager/employees/password-reset', { user_id: adminAccount.id, new_password: newPassword });
+      setMessage('Admin password updated successfully.');
+      await onReload();
+    } catch (e: any) {
+      setError(e.message || 'Unable to reset admin password.');
+    } finally {
+      setIsSubmitting(false); setActiveAdminAction(null);
+    }
+  };
+
+  const deleteAdmin = async (adminAccount: any) => {
+    if (!window.confirm(`Delete ${adminAccount.fullName || adminAccount.employeeId || 'this admin'}?`)) return;
+    setError(''); setMessage(''); setIsSubmitting(true); setActiveAdminAction(`delete-${adminAccount.id}`);
+    try {
+      await apiDelete(`/api/company-manager/employees/${adminAccount.id}`);
+      setMessage('Admin deleted successfully.');
+      await onReload();
+    } catch (e: any) {
+      setError(e.message || 'Unable to delete admin.');
+    } finally {
+      setIsSubmitting(false); setActiveAdminAction(null);
+    }
+  };
+
+  return <div className="space-y-6 animate-fadeIn max-w-5xl">
+    <div><h1 className="text-2xl font-extrabold text-primary">Profile & Admins</h1><p className="text-xs text-subtle-text mt-1">Change your password, add another company manager, and manage existing admins.</p></div>
+    {message && <p className="rounded-xl bg-green-50 border border-green-200 p-3 text-xs font-bold text-green-700">{message}</p>}
+    {error && <p className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs font-bold text-danger">{error}</p>}
+    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <form onSubmit={changePassword} className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm"><h2 className="font-black text-primary">Change my password</h2><input required type="password" placeholder="Current password" value={password.old_password} onChange={e => setPassword({ ...password, old_password: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" /><input required type="password" placeholder="New password (8+ characters, upper/lowercase and number)" value={password.new_password} onChange={e => setPassword({ ...password, new_password: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" /><button disabled={isSubmitting && activeAdminAction === 'change-password'} className="rounded-xl bg-primary px-4 py-3 text-xs font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed">{activeAdminAction === 'change-password' ? 'Updating...' : 'Update Password'}</button></form>
+      <form onSubmit={addAdmin} className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm"><h2 className="font-black text-primary">Add company manager</h2><input required placeholder="Manager ID" value={admin.employee_external_id} onChange={e => setAdmin({ ...admin, employee_external_id: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" /><input required placeholder="Full name" value={admin.fullname} onChange={e => setAdmin({ ...admin, fullname: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" /><input required placeholder="Phone number" value={admin.phone_number} onChange={e => setAdmin({ ...admin, phone_number: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" /><input required type="password" placeholder="Password" value={admin.password} onChange={e => setAdmin({ ...admin, password: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" /><button disabled={isSubmitting && activeAdminAction === 'add-admin'} className="rounded-xl bg-primary px-4 py-3 text-xs font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed">{activeAdminAction === 'add-admin' ? 'Adding...' : 'Add Manager'}</button></form>
+    </div>
+
+    <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 className="font-black text-primary">Company managers</h2>
+          <p className="text-xs text-subtle-text mt-1">Edit details, reset passwords, or remove admin accounts.</p>
+        </div>
+      </div>
+      {companyManagers.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-subtle-text">No company manager accounts yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {companyManagers.map((adminAccount) => (
+            <div key={adminAccount.id} className="rounded-2xl border border-slate-200 p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-black text-primary">{adminAccount.fullName || adminAccount.fullname}</p>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">{adminAccount.employeeId}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-subtle-text">{adminAccount.phone || 'No phone on file'}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEditAdmin(adminAccount)}
+                    disabled={isSubmitting}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {activeAdminAction === `save-${adminAccount.id}` ? 'Saving...' : 'Edit'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => resetAdminPassword(adminAccount)}
+                    disabled={isSubmitting}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {activeAdminAction === `reset-${adminAccount.id}` ? 'Resetting...' : 'Reset Password'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteAdmin(adminAccount)}
+                    disabled={isSubmitting}
+                    className="rounded-xl bg-danger px-3 py-2 text-[11px] font-bold text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {activeAdminAction === `delete-${adminAccount.id}` ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+              {editingAdmin?.id === adminAccount.id && (
+                <form onSubmit={saveAdminChanges} className="mt-4 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <input required value={editForm.fullname} onChange={(e) => setEditForm({ ...editForm, fullname: e.target.value })} placeholder="Full name" className="w-full rounded-xl border border-slate-200 p-3 text-sm" />
+                    <input value={editForm.phone_number} onChange={(e) => setEditForm({ ...editForm, phone_number: e.target.value })} placeholder="Phone number" className="w-full rounded-xl border border-slate-200 p-3 text-sm" />
+                  </div>
+                  <input type="password" value={editForm.password} onChange={(e) => setEditForm({ ...editForm, password: e.target.value })} placeholder="New password (optional)" className="w-full rounded-xl border border-slate-200 p-3 text-sm" />
+                  <div className="flex gap-2">
+                    <button type="submit" className="rounded-xl bg-primary px-3 py-2 text-[11px] font-bold text-white">Save changes</button>
+                    <button type="button" onClick={() => setEditingAdmin(null)} className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-700">Cancel</button>
+                  </div>
+                </form>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>;
 }
 
 function ManagerCafesPage({
@@ -319,7 +476,7 @@ function ManagerCafesPage({
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [error, setError] = useState('');
-  const [manager, setManager] = useState({ cafeId: '', employeeId: '', fullName: '', email: '', phone: '', password: '' });
+  const [manager, setManager] = useState({ cafeId: '', employeeId: '', fullName: '', phone: '', password: '' });
 
   const addCafe = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -341,11 +498,10 @@ function ManagerCafesPage({
         cafe_id: Number(manager.cafeId),
         employee_external_id: manager.employeeId,
         fullname: manager.fullName,
-        email: manager.email,
         phone_number: manager.phone,
         password: manager.password,
       });
-      setManager({ cafeId: '', employeeId: '', fullName: '', email: '', phone: '', password: '' });
+      setManager({ cafeId: '', employeeId: '', fullName: '', phone: '', password: '' });
       setError('');
       await onReload();
     } catch (err: any) {
@@ -364,6 +520,33 @@ function ManagerCafesPage({
     await onReload();
   };
 
+  const editCafeManager = async (mgr: any) => {
+    const fullname = window.prompt('Manager name', mgr.fullName);
+    if (!fullname) return;
+    const phone_number = window.prompt('Phone number', mgr.phone || '') ?? '';
+    const department_id = window.prompt('Department ID (leave blank for none)', String(mgr.departmentId || ''));
+    const password = window.prompt('New password (leave blank to keep current)', '') ?? '';
+    try {
+      await apiPatch(`/api/company-manager/employees/${mgr.id}`, { fullname, phone_number: phone_number || null, department_id: department_id ? Number(department_id) : null, ...(password ? { password } : {}) });
+      await onReload();
+    } catch (err: any) { setError(err.message || 'Unable to update cafe manager'); }
+  };
+
+  const deleteCafe = async (cafe: any) => {
+    const confirmed = window.confirm(
+      `Remove ${cafe.name}? It will no longer be available, while past orders and reports remain preserved.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await apiDelete(`/api/company-manager/cafes/${cafe.id}`);
+      setError('');
+      await onReload();
+    } catch (err: any) {
+      setError(err.message || 'Unable to delete cafe');
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <div><h1 className="text-2xl font-extrabold text-primary tracking-tight">Cafes</h1><p className="mt-1 text-xs font-medium uppercase tracking-wider text-subtle-text">Create and view company cafeterias</p></div>
@@ -379,7 +562,6 @@ function ManagerCafesPage({
           <select required value={manager.cafeId} onChange={(e) => setManager({ ...manager, cafeId: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm"><option value="">Select café</option>{cafes.map((cafe) => <option key={cafe.id} value={cafe.id}>{cafe.name}</option>)}</select>
           <input required placeholder="Manager ID" value={manager.employeeId} onChange={(e) => setManager({ ...manager, employeeId: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
           <input required placeholder="Full name" value={manager.fullName} onChange={(e) => setManager({ ...manager, fullName: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
-          <input required type="email" placeholder="Email" value={manager.email} onChange={(e) => setManager({ ...manager, email: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
           <input required placeholder="Phone" value={manager.phone} onChange={(e) => setManager({ ...manager, phone: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
           <input required type="password" placeholder="Temporary password" value={manager.password} onChange={(e) => setManager({ ...manager, password: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
         </div>
@@ -399,7 +581,17 @@ function ManagerCafesPage({
                   <p className="font-bold text-primary">{cafe.name}</p>
                   <p className="text-xs text-subtle-text">{cafe.location || 'No location set'}</p>
                 </div>
-                <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{cafe.is_active === false ? 'Inactive' : 'Active'}</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase text-success">{cafe.is_active === false ? 'Inactive' : 'Active'}</span>
+                  <button
+                    type="button"
+                    onClick={() => deleteCafe(cafe)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-3 py-2 text-[11px] font-bold text-danger hover:bg-red-50"
+                    aria-label={`Delete ${cafe.name}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete Cafe
+                  </button>
+                </div>
               </div>
               <div className="mt-3 space-y-2">
                 {cafeManagers.length === 0 ? (
@@ -419,6 +611,7 @@ function ManagerCafesPage({
                       >
                         {mgr.isActive ? 'Deactivate' : 'Activate'}
                       </button>
+                      <button type="button" onClick={() => editCafeManager(mgr)} className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-700 hover:bg-slate-50">Edit / Reset Password</button>
                       <button
                         type="button"
                         onClick={() => deleteCafeManager(mgr)}
@@ -447,6 +640,7 @@ function ManagerDashboardOverview({
   recentOrders,
   auditLogs,
   financialData,
+  departmentUsageData,
   isLoading,
   onRefresh
 }: {
@@ -455,31 +649,31 @@ function ManagerDashboardOverview({
   recentOrders: any[];
   auditLogs: any[];
   financialData: any;
+  departmentUsageData: any;
   isLoading: boolean;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation();
   
   // Stats derived from real backend data
-  const totalEmployees = employeesList.length;
-  const activeEmployeesCount = employeesList.filter(e => e.isActive !== false).length;
-  const expiredEmployeesCount = employeesList.filter(e => e.isActive === false).length;
+  const employeesOnly = employeesList.filter(e => e.roles?.includes('employee'));
+  const totalEmployees = employeesOnly.length;
+  const activeEmployeesCount = employeesOnly.filter(e => e.isActive !== false).length;
+  const expiredEmployeesCount = employeesOnly.filter(e => e.isActive === false).length;
 
-  // Financial totals: from financial report or fallback to order sums
-  const totalDistributed = financialData?.total_company_obligation
-    ?? recentOrders.reduce((sum: number, o: any) => sum + Number(o.amount || 0), 0);
-  const totalRedeemed = financialData?.cafe_spending
-    ? financialData.cafe_spending.reduce((sum: number, c: any) => sum + Number(c.total_amount || 0), 0)
-    : recentOrders.reduce((sum: number, o: any) => sum + Number(o.amount || 0), 0);
-  const attentionCount = employeesList.filter(e => e.isActive === false || e.isAwaitingSetup).length;
+  const reportDepartments = departmentUsageData?.departments ?? [];
+  // These totals use the same department report displayed on the Reports page.
+  const totalDistributed = reportDepartments.reduce((sum: number, department: any) => sum + Number(department.total_money_given || 0), 0);
+  const totalRedeemed = reportDepartments.reduce((sum: number, department: any) => sum + Number(department.total_used || 0), 0);
+  const attentionCount = employeesOnly.filter(e => e.isActive === false || e.isAwaitingSetup).length;
 
-  // Build chart data from financial report department spending
+  // Build the graph directly from the department report columns.
   const chartData = (() => {
-    if (financialData?.department_spending && financialData.department_spending.length > 0) {
-      return financialData.department_spending.slice(0, 7).map((d: any) => ({
-        name: (d.department_name || 'Dept').slice(0, 8),
-        Allocated: Number(d.total_amount || 0) * 1.2,
-        Redeemed: Number(d.total_amount || 0),
+    if (reportDepartments.length > 0) {
+      return reportDepartments.slice(0, 7).map((department: any) => ({
+        name: department.department || 'Unassigned',
+        Allocated: Number(department.total_money_given || 0),
+        Redeemed: Number(department.total_used || 0),
       }));
     }
     return null; // will use chart defaults
@@ -590,7 +784,7 @@ function ManagerDashboardOverview({
             <div>
               <h3 className="text-sm font-black text-primary tracking-tight">{t('manager.allocationRedemptionChart')}</h3>
               <p className="text-[10px] text-subtle-text font-medium mt-0.5">
-                {financialData ? 'Dept spending vs estimated allocation — current month' : 'Comparing financial commitments vs actual cafeteria consumption'}
+                {reportDepartments.length ? 'Department allocations and meal usage — current month' : 'No department report data is available yet'}
               </p>
             </div>
             <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl">
@@ -774,6 +968,7 @@ function ManagerEmployeesPage({
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [filterTab, setFilterTab] = useState('All'); // All, Active, Inactive, Pending
+  const [departmentFilter, setDepartmentFilter] = useState('all');
 
   // Form modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -782,8 +977,6 @@ function ManagerEmployeesPage({
   const [newDepartment, setNewDepartment] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPhone, setNewPhone] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [newTier, setNewTier] = useState('Tier 1');
   const [formError, setFormError] = useState('');
 
   // Delete modal
@@ -797,16 +990,28 @@ function ManagerEmployeesPage({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [resetQrEmp, setResetQrEmp] = useState<any | null>(null);
   const [isResettingQr, setIsResettingQr] = useState(false);
+  const [printQr, setPrintQr] = useState<any | null>(null);
+  const [printAllQrs, setPrintAllQrs] = useState<any[] | null>(null);
 
   // Filter list
   const filteredEmployees = employeesList.filter((emp) => {
     if (!emp.roles?.includes('employee')) return false;
+    if (departmentFilter !== 'all' && String(emp.departmentId) !== departmentFilter) return false;
     const matchesSearch = emp.fullName.toLowerCase().includes(search.toLowerCase()) || emp.employeeId.toLowerCase().includes(search.toLowerCase());
     if (filterTab === 'Active') return matchesSearch && emp.isActive && !emp.isAwaitingSetup;
     if (filterTab === 'Inactive') return matchesSearch && !emp.isActive;
     if (filterTab === 'Pending') return matchesSearch && emp.isAwaitingSetup;
     return matchesSearch;
   });
+
+  const findDepartmentByName = (departmentName: string) => {
+    const normalizedTarget = (departmentName || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+    if (!normalizedTarget) return null;
+    return departmentsList.find((item) => {
+      const normalizedName = (item.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+      return normalizedName === normalizedTarget || normalizedName.includes(normalizedTarget) || normalizedTarget.includes(normalizedName);
+    }) ?? null;
+  };
 
   const handleImportEmployees = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -826,7 +1031,7 @@ function ManagerEmployeesPage({
         throw new Error('The spreadsheet does not contain any employee rows.');
       }
 
-      const validRows: Array<{ employee_external_id: string; fullname: string; phone_number: string; password: string }> = [];
+      const validRows: Array<{ employee_external_id: string; fullname: string; department_id: number; password: string }> = [];
       for (const row of rows) {
         const normalized: Record<string, string> = {};
         Object.entries(row as Record<string, unknown>).forEach(([key, value]) => {
@@ -836,29 +1041,31 @@ function ManagerEmployeesPage({
         const employeeExternalId = normalized['id'] || normalized['employeeid'] || normalized['empid'] || normalized['employee'] || normalized['employeeexternalid'];
         const fullname = normalized['employeename'] || normalized['name'] || normalized['fullname'] || normalized['employee_name'];
         const password = normalized['password'] || normalized['pass'];
-        const phone = normalized['phonenumber'] || normalized['phone'] || normalized['phone_number'];
+        const departmentName = normalized['department'] || normalized['departement'] || normalized['departmentname'];
+        const departmentIdValue = normalized['departmentid'] || normalized['deptid'];
+        const department = departmentIdValue
+          ? departmentsList.find((item) => String(item.id) === departmentIdValue)
+          : findDepartmentByName(departmentName);
 
-        if (!employeeExternalId || !fullname || !password || !phone) continue;
+        if (!employeeExternalId || !fullname || !/^\d{6}$/.test(password) || !department) continue;
 
         validRows.push({
           employee_external_id: employeeExternalId,
           fullname,
-          phone_number: phone,
+          department_id: Number(department.id),
           password,
         });
       }
 
       if (validRows.length === 0) {
-        throw new Error('No usable employee rows were found. Expected columns: Employee Name, ID, Password, and Phone Number.');
+        throw new Error('No usable rows found. Required columns: Employee Name, Employee ID, Password (6 digits), and Department. Department names must already exist.');
       }
 
       for (const row of validRows) {
         await apiPost('/api/company-manager/employees', {
           employee_external_id: row.employee_external_id,
           fullname: row.fullname,
-          department_id: null,
-          phone_number: row.phone_number,
-          email: `${row.employee_external_id}@esrom.local`,
+          department_id: row.department_id,
           password: row.password,
           roles: ['employee'],
         });
@@ -887,7 +1094,6 @@ function ManagerEmployeesPage({
         fullname: newFullName,
         department_id: newDepartment ? Number(newDepartment) : null,
         phone_number: newPhone,
-        email: newEmail.trim() || null,
         password: newPassword,
         roles: ['employee'],
       });
@@ -897,8 +1103,6 @@ function ManagerEmployeesPage({
       setNewFullName('');
       setNewDepartment('');
       setNewPhone('');
-      setNewEmail('');
-      setNewTier('Tier 1');
       setShowAddModal(false);
       setFormError('');
       await onReload();
@@ -915,6 +1119,18 @@ function ManagerEmployeesPage({
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleEditEmployee = async (emp: any) => {
+    const fullname = window.prompt('Employee name', emp.fullName);
+    if (!fullname) return;
+    const department_id = window.prompt('Department ID (leave blank for none)', String(emp.departmentId || ''));
+    const password = window.prompt('New 6-digit password (leave blank to keep current)', '') ?? '';
+    if (password && !/^\d{6}$/.test(password)) { setFormError('Employee password must be exactly 6 digits.'); return; }
+    try {
+      await apiPatch(`/api/company-manager/employees/${emp.id}`, { fullname, department_id: department_id ? Number(department_id) : null, ...(password ? { password } : {}) });
+      await onReload();
+    } catch (e: any) { setFormError(e.message || 'Unable to update employee'); }
   };
 
   const handleDelete = async () => {
@@ -941,7 +1157,7 @@ function ManagerEmployeesPage({
       // Reset password instead of QR (no QR reset endpoint exists; password-reset is closest)
       await apiPost(`/api/company-manager/employees/password-reset`, {
         user_id: resetQrEmp.id,
-        new_password: `Esrom@${new Date().getFullYear()}!`
+        new_password: '123456'
       });
       setResetQrEmp(null);
       onReload();
@@ -950,6 +1166,20 @@ function ManagerEmployeesPage({
     } finally {
       setIsResettingQr(false);
     }
+  };
+
+  const generatePrintableQr = async (emp: any) => {
+    try {
+      const response = await apiPost(`/api/company-manager/employees/${emp.id}/qr`, {});
+      setPrintQr(response.data ?? response);
+    } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR code.'); }
+  };
+
+  const generateAllPrintableQrs = async () => {
+    try {
+      const response = await apiPost('/api/company-manager/employees/qr-codes', {});
+      setPrintAllQrs(response.data ?? response ?? []);
+    } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR codes.'); }
   };
 
   return (
@@ -961,6 +1191,9 @@ function ManagerEmployeesPage({
           <p className="text-xs text-subtle-text font-medium uppercase tracking-wider mt-1">Add, edit, or control staff meal allocations</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button onClick={generateAllPrintableQrs} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-200">
+            <Download className="w-4 h-4" /> Print Employee QR Codes
+          </button>
           <label className="inline-flex items-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold shadow-sm transition-all min-h-[44px] cursor-pointer hover:bg-slate-200">
             <Download className="w-4 h-4" />
             <span>{importing ? 'Importing...' : 'Import Excel'}</span>
@@ -1016,10 +1249,19 @@ function ManagerEmployeesPage({
             className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent text-xs text-slate-900 dark:text-slate-900"
           />
         </div>
+        <select
+          id="employee-department-filter"
+          value={departmentFilter}
+          onChange={(e) => setDepartmentFilter(e.target.value)}
+          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold"
+        >
+          <option value="all">All Departments</option>
+          {departmentsList.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}
+        </select>
       </div>
 
       {/* List of employee accounts */}
-      <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+      <div className="overflow-visible rounded-3xl border border-slate-100 bg-white shadow-sm">
         {filteredEmployees.length === 0 ? (
           <div className="p-8 text-center text-xs text-subtle-text">No employee accounts found.</div>
         ) : (
@@ -1081,6 +1323,10 @@ function ManagerEmployeesPage({
                           </button>
 
                           <button
+                            onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); handleEditEmployee(emp); }}
+                            className="w-full text-left px-4 py-2 text-xs text-slate-700 font-bold hover:bg-slate-50"
+                          >Edit Profile / Reset Password</button>
+                          <button
                             id={`emp-menu-reset-qr-${emp.id}`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1090,6 +1336,10 @@ function ManagerEmployeesPage({
                             className="w-full text-left px-4 py-2 text-xs text-slate-700 font-bold transition-all flex items-center gap-2 hover:bg-slate-50"
                           >
                             Reset QR Code
+                          </button>
+
+                          <button onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); generatePrintableQr(emp); }} className="w-full text-left px-4 py-2 text-xs text-slate-700 font-bold transition-all flex items-center gap-2 hover:bg-slate-50">
+                            Print QR Code
                           </button>
 
                           <hr className="my-1 border-slate-100" />
@@ -1129,7 +1379,7 @@ function ManagerEmployeesPage({
 
             <div>
               <h3 className="text-lg font-black text-primary tracking-tight">Add New Employee</h3>
-              <p className="text-xs text-subtle-text">Create a secure portal account with automated BirrBalance allotments</p>
+              <p className="text-xs text-subtle-text">Create an employee account with a 6-digit numeric password.</p>
             </div>
 
             {formError && (
@@ -1182,18 +1432,6 @@ function ManagerEmployeesPage({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-700">Email Address *</label>
-                  <input
-                    id="add-emp-email"
-                    type="email"
-                    required
-                    placeholder="e.g. dawit@esrom.com"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div className="space-y-1.5">
                   <label className="font-bold text-slate-700">Phone Number</label>
                   <input
                     id="add-emp-phone"
@@ -1213,23 +1451,11 @@ function ManagerEmployeesPage({
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"
-                      placeholder="e.g. ChangeMe123!"
+                      placeholder="e.g. 123456"
                     />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Monthly Balance Tier *</label>
-                <select
-                  id="add-emp-tier"
-                  value={newTier}
-                  onChange={(e) => setNewTier(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent"
-                >
-                  <option value="Tier 1">Tier 1 (ETB 5,000.00 / month)</option>
-                  <option value="Tier 2">Tier 2 (ETB 3,000.00 / month)</option>
-                </select>
-              </div>
 
               <div className="flex gap-3 pt-4">
                 <button
@@ -1340,6 +1566,12 @@ function ManagerEmployeesPage({
           </div>
         </div>
       )}
+      {printQr && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"><div className="w-full max-w-md rounded-3xl bg-white p-7 text-center shadow-2xl"><h2 className="text-lg font-black text-primary">Employee QR Code</h2><p className="mt-4 font-bold text-primary">{printQr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">ID: {printQr.employee_external_id}</p><div className="my-5 inline-block rounded-2xl border border-slate-200 p-5"><QRCodeSVG value={printQr.qr_token} size={220} /></div><p className="mt-3 text-[10px] text-slate-400">Valid until {new Date(printQr.expires_at).toLocaleDateString()}</p><div className="mt-6 flex gap-3"><button onClick={() => setPrintQr(null)} className="flex-1 rounded-xl border border-slate-200 py-3 text-xs font-bold">Close</button><button onClick={() => window.print()} className="flex-1 rounded-xl bg-primary py-3 text-xs font-bold text-white">Print</button></div></div></div>
+      )}
+      {printAllQrs && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-6"><div className="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-black text-primary">Employee QR Codes</h2><p className="text-xs text-slate-500">Name and ID are printed before each QR code.</p></div><div className="flex gap-2"><button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button><button onClick={() => window.print()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All</button></div></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{printAllQrs.map((qr) => <div key={qr.id} className="break-inside-avoid rounded-2xl border border-slate-200 p-5 text-center"><p className="font-bold text-primary">{qr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">ID: {qr.employee_external_id}</p><div className="mt-4"><QRCodeSVG value={qr.qr_token} size={180} /></div></div>)}</div></div></div>
+      )}
     </div>
   );
 }
@@ -1352,13 +1584,15 @@ function ManagerDepartmentsPage({
   employeesList,
   onReload,
   apiPost,
-  apiPatch
+  apiPatch,
+  apiDelete
 }: {
   departmentsList: any[];
   employeesList: any[];
   onReload: () => Promise<void>;
   apiPost: (path: string, body: any) => Promise<any>;
   apiPatch: (path: string, body: any) => Promise<any>;
+  apiDelete: (path: string) => Promise<any>;
 }) {
   const [showAddDept, setShowAddDept] = useState(false);
   const [editingDept, setEditingDept] = useState<any | null>(null);
@@ -1395,6 +1629,16 @@ function ManagerDepartmentsPage({
       onReload();
     } catch (e: any) {
       setErrorMsg(e.message || 'Error updating department');
+    }
+  };
+
+  const handleDeleteDept = async (department: any) => {
+    if (!window.confirm(`Delete ${department.name}? Assigned employees will become unassigned.`)) return;
+    try {
+      await apiDelete(`/api/company-manager/departments/${department.id}`);
+      await onReload();
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Error deleting department');
     }
   };
 
@@ -1470,6 +1714,13 @@ function ManagerDepartmentsPage({
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeleteDept(dept); }}
+                            className="p-1 rounded-lg text-slate-400 hover:text-danger transition-all"
+                            title="Delete Department"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                       <td className="py-4 px-4 text-center font-bold text-slate-600">
@@ -1510,7 +1761,6 @@ function ManagerDepartmentsPage({
                                     </div>
                                     <div className="text-right">
                                       <p className="font-extrabold text-primary">{formatETB(emp.balance)}</p>
-                                      <span className="text-[9px] font-bold text-slate-400 uppercase">{emp.balanceTier}</span>
                                     </div>
                                   </div>
                                 ))}
@@ -1594,10 +1844,11 @@ function ManagerBalancePage({
   apiPost: (path: string, body: any) => Promise<any>;
 }) {
   const { t } = useTranslation();
-  const [option, setOption] = useState<'department' | 'employee'>('department');
+  const [option, setOption] = useState<'department' | 'employee' | 'scheduled'>('department');
   const [targetId, setTargetId] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [activationKey, setActivationKey] = useState('');
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [successAllocMsg, setSuccessAllocMsg] = useState('');
 
@@ -1614,7 +1865,7 @@ function ManagerBalancePage({
   // Financial preview
   const getAffectedCount = () => {
     if (!amount || isNaN(Number(amount))) return 0;
-    if (option === 'department') {
+    if (option === 'department' || option === 'scheduled') {
       return employeesList.filter((e) =>
         e.isActive && e.roles?.includes('employee') && (targetId === 'all' || String(e.departmentId) === targetId)
       ).length;
@@ -1640,18 +1891,30 @@ function ManagerBalancePage({
         month: paymentDate.slice(0, 7),
       });
       successCount = 1;
+    } else if (option === 'department') {
+      const result = await apiPost('/api/company-manager/balances/group-allocations', {
+        amount: Number(amount),
+        month: paymentDate.slice(0, 7),
+        applies_to_all: targetId === 'all',
+        department_id: targetId === 'all' ? null : Number(targetId),
+      });
+      successCount = result?.data?.allocated ?? result?.allocated ?? getAffectedCount();
+      failCount = result?.data?.skipped ?? result?.skipped ?? 0;
     } else {
-      const schedule = await apiPost('/api/company-manager/balances/schedules', {
+      const scheduleResponse = await apiPost('/api/company-manager/balances/schedules', {
         amount: Number(amount),
         payment_date: paymentDate,
         applies_to_all: targetId === 'all',
         department_id: targetId === 'all' ? null : Number(targetId),
+        activation_key: activationKey,
       });
+      const schedule = scheduleResponse?.data ?? scheduleResponse;
+      await apiPost(`/api/company-manager/balances/schedules/${schedule.id}/activate`, { activation_key: activationKey });
       successCount = getAffectedCount();
-      setSuccessAllocMsg(`Automatic monthly payment scheduled for ${successCount} employee(s) on day ${new Date(paymentDate + 'T00:00:00').getDate()}.`);
+      setSuccessAllocMsg(`Scheduled wallet renewal activated for ${successCount} employee(s) on day ${new Date(paymentDate + 'T00:00:00').getDate()}.`);
     }
 
-    if (option === 'department') {
+    if (option === 'scheduled') {
       // The schedule confirmation was already shown above.
     } else if (failCount > 0) {
       setSuccessAllocMsg(`Allocated to ${successCount} employees, ${failCount} failed (likely already allocated for this month).`);
@@ -1662,6 +1925,7 @@ function ManagerBalancePage({
     setAmount('');
     setTargetId('');
     setSearchEmp('');
+    setActivationKey('');
     onReload();
     window.dispatchEvent(new Event('esrom-balance-updated'));
     setTimeout(() => {
@@ -1693,7 +1957,7 @@ function ManagerBalancePage({
           <h3 className="text-sm font-black text-primary tracking-tight">Configure Subsidy</h3>
 
           {/* Option Selector */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <button
               id="balance-opt-dept"
               onClick={() => { setOption('department'); setTargetId(''); }}
@@ -1703,7 +1967,7 @@ function ManagerBalancePage({
                   : 'border-slate-200 text-subtle-text hover:bg-slate-50'
               }`}
             >
-              Set by Department
+              Pay Group Now
             </button>
             <button
               id="balance-opt-emp"
@@ -1716,13 +1980,24 @@ function ManagerBalancePage({
             >
               Set by Individual
             </button>
+            <button
+              id="balance-opt-scheduled"
+              onClick={() => { setOption('scheduled'); setTargetId(''); }}
+              className={`py-3 rounded-xl border text-xs font-bold transition-all text-center min-h-[44px] ${
+                option === 'scheduled'
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-slate-200 text-subtle-text hover:bg-slate-50'
+              }`}
+            >
+              Scheduled Renewal
+            </button>
           </div>
 
           <div className="space-y-4 text-xs">
             {/* Target Select */}
-            {option === 'department' ? (
+            {option === 'department' || option === 'scheduled' ? (
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Select Target Department</label>
+              <label className="font-bold text-slate-700">Select Target Department</label>
                 <select
                   id="alloc-target-dept"
                   value={targetId}
@@ -1785,9 +2060,22 @@ function ManagerBalancePage({
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
             </div>
+            {option === 'scheduled' && (
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700">Activation Key</label>
+                <input
+                  id="schedule-activation-key-input"
+                  type="password"
+                  value={activationKey}
+                  onChange={(e) => setActivationKey(e.target.value)}
+                  placeholder="Create a key to activate this renewal"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
+                />
+              </div>
+            )}
              {/* Month */}
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-700">Monthly Payment Date</label>
+              <label className="font-bold text-slate-700">{option === 'scheduled' ? 'Monthly Renewal Date' : 'Allocation Month'}</label>
               <input
                 id="alloc-payment-date-input"
                 type="date"
@@ -1795,7 +2083,7 @@ function ManagerBalancePage({
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
-              <p className="text-[10px] text-slate-400">For a department or all employees, this date sets the day they are automatically funded every month.</p>
+              <p className="text-[10px] text-slate-400">{option === 'scheduled' ? 'On this day each month, unused wallet funds are replaced with the new balance.' : 'Group and individual payments are added to the selected month.'}</p>
             </div>
 
             {/* Financial Commitment Preview section */}
@@ -1817,7 +2105,7 @@ function ManagerBalancePage({
             <button
               id="confirm-allocation-trigger-btn"
               type="button"
-              disabled={!amount || !targetId || isNaN(Number(amount))}
+              disabled={!amount || !targetId || isNaN(Number(amount)) || (option === 'scheduled' && !activationKey)}
               onClick={() => setShowWarningModal(true)}
               className="w-full py-4 rounded-xl bg-primary hover:bg-secondary text-white font-bold text-xs tracking-wider uppercase disabled:opacity-45 disabled:hover:bg-primary transition-all shadow-md min-h-[44px]"
             >
@@ -1899,13 +2187,25 @@ function ManagerReportsPage({
   waitersList: any[];
 }) {
   const { t } = useTranslation();
-  const { apiDownload, setGlobalLoading } = useApp();
-  const [selectedMonth, setSelectedMonth] = useState('2026-06');
+  const { apiDownload, apiGet, setGlobalLoading } = useApp();
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedCafe, setSelectedCafe] = useState('');
+  const [usageReport, setUsageReport] = useState<any>({ departments: [], employees: [] });
 
-  // Summaries
-  const totalOwed = recentOrders.reduce((sum, o) => sum + o.amount, 0);
+  useEffect(() => {
+    const query = new URLSearchParams({ month: selectedMonth, format: 'json' });
+    if (selectedDept) query.set('department_id', selectedDept);
+    apiGet(`/api/company-manager/reports/department-usage?${query.toString()}`)
+      .then((response) => setUsageReport(response?.data ?? response ?? { departments: [], employees: [] }))
+      .catch(() => setUsageReport({ departments: [], employees: [] }));
+  }, [apiGet, selectedMonth, selectedDept]);
+
+  // Summary totals use the same rows displayed in the department report.
+  const departmentRows = usageReport.departments ?? [];
+  const totalGiven = departmentRows.reduce((sum: number, row: any) => sum + Number(row.total_money_given || 0), 0);
+  const totalUsed = departmentRows.reduce((sum: number, row: any) => sum + Number(row.total_used || 0), 0);
+  const totalExpired = departmentRows.reduce((sum: number, row: any) => sum + Number(row.expired_money || 0), 0);
 
   // Reconciliation data row mapping
   const reportRows = employeesList.map(emp => {
@@ -1962,6 +2262,12 @@ function ManagerReportsPage({
   const handleExportXLSX = () => exportFinancialReport('xlsx');
   const handleExportCSV = () => exportFinancialReport('csv');
   const handleExportPDF = () => exportFinancialReport('pdf');
+  const exportUsageReport = async (format: 'xlsx' | 'pdf' | 'csv') => {
+    const query = new URLSearchParams({ month: selectedMonth, format });
+    if (selectedDept) query.set('department_id', selectedDept);
+    const { blob, contentDisposition } = await apiDownload(`/api/company-manager/reports/department-usage?${query.toString()}`);
+    downloadBlobFile(blob, getFileNameFromContentDisposition(contentDisposition, `department-usage-${selectedMonth}.${format}`));
+  };
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -1974,16 +2280,16 @@ function ManagerReportsPage({
       {/* Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Total Owed to All Cafés</p>
-          <p className="text-2xl font-black text-primary mt-1">{formatETB(totalOwed)}</p>
+          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Total Money Given</p>
+          <p className="text-2xl font-black text-primary mt-1">{formatETB(totalGiven)}</p>
         </div>
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Average Order Basket Size</p>
-          <p className="text-2xl font-black text-secondary mt-1">{formatETB(310.50)}</p>
+          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Total Used Money</p>
+          <p className="text-2xl font-black text-secondary mt-1">{formatETB(totalUsed)}</p>
         </div>
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Reconciled Cycles</p>
-          <p className="text-2xl font-black text-success mt-1">100%</p>
+          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Expired Money</p>
+          <p className="text-2xl font-black text-success mt-1">{formatETB(totalExpired)}</p>
         </div>
       </div>
 
@@ -2055,6 +2361,25 @@ function ManagerReportsPage({
         </button>
       </div>
 
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100">
+          <div><h2 className="text-sm font-black text-primary">Department Wallet Usage</h2><p className="text-xs text-subtle-text">Select a department above to view every employee and each daily meal.</p></div>
+          <div className="flex gap-2">
+            {(['csv', 'xlsx', 'pdf'] as const).map((format) => <button key={format} onClick={() => exportUsageReport(format)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold uppercase hover:bg-slate-50">{format}</button>)}
+          </div>
+        </div>
+        {!selectedDept ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-xs">
+              <thead><tr className="bg-slate-50 text-slate-500"><th className="p-4">Department</th><th className="p-4 text-center">Number of Employees</th><th className="p-4 text-right">Total Money Given</th><th className="p-4 text-right">Expired Money</th><th className="p-4 text-right">Total Used Money</th></tr></thead>
+              <tbody>{departmentRows.map((row: any) => <tr key={row.department_id ?? row.department} onClick={() => row.department_id && setSelectedDept(String(row.department_id))} className="border-t cursor-pointer hover:bg-slate-50"><td className="p-4 font-bold">{row.department}</td><td className="p-4 text-center">{row.employee_count}</td><td className="p-4 text-right font-semibold">{formatETB(row.total_money_given)}</td><td className="p-4 text-right text-amber-700 font-semibold">{formatETB(row.expired_money)}</td><td className="p-4 text-right text-secondary font-bold">{formatETB(row.total_used)}</td></tr>)}</tbody>
+            </table>
+          </div>
+        ) : (
+          <table className="w-full text-left text-xs"><thead><tr className="bg-slate-50 text-slate-500"><th className="p-4">Employee</th><th className="p-4 text-right">Total Used</th><th className="p-4 text-right">Expired</th><th className="p-4">Daily / Meal Usage</th></tr></thead><tbody>{usageReport.employees.map((row: any) => <tr key={row.employee_id} className="border-t align-top"><td className="p-4 font-bold">{row.employee_name}<div className="text-slate-400">{row.employee_id}</div></td><td className="p-4 text-right">{formatETB(row.total_used)}</td><td className="p-4 text-right">{formatETB(row.expired_money)}</td><td className="p-4 text-slate-600">{row.daily_meal_usage}</td></tr>)}</tbody></table>
+        )}
+      </div>
+
       {/* Main Reconciliation Table */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="table-container relative">
@@ -2097,6 +2422,35 @@ function ManagerReportsPage({
 // -----------------------------------------------------------
 // SUB-PAGE 6: FEEDBACK REVIEW
 // -----------------------------------------------------------
+function ManagerIncomingMessagesPage({ messages }: { messages: any[] }) {
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      <div>
+        <h1 className="text-2xl font-extrabold text-primary tracking-tight">Employee Messages</h1>
+        <p className="mt-1 text-xs font-medium uppercase tracking-wider text-subtle-text">Messages sent directly by employees</p>
+      </div>
+      {messages.length === 0 ? (
+        <div className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm">
+          <MessageSquare className="mx-auto h-10 w-10 text-slate-300" />
+          <h2 className="mt-3 text-sm font-bold text-primary">No employee messages yet</h2>
+          <p className="mt-1 text-xs text-subtle-text">New messages will appear here as soon as an employee sends one.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {messages.map((message) => (
+            <article key={message.id} className={`rounded-2xl border bg-white p-5 shadow-sm ${message.is_read === false ? 'border-secondary/40' : 'border-slate-100'}`}>
+              <div className="flex items-start justify-between gap-4">
+                <div><h2 className="text-sm font-black text-primary">{message.title}</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{message.message}</p></div>
+                <time className="shrink-0 text-[10px] font-medium text-slate-400">{message.created_at ? new Date(message.created_at).toLocaleString() : ''}</time>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ManagerFeedbackPage({ feedbacks }: { feedbacks: any[] }) {
   const [selectedCafe, setSelectedCafe] = useState('');
   const [ratingFilter, setRatingFilter] = useState<number | ''>('');

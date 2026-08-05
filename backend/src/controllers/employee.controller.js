@@ -1,5 +1,5 @@
 import prisma from "../config/db.js";
-import { getEmployeeBalance } from "../services/balance.service.js";
+import { getEmployeeBalance, getEmployeeLedgerEntries } from "../services/balance.service.js";
 import { createOrderWithBalanceDeduction } from "../services/order.service.js";
 import { validateOnlineOrder } from "../validators/order.validators.js";
 import { successResponse } from "../utils/response.js";
@@ -16,29 +16,68 @@ import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const getProfile = asyncHandler(async (req, res) => {
-  const user = await prisma.users.findUnique({
-    where: { id: req.user.id },
-    select: {
-      id: true,
-      fullname: true,
-      employee_external_id: true,
-      email: true,
-      phone_number: true,
-      is_active: true,
-      created_at: true,
-      departments: {
-        select: { name: true },
+  const [user, allocations, ledgerEntries] = await Promise.all([
+    prisma.users.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        fullname: true,
+        employee_external_id: true,
+        email: true,
+        phone_number: true,
+        is_active: true,
+        created_at: true,
+        departments: {
+          select: { name: true },
+        },
       },
-    },
+    }),
+    prisma.monthly_allocations.findMany({
+      where: { user_id: req.user.id },
+      orderBy: { allocation_month: "asc" },
+      select: { id: true, allocation_month: true, amount: true },
+    }),
+    getEmployeeLedgerEntries(req.user.id),
+  ]);
+
+  const { token, expiresAt } = generateQRToken(req.user.id);
+  const tokenHash = hashQRToken(token);
+  await prisma.employee_qr_codes.upsert({
+    where: { user_id: req.user.id },
+    create: { user_id: req.user.id, token_hash: tokenHash, is_active: true, expires_at: expiresAt },
+    update: { token_hash: tokenHash, is_active: true, expires_at: expiresAt },
   });
 
-  return successResponse(res, user, "Profile fetched successfully");
+  return successResponse(
+    res,
+    {
+      ...user,
+      allocations: allocations.map((allocation) => ({
+        id: allocation.id,
+        date: allocation.allocation_month,
+        amount: Number(allocation.amount),
+      })),
+      transactions: ledgerEntries,
+      qr_token: token,
+      qr_expires_at: expiresAt,
+    },
+    "Profile fetched successfully",
+  );
 });
 
 export const getBalance = asyncHandler(async (req, res) => {
   const balance = await getEmployeeBalance(req.user.id);
   return successResponse(res, { balance }, "Balance fetched successfully");
 });
+
+export const getLedger = async (req, res, next) => {
+  try {
+    const ledgerEntries = await getEmployeeLedgerEntries(req.user.id);
+    return successResponse(res, { items: ledgerEntries }, "Ledger fetched successfully");
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getOrders = async (req, res, next) => {
   try {
@@ -219,6 +258,39 @@ export const changePassword = asyncHandler(async (req, res) => {
   return successResponse(res, { changed: true }, "Password updated successfully");
 });
 
+// Employee messages are delivered to every company manager through the
+// existing notifications inbox.  Keeping them in the notification stream
+// means managers receive them immediately without exposing employee messages
+// to cafe staff or other employees.
+export const sendMessageToCompanyManagers = asyncHandler(async (req, res) => {
+  const message = requireString(req.body.message, "message", 2000);
+
+  const companyManagers = await prisma.users.findMany({
+    where: {
+      is_active: true,
+      user_roles: { some: { roles: { name: "company_manager" } } },
+    },
+    select: { id: true },
+  });
+
+  if (!companyManagers.length) {
+    throw new AppError("No active company manager is available to receive messages", 409);
+  }
+
+  await prisma.notifications.createMany({
+    data: companyManagers.map((manager) => ({
+      user_id: manager.id,
+      title: `Message from ${req.user.fullname}`,
+      message,
+      // "feedback" is the closest existing notification type and keeps
+      // this change compatible with the current database enum.
+      type: "feedback",
+    })),
+  });
+
+  return successResponse(res, { sent: true }, "Message sent to company manager successfully", 201);
+});
+
 export const createFeedback = async (req, res, next) => {
   try {
     const payload = validateFeedbackCreate(req.body);
@@ -278,6 +350,21 @@ export const createFeedback = async (req, res, next) => {
             })),
           });
         }
+      }
+
+      const companyManagers = await tx.users.findMany({
+        where: { user_roles: { some: { roles: { name: "company_manager" } } } },
+        select: { id: true },
+      });
+      if (companyManagers.length) {
+        await tx.notifications.createMany({
+          data: companyManagers.map((manager) => ({
+            user_id: manager.id,
+            title: "New food feedback",
+            message: `Employee feedback: ${payload.comment}`,
+            type: "feedback",
+          })),
+        });
       }
 
       return created;

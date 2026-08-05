@@ -86,7 +86,7 @@ app.get("/health/ready", async (req, res, next) => {
 app.use("/api", routes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "ESROM BirrBalance API is running" });
+  res.json({ message: 'Print("Hello_Ethiopia") BirrBalance Management System' });
 });
 
 app.use(notFound);

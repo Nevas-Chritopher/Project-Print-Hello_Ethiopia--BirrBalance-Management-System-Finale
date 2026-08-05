@@ -74,6 +74,11 @@ export const validatePhone = (value, fieldName = "phone_number") => {
   return phone;
 };
 
+export const validateOptionalPhone = (value, fieldName = "phone_number") => {
+  if (value === undefined || value === null || value === "") return null;
+  return validatePhone(value, fieldName);
+};
+
 export const validatePassword = (value, fieldName = "password") => {
   const password = requireString(value, fieldName, 100);
   const hasLower = /[a-z]/.test(password);
@@ -84,6 +89,14 @@ export const validatePassword = (value, fieldName = "password") => {
     throw new AppError(`${fieldName} must be at least 8 characters and include uppercase, lowercase, and number`, 400);
   }
 
+  return password;
+};
+
+export const validateEmployeePin = (value, fieldName = "password") => {
+  const password = requireString(value, fieldName, 6);
+  if (!/^\d{6}$/.test(password)) {
+    throw new AppError(`${fieldName} must be exactly a 6-digit number`, 400);
+  }
   return password;
 };
 

@@ -156,10 +156,13 @@ model monthly_allocations {
 model monthly_payment_schedules {
   id                   Int       @id @default(autoincrement())
   amount               Decimal   @db.Decimal(10, 2)
+  payment_date         DateTime? @db.Date
   payout_day           Int
   department_id        Int?
   applies_to_all       Boolean   @default(false)
   is_active            Boolean   @default(true)
+  activation_key_hash  String?   @db.VarChar(64)
+  activated_at         DateTime? @db.Timestamp(6)
   created_by           Int?
   last_processed_month String?   @db.VarChar(7)
   created_at           DateTime? @default(now()) @db.Timestamp(6)
@@ -299,7 +302,7 @@ model users {
   employee_external_id                                        String?                 @unique @db.VarChar(50)
   fullname                                                    String                  @db.VarChar(150)
   email                                                       String?                 @unique @db.VarChar(150)
-  phone_number                                                String                  @unique @db.VarChar(20)
+  phone_number                                                String?                 @unique @db.VarChar(20)
   password_hash                                               String
   department_id                                               Int?
   is_active                                                   Boolean?                @default(true)

@@ -1,11 +1,12 @@
 import prisma from "../config/db.js";
-import { hashPassword } from "./auth.service.js";
+import { comparePassword, hashPassword } from "./auth.service.js";
 import { writeAuditLog } from "./audit.service.js";
 import { createNotification, notifyAllocation, notifyPasswordReset } from "./notification.service.js";
-import { getEmployeeCurrentMonthSummary } from "./balance.service.js";
 import { AppError } from "../utils/AppError.js";
 import { getMonthRange } from "../utils/date.js";
 import { buildCsv, buildPdf, buildXlsx } from "../utils/report.js";
+import crypto from "crypto";
+import { generateQRToken, hashQRToken } from "./qr.service.js";
 
 const REPORT_FIELDS = [
   { key: "employee_id", header: "Employee ID", width: 18 },
@@ -26,9 +27,35 @@ const FINANCIAL_REPORT_FIELDS = [
   { key: "total_amount", header: "Total Amount", width: 18 },
 ];
 
+const DEPARTMENT_USAGE_FIELDS = [
+  { key: "department", header: "Department", width: 26 },
+  { key: "employee_count", header: "Number of Employees", width: 22 },
+  { key: "total_money_given", header: "Total Money Given (ETB)", width: 26 },
+  { key: "expired_money", header: "Expired Money (ETB)", width: 23 },
+  { key: "total_used", header: "Total Used Money (ETB)", width: 26 },
+];
+
+const EMPLOYEE_USAGE_FIELDS = [
+  { key: "employee_id", header: "Employee ID", width: 18 },
+  { key: "employee_name", header: "Employee", width: 26 },
+  { key: "department", header: "Department", width: 22 },
+  { key: "total_used", header: "Total Used (ETB)", width: 18 },
+  { key: "expired_money", header: "Expired (ETB)", width: 18 },
+  { key: "daily_meal_usage", header: "Daily / Meal Usage", width: 52 },
+];
+
 const MAX_REPORT_ROWS = 10000;
 const COUNTABLE_ORDER_STATUSES = ["confirmed", "preparing", "ready", "completed"];
 const ALLOWED_ROLES = ["employee", "waiter", "cafe_manager", "company_manager"];
+const PRINTED_QR_TTL_MINUTES = 365 * 24 * 60;
+
+// Some deployed databases still have the legacy NOT NULL phone constraint.
+// Imports intentionally do not require a phone number, so give those records
+// a stable, unique internal placeholder until a real number is added.
+const fallbackPhoneNumber = (employeeExternalId) => {
+  const digits = crypto.createHash("sha256").update(String(employeeExternalId)).digest("hex").replace(/[^0-9]/g, "").padEnd(9, "0").slice(0, 9);
+  return `+251${digits}`;
+};
 
 const getUserOrThrow = async (userId, tx = prisma) => {
   const user = await tx.users.findUnique({ where: { id: userId } });
@@ -42,21 +69,30 @@ const ensureDepartmentExists = async (departmentId, tx = prisma) => {
   if (!department) throw new AppError("Department not found", 404);
 };
 
+const normalizeEmployeeExternalId = (employeeExternalId) => {
+  if (!employeeExternalId || typeof employeeExternalId !== 'string') return employeeExternalId;
+  return employeeExternalId.trim().toUpperCase();
+};
+
 const ensureRoles = async (roles, tx) => {
-  const invalid = roles.filter((role) => !ALLOWED_ROLES.includes(role));
+  const uniqueRoles = [...new Set(roles)];
+  const invalid = uniqueRoles.filter((role) => !ALLOWED_ROLES.includes(role));
   if (invalid.length) {
     throw new AppError(`Invalid role: ${invalid.join(", ")}`, 400);
   }
 
-  const dbRoles = await tx.roles.findMany({ where: { name: { in: roles } } });
+  const dbRoles = await tx.roles.findMany({ where: { name: { in: uniqueRoles } } });
   const found = new Set(dbRoles.map((role) => role.name));
-  const missing = roles.filter((role) => !found.has(role));
+  const missing = uniqueRoles.filter((role) => !found.has(role));
 
   if (missing.length) {
-    throw new AppError(`Missing roles in database: ${missing.join(", ")}`, 500);
+    await tx.roles.createMany({
+      data: missing.map((name) => ({ name })),
+      skipDuplicates: true,
+    });
   }
 
-  return dbRoles;
+  return tx.roles.findMany({ where: { name: { in: uniqueRoles } } });
 };
 
 const syncUserRoles = async (userId, roles, tx) => {
@@ -115,17 +151,19 @@ const formatEmployee = (employee) => ({
 
 export const createEmployee = async (actor, payload, ipAddress) => {
   const passwordHash = await hashPassword(payload.password);
+  const normalizedEmployeeId = normalizeEmployeeExternalId(payload.employee_external_id);
   assertCafeAssignmentMatchesRoles(payload.roles, payload.cafe_id);
+  const phoneNumber = payload.phone_number ?? fallbackPhoneNumber(normalizedEmployeeId);
 
   return prisma.$transaction(async (tx) => {
     await ensureDepartmentExists(payload.department_id, tx);
 
     const employee = await tx.users.create({
       data: {
-        employee_external_id: payload.employee_external_id,
+        employee_external_id: normalizedEmployeeId,
         fullname: payload.fullname,
-        email: payload.email,
-        phone_number: payload.phone_number,
+        email: payload.email ?? null,
+        phone_number: phoneNumber,
         password_hash: passwordHash,
         department_id: payload.department_id,
       },
@@ -152,6 +190,22 @@ export const createEmployee = async (actor, payload, ipAddress) => {
   },{ timeout: 30000 });
 };
 
+export const createCompanyManager = async (actor, payload, ipAddress) => {
+  return createEmployee(actor, { ...payload, department_id: null, cafe_id: null, roles: ["company_manager"] }, ipAddress);
+};
+
+export const changeCompanyManagerPassword = async (actor, payload, ipAddress) => {
+  const manager = await prisma.users.findUnique({ where: { id: actor.id }, select: { password_hash: true } });
+  if (!manager || !(await comparePassword(payload.old_password, manager.password_hash))) {
+    throw new AppError("Current password is incorrect", 401);
+  }
+  await prisma.$transaction(async (tx) => {
+    await tx.users.update({ where: { id: actor.id }, data: { password_hash: await hashPassword(payload.new_password), updated_at: new Date() } });
+    await writeAuditLog({ userId: actor.id, action: "company_manager.password.change", entityType: "users", entityId: actor.id, description: "Changed own password", ipAddress }, tx);
+  });
+  return { changed: true };
+};
+
 export const createCafe = async (actor, payload, ipAddress) => {
   const cafe = await prisma.cafes.create({ data: payload });
   await writeAuditLog({
@@ -167,7 +221,14 @@ export const createCafe = async (actor, payload, ipAddress) => {
 
 export const removeCafe = async (actor, cafeId, ipAddress) => {
   return prisma.$transaction(async (tx) => {
-    const cafe = await tx.cafes.delete({ where: { id: cafeId } });
+    const existing = await tx.cafes.findUnique({ where: { id: cafeId } });
+    if (!existing) throw new AppError("Cafe not found", 404);
+    // Keep completed orders and financial history intact while removing the cafe
+    // from all active manager/employee views.
+    const cafe = await tx.cafes.update({
+      where: { id: cafeId },
+      data: { is_active: false },
+    });
     await writeAuditLog({
       userId: actor.id,
       action: "company.cafe.delete",
@@ -181,6 +242,7 @@ export const removeCafe = async (actor, cafeId, ipAddress) => {
 };
 
 export const listCafes = async () => prisma.cafes.findMany({
+  where: { is_active: true },
   orderBy: { name: "asc" },
   select: { id: true, name: true, location: true, is_active: true, created_at: true },
 });
@@ -221,13 +283,33 @@ export const listEmployees = async (actor, filters, pagination, ipAddress) => {
     prisma.users.count({ where }),
   ]);
 
-  const itemsWithBalance = await Promise.all(items.map(async (employee) => {
-    const summary = await getEmployeeCurrentMonthSummary(employee.id);
-    return {
-      ...formatEmployee(employee),
-      balance: Number(summary.remaining ?? 0),
-    };
-  }));
+  // Fetch balances in three batched queries.  The previous per-employee
+  // lookup ran hundreds of queries when the overview opened, making the
+  // manager portal slow and prone to database timeouts.
+  const employeeIds = items.map((employee) => employee.id);
+  const { start, end } = getMonthRange();
+  const [allocations, transactions] = employeeIds.length ? await Promise.all([
+    prisma.monthly_allocations.findMany({
+      where: { user_id: { in: employeeIds }, allocation_month: start },
+      select: { user_id: true, amount: true },
+    }),
+    prisma.balance_transactions.groupBy({
+      by: ["user_id", "direction"],
+      where: { user_id: { in: employeeIds }, created_at: { gte: start, lt: end } },
+      _sum: { amount: true },
+    }),
+  ]) : [[], []];
+  const balances = new Map(allocations.map((allocation) => [allocation.user_id, { credit: 0, debit: 0 }]));
+  transactions.forEach((transaction) => {
+    const balance = balances.get(transaction.user_id) ?? { credit: 0, debit: 0 };
+    if (transaction.direction === "credit") balance.credit = Number(transaction._sum.amount ?? 0);
+    if (transaction.direction === "debit") balance.debit = Number(transaction._sum.amount ?? 0);
+    balances.set(transaction.user_id, balance);
+  });
+  const itemsWithBalance = items.map((employee) => {
+    const balance = balances.get(employee.id) ?? { credit: 0, debit: 0 };
+    return { ...formatEmployee(employee), balance: Math.max(balance.credit - balance.debit, 0) };
+  });
 
   await writeAuditLog({
     userId: actor.id,
@@ -253,10 +335,22 @@ export const updateEmployee = async (actor, userId, payload, ipAddress) => {
   });
   if (!existingUser) throw new AppError("Employee not found", 404);
 
-  const { roles, cafe_id: cafeId, ...userData } = payload;
+  if (payload.employee_external_id) {
+    payload.employee_external_id = normalizeEmployeeExternalId(payload.employee_external_id);
+  }
+
+  const { roles, cafe_id: cafeId, password, ...userData } = payload;
   const effectiveRoles = roles ?? existingUser.user_roles.map((userRole) => userRole.roles.name);
   const effectiveCafeId = payload.cafe_id !== undefined ? cafeId : existingUser.cafe_staff?.cafe_id;
   assertCafeAssignmentMatchesRoles(effectiveRoles, effectiveCafeId);
+  if (password) {
+    if (effectiveRoles.includes("employee") && !/^\d{6}$/.test(password)) {
+      throw new AppError("Employee password must be exactly a 6-digit number", 400);
+    }
+    if (!effectiveRoles.includes("employee") && (password.length < 8 || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password))) {
+      throw new AppError("Manager and waiter passwords must be at least 8 characters and include uppercase, lowercase, and number", 400);
+    }
+  }
 
   return prisma.$transaction(async (tx) => {
     await ensureDepartmentExists(userData.department_id, tx);
@@ -265,7 +359,7 @@ export const updateEmployee = async (actor, userId, payload, ipAddress) => {
 
     const employee = await tx.users.update({
       where: { id: userId },
-      data: { ...userData, updated_at: new Date() },
+      data: { ...userData, ...(password ? { password_hash: await hashPassword(password) } : {}), updated_at: new Date() },
       select: employeeSelect,
     });
 
@@ -289,6 +383,11 @@ export const removeEmployee = async (actor, userId, ipAddress) => {
   const existing = await getUserOrThrow(userId);
 
   return prisma.$transaction(async (tx) => {
+    // Explicitly remove every dependent record.  Some installations were
+    // created before the cascade constraints existed, so relying on database
+    // cascades made waiter deletion fail with a foreign-key error.
+    await tx.qr_sessions.deleteMany({ where: { OR: [{ employee_id: userId }, { waiter_id: userId }] } });
+    await tx.employee_qr_codes.deleteMany({ where: { user_id: userId } });
     await tx.order_items.deleteMany({
       where: {
         orders: {
@@ -304,9 +403,14 @@ export const removeEmployee = async (actor, userId, ipAddress) => {
     });
 
     await tx.balance_transactions.deleteMany({ where: { user_id: userId } });
+    await tx.monthly_allocations.deleteMany({ where: { user_id: userId } });
     await tx.feedback.deleteMany({ where: { user_id: userId } });
+    await tx.notifications.deleteMany({ where: { user_id: userId } });
     await tx.login_history.deleteMany({ where: { user_id: userId } });
     await tx.password_reset_tokens.deleteMany({ where: { user_id: userId } });
+    await tx.refresh_tokens.deleteMany({ where: { user_id: userId } });
+    await tx.cafe_staff.deleteMany({ where: { user_id: userId } });
+    await tx.user_roles.deleteMany({ where: { user_id: userId } });
     await tx.audit_logs.deleteMany({ where: { user_id: userId } });
 
     const employee = await tx.users.delete({
@@ -332,6 +436,42 @@ export const removeEmployee = async (actor, userId, ipAddress) => {
 
 export const setEmployeeActive = async (actor, userId, isActive, ipAddress) => {
   return updateEmployee(actor, userId, { is_active: isActive }, ipAddress);
+};
+
+const issueEmployeeQrCode = async (actor, employee, ipAddress, tx) => {
+  const { token, expiresAt } = generateQRToken(employee.id, PRINTED_QR_TTL_MINUTES);
+  const qr = await tx.employee_qr_codes.upsert({
+    where: { user_id: employee.id },
+    create: { user_id: employee.id, token_hash: hashQRToken(token), is_active: true, expires_at: expiresAt },
+    update: { token_hash: hashQRToken(token), is_active: true, expires_at: expiresAt },
+  });
+  await writeAuditLog({
+    userId: actor.id,
+    action: "employee.qr.print_issue",
+    entityType: "employee_qr_codes",
+    entityId: qr.id,
+    description: `Issued printable QR code for ${employee.fullname}`,
+    ipAddress,
+  }, tx);
+  return { id: employee.id, employee_external_id: employee.employee_external_id, fullname: employee.fullname, qr_token: token, expires_at: expiresAt };
+};
+
+export const issuePrintableEmployeeQr = async (actor, employeeId, ipAddress) => {
+  const employee = await prisma.users.findFirst({
+    where: { id: employeeId, is_active: true, user_roles: { some: { roles: { name: "employee" } } } },
+    select: { id: true, employee_external_id: true, fullname: true },
+  });
+  if (!employee) throw new AppError("Active employee not found", 404);
+  return prisma.$transaction((tx) => issueEmployeeQrCode(actor, employee, ipAddress, tx));
+};
+
+export const issueAllPrintableEmployeeQrs = async (actor, ipAddress) => {
+  const employees = await prisma.users.findMany({
+    where: { is_active: true, user_roles: { some: { roles: { name: "employee" } } } },
+    select: { id: true, employee_external_id: true, fullname: true },
+    orderBy: { fullname: "asc" },
+  });
+  return prisma.$transaction(async (tx) => Promise.all(employees.map((employee) => issueEmployeeQrCode(actor, employee, ipAddress, tx))), { timeout: 30000 });
 };
 
 export const createDepartment = async (actor, payload, ipAddress) => {
@@ -371,12 +511,10 @@ export const updateDepartment = async (actor, departmentId, payload, ipAddress) 
 };
 
 export const deleteDepartment = async (actor, departmentId, ipAddress) => {
-  const employeeCount = await prisma.users.count({ where: { department_id: departmentId } });
-  if (employeeCount > 0) {
-    throw new AppError("Cannot delete department with assigned employees", 409);
-  }
-
   return prisma.$transaction(async (tx) => {
+    const existing = await tx.departments.findUnique({ where: { id: departmentId } });
+    if (!existing) throw new AppError("Department not found", 404);
+    await tx.users.updateMany({ where: { department_id: departmentId }, data: { department_id: null, updated_at: new Date() } });
     const department = await tx.departments.delete({ where: { id: departmentId } });
     await writeAuditLog(
       {
@@ -459,20 +597,79 @@ export const assignMonthlyBalance = async (actor, payload, ipAddress) => {
   });
 };
 
+export const assignGroupMonthlyBalance = async (actor, payload, ipAddress) => {
+  const employees = await prisma.users.findMany({
+    where: {
+      is_active: true,
+      ...(payload.applies_to_all ? {} : { department_id: payload.department_id }),
+      user_roles: { some: { roles: { name: "employee" } } },
+    },
+    select: { id: true },
+  });
+
+  const results = await Promise.allSettled(employees.map((employee) => assignMonthlyBalance(actor, {
+    user_id: employee.id,
+    amount: payload.amount,
+    month: payload.month,
+  }, ipAddress)));
+  const allocated = results.filter((result) => result.status === "fulfilled").length;
+  const skipped = results.length - allocated;
+
+  await writeAuditLog({
+    userId: actor.id,
+    action: "company.balance.group_allocate",
+    entityType: "monthly_allocations",
+    description: `Allocated ETB ${payload.amount} to ${allocated} employee(s); ${skipped} skipped`,
+    ipAddress,
+  });
+  return { allocated, skipped, total: employees.length };
+};
+
 export const createMonthlyPaymentSchedule = async (actor, payload, ipAddress) => {
   if (payload.department_id) await ensureDepartmentExists(payload.department_id);
+  const activationKeyHash = crypto.createHash("sha256").update(payload.activation_key).digest("hex");
   const schedule = await prisma.monthly_payment_schedules.create({
-    data: { ...payload, created_by: actor.id },
+    data: {
+      amount: payload.amount,
+      payment_date: payload.payment_date,
+      payout_day: payload.payout_day,
+      department_id: payload.department_id,
+      applies_to_all: payload.applies_to_all,
+      is_active: false,
+      activation_key_hash: activationKeyHash,
+      created_by: actor.id,
+    },
   });
   await writeAuditLog({
     userId: actor.id,
     action: "company.balance.schedule.create",
     entityType: "monthly_payment_schedules",
     entityId: schedule.id,
-    description: `Scheduled ETB ${payload.amount} on day ${payload.payout_day} each month`,
+    description: `Scheduled ETB ${payload.amount} for ${payload.payment_date.toISOString().slice(0, 10)}`,
     ipAddress,
   });
   return schedule;
+};
+
+export const activateMonthlyPaymentSchedule = async (actor, scheduleId, payload, ipAddress) => {
+  const schedule = await prisma.monthly_payment_schedules.findUnique({ where: { id: scheduleId } });
+  if (!schedule) throw new AppError("Payment schedule not found", 404);
+  const keyHash = crypto.createHash("sha256").update(payload.activation_key).digest("hex");
+  if (schedule.activation_key_hash !== keyHash) throw new AppError("Invalid activation key", 403);
+
+  const activated = await prisma.monthly_payment_schedules.update({
+    where: { id: scheduleId },
+    data: { is_active: true, activated_at: new Date(), updated_at: new Date() },
+  });
+  await writeAuditLog({
+    userId: actor.id,
+    action: "company.balance.schedule.activate",
+    entityType: "monthly_payment_schedules",
+    entityId: scheduleId,
+    description: "Activated scheduled payment",
+    ipAddress,
+  });
+  return activated;
 };
 
 export const updateMonthlyAllocation = async (actor, allocationId, payload, ipAddress) => {
@@ -565,6 +762,8 @@ const buildMonthlyReportRows = async (monthRange) => {
                COUNT(*)::int AS total_orders,
                COALESCE(SUM(o.total_amount), 0)::double precision AS total_amount_used
         FROM orders_for_month o
+        JOIN user_roles eur ON eur.user_id = o.employee_id
+        JOIN roles er ON er.id = eur.role_id AND er.name = 'employee'
         GROUP BY o.employee_id
       ),
       balance_totals AS (
@@ -599,6 +798,11 @@ const buildMonthlyReportRows = async (monthRange) => {
       LEFT JOIN users w ON w.id = o.waiter_id
       LEFT JOIN order_item_summary ois ON ois.order_id = o.id
       WHERE ma.allocation_month = $1::date
+        AND EXISTS (
+          SELECT 1 FROM user_roles eur
+          JOIN roles er ON er.id = eur.role_id
+          WHERE eur.user_id = u.id AND er.name = 'employee'
+        )
       ORDER BY u.fullname ASC, o.created_at ASC NULLS LAST
       LIMIT $4
     `,
@@ -663,6 +867,8 @@ export const getFinancialReport = async (params) => {
                COALESCE(SUM(o.total_amount), 0)::double precision AS total_amount
         FROM orders o
         JOIN cafes c ON c.id = o.cafe_id
+        JOIN user_roles eur ON eur.user_id = o.employee_id
+        JOIN roles er ON er.id = eur.role_id AND er.name = 'employee'
         WHERE o.created_at >= $1
           AND o.created_at < $2
           AND o.status::text = ANY($3)
@@ -681,6 +887,8 @@ export const getFinancialReport = async (params) => {
                COALESCE(SUM(o.total_amount), 0)::double precision AS total_amount
         FROM orders o
         JOIN users u ON u.id = o.employee_id
+        JOIN user_roles eur ON eur.user_id = u.id
+        JOIN roles er ON er.id = eur.role_id AND er.name = 'employee'
         LEFT JOIN departments d ON d.id = u.department_id
         WHERE o.created_at >= $1
           AND o.created_at < $2
@@ -762,6 +970,74 @@ export const generateFinancialReport = async (actor, params, ipAddress) => {
   return { format: "json", data };
 };
 
+export const generateDepartmentUsageReport = async (actor, params, ipAddress, cafeId = null) => {
+  const { start, end, month } = getMonthRange(params.month);
+  const users = await prisma.users.findMany({
+    where: {
+      ...(params.department_id ? { department_id: params.department_id } : {}),
+      user_roles: { some: { roles: { name: "employee" } } },
+    },
+    select: { id: true, employee_external_id: true, fullname: true, departments: { select: { id: true, name: true } } },
+    orderBy: { fullname: "asc" },
+  });
+  const userIds = users.map((user) => user.id);
+  const [orders, expirations, allocations] = await Promise.all([
+    prisma.orders.findMany({
+      where: { employee_id: { in: userIds }, created_at: { gte: start, lt: end }, ...(cafeId ? { cafe_id: cafeId } : {}) },
+      include: { order_items: { select: { item_name_snapshot: true, quantity: true } } },
+      orderBy: { created_at: "asc" },
+    }),
+    prisma.balance_transactions.findMany({
+      where: { user_id: { in: userIds }, transaction_type: "expiration", created_at: { gte: start, lt: end } },
+      select: { user_id: true, amount: true },
+    }),
+    prisma.monthly_allocations.findMany({
+      where: { user_id: { in: userIds }, allocation_month: start },
+      select: { user_id: true, amount: true },
+    }),
+  ]);
+  const ordersByUser = new Map();
+  orders.forEach((order) => ordersByUser.set(order.employee_id, [...(ordersByUser.get(order.employee_id) ?? []), order]));
+  const expiredByUser = new Map();
+  expirations.forEach((transaction) => expiredByUser.set(transaction.user_id, Number(expiredByUser.get(transaction.user_id) ?? 0) + Number(transaction.amount)));
+  const allocatedByUser = new Map();
+  allocations.forEach((allocation) => allocatedByUser.set(allocation.user_id, Number(allocation.amount)));
+
+  const employees = users.map((user) => {
+    const employeeOrders = ordersByUser.get(user.id) ?? [];
+    const totalUsed = employeeOrders.reduce((sum, order) => sum + Number(order.total_amount), 0);
+    return {
+      employee_id: user.employee_external_id ?? String(user.id),
+      employee_name: user.fullname,
+      department: user.departments?.name ?? "Unassigned",
+      department_id: user.departments?.id ?? null,
+      total_money_given: Number((allocatedByUser.get(user.id) ?? 0).toFixed(2)),
+      total_used: Number(totalUsed.toFixed(2)),
+      expired_money: Number((expiredByUser.get(user.id) ?? 0).toFixed(2)),
+      daily_meal_usage: employeeOrders.map((order) => `${order.created_at.toISOString().slice(0, 10)}: ${order.order_items.map((item) => `${item.item_name_snapshot} x${item.quantity}`).join(", ")} (ETB ${Number(order.total_amount).toFixed(2)})`).join("; ") || "No meals",
+    };
+  });
+  const departmentMap = new Map();
+  employees.forEach((employee) => {
+    const summary = departmentMap.get(employee.department) ?? { department: employee.department, department_id: employee.department_id, employee_count: 0, total_money_given: 0, total_used: 0, expired_money: 0 };
+    summary.employee_count += 1;
+    summary.total_money_given += employee.total_money_given;
+    summary.total_used += employee.total_used;
+    summary.expired_money += employee.expired_money;
+    departmentMap.set(employee.department, summary);
+  });
+  const departments = [...departmentMap.values()].map((department) => ({ ...department, total_money_given: Number(department.total_money_given.toFixed(2)), total_used: Number(department.total_used.toFixed(2)), expired_money: Number(department.expired_money.toFixed(2)) }));
+  await writeAuditLog({ userId: actor.id, action: "report.department_usage", entityType: "reports", description: `Generated department usage report for ${month}`, ipAddress });
+
+  if (params.format === "json") return { format: "json", data: { month, departments, employees } };
+  const rows = params.department_id ? employees : departments;
+  const fields = params.department_id ? EMPLOYEE_USAGE_FIELDS : DEPARTMENT_USAGE_FIELDS;
+  const fileBase = params.department_id ? `employee-usage-${month}` : `department-usage-${month}`;
+  if (params.format === "csv") return { format: "csv", data: buildCsv(rows, fields), fileName: `${fileBase}.csv` };
+  if (params.format === "xlsx") return { format: "xlsx", data: await buildXlsx(rows, fields, "Usage Report"), fileName: `${fileBase}.xlsx` };
+  return { format: "pdf", data: await buildPdf(rows, fields, "Department Usage Report"), fileName: `${fileBase}.pdf` };
+};
+
 export const listFeedback = async (actor, filters, pagination, ipAddress) => {
   const monthRange = filters.month ? getMonthRange(filters.month) : null;
   const where = {
@@ -797,7 +1073,15 @@ export const listFeedback = async (actor, filters, pagination, ipAddress) => {
 };
 
 export const resetEmployeePassword = async (actor, payload, ipAddress) => {
-  await getUserOrThrow(payload.user_id);
+  const user = await getUserOrThrow(payload.user_id);
+  const roles = await prisma.user_roles.findMany({ where: { user_id: user.id }, include: { roles: true } });
+  const isEmployee = roles.some((role) => role.roles.name === "employee");
+  if (isEmployee && !/^\d{6}$/.test(payload.new_password)) {
+    throw new AppError("Employee password must be exactly a 6-digit number", 400);
+  }
+  if (!isEmployee && (payload.new_password.length < 8 || !/[a-z]/.test(payload.new_password) || !/[A-Z]/.test(payload.new_password) || !/[0-9]/.test(payload.new_password))) {
+    throw new AppError("Manager and waiter passwords must be at least 8 characters and include uppercase, lowercase, and number", 400);
+  }
   const passwordHash = await hashPassword(payload.new_password);
 
   return prisma.$transaction(async (tx) => {

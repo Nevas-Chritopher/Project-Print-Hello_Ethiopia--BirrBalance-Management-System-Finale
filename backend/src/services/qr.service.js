@@ -9,8 +9,8 @@ const QR_SESSION_TTL_MINUTES = 3;
 export const hashQRToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 export const hashQRSessionId = (sessionId) => crypto.createHash("sha256").update(sessionId).digest("hex");
 
-export const generateQRToken = (employeeId) => {
-  const expiresAt = new Date(Date.now() + QR_TOKEN_TTL_MINUTES * 60 * 1000);
+export const generateQRToken = (employeeId, ttlMinutes = QR_TOKEN_TTL_MINUTES) => {
+  const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
   const payload = JSON.stringify({
     employee_id: employeeId,
     nonce: crypto.randomBytes(16).toString("hex"),

@@ -218,7 +218,7 @@ export type UsersGroupByOutputType = {
   employee_external_id: string | null
   fullname: string
   email: string | null
-  phone_number: string
+  phone_number: string | null
   password_hash: string
   department_id: number | null
   is_active: boolean | null
@@ -254,7 +254,7 @@ export type usersWhereInput = {
   employee_external_id?: Prisma.StringNullableFilter<"users"> | string | null
   fullname?: Prisma.StringFilter<"users"> | string
   email?: Prisma.StringNullableFilter<"users"> | string | null
-  phone_number?: Prisma.StringFilter<"users"> | string
+  phone_number?: Prisma.StringNullableFilter<"users"> | string | null
   password_hash?: Prisma.StringFilter<"users"> | string
   department_id?: Prisma.IntNullableFilter<"users"> | number | null
   is_active?: Prisma.BoolNullableFilter<"users"> | boolean | null
@@ -284,7 +284,7 @@ export type usersOrderByWithRelationInput = {
   employee_external_id?: Prisma.SortOrderInput | Prisma.SortOrder
   fullname?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
-  phone_number?: Prisma.SortOrder
+  phone_number?: Prisma.SortOrderInput | Prisma.SortOrder
   password_hash?: Prisma.SortOrder
   department_id?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -347,7 +347,7 @@ export type usersOrderByWithAggregationInput = {
   employee_external_id?: Prisma.SortOrderInput | Prisma.SortOrder
   fullname?: Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
-  phone_number?: Prisma.SortOrder
+  phone_number?: Prisma.SortOrderInput | Prisma.SortOrder
   password_hash?: Prisma.SortOrder
   department_id?: Prisma.SortOrderInput | Prisma.SortOrder
   is_active?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -368,7 +368,7 @@ export type usersScalarWhereWithAggregatesInput = {
   employee_external_id?: Prisma.StringNullableWithAggregatesFilter<"users"> | string | null
   fullname?: Prisma.StringWithAggregatesFilter<"users"> | string
   email?: Prisma.StringNullableWithAggregatesFilter<"users"> | string | null
-  phone_number?: Prisma.StringWithAggregatesFilter<"users"> | string
+  phone_number?: Prisma.StringNullableWithAggregatesFilter<"users"> | string | null
   password_hash?: Prisma.StringWithAggregatesFilter<"users"> | string
   department_id?: Prisma.IntNullableWithAggregatesFilter<"users"> | number | null
   is_active?: Prisma.BoolNullableWithAggregatesFilter<"users"> | boolean | null
@@ -380,7 +380,7 @@ export type usersCreateInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -409,7 +409,7 @@ export type usersUncheckedCreateInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -437,7 +437,7 @@ export type usersUpdateInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -466,7 +466,7 @@ export type usersUncheckedUpdateInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -495,7 +495,7 @@ export type usersCreateManyInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -507,7 +507,7 @@ export type usersUpdateManyMutationInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -519,7 +519,7 @@ export type usersUncheckedUpdateManyInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -874,7 +874,7 @@ export type usersCreateWithoutAudit_logsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -902,7 +902,7 @@ export type usersUncheckedCreateWithoutAudit_logsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -945,7 +945,7 @@ export type usersUpdateWithoutAudit_logsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -973,7 +973,7 @@ export type usersUncheckedUpdateWithoutAudit_logsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1000,7 +1000,7 @@ export type usersCreateWithoutBalance_transactionsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1028,7 +1028,7 @@ export type usersUncheckedCreateWithoutBalance_transactionsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1071,7 +1071,7 @@ export type usersUpdateWithoutBalance_transactionsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1099,7 +1099,7 @@ export type usersUncheckedUpdateWithoutBalance_transactionsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1126,7 +1126,7 @@ export type usersCreateWithoutCafe_staffInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1154,7 +1154,7 @@ export type usersUncheckedCreateWithoutCafe_staffInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1197,7 +1197,7 @@ export type usersUpdateWithoutCafe_staffInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1225,7 +1225,7 @@ export type usersUncheckedUpdateWithoutCafe_staffInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1252,7 +1252,7 @@ export type usersCreateWithoutDepartmentsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1280,7 +1280,7 @@ export type usersUncheckedCreateWithoutDepartmentsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1337,7 +1337,7 @@ export type usersScalarWhereInput = {
   employee_external_id?: Prisma.StringNullableFilter<"users"> | string | null
   fullname?: Prisma.StringFilter<"users"> | string
   email?: Prisma.StringNullableFilter<"users"> | string | null
-  phone_number?: Prisma.StringFilter<"users"> | string
+  phone_number?: Prisma.StringNullableFilter<"users"> | string | null
   password_hash?: Prisma.StringFilter<"users"> | string
   department_id?: Prisma.IntNullableFilter<"users"> | number | null
   is_active?: Prisma.BoolNullableFilter<"users"> | boolean | null
@@ -1349,7 +1349,7 @@ export type usersCreateWithoutEmployee_qr_codesInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1377,7 +1377,7 @@ export type usersUncheckedCreateWithoutEmployee_qr_codesInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1420,7 +1420,7 @@ export type usersUpdateWithoutEmployee_qr_codesInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1448,7 +1448,7 @@ export type usersUncheckedUpdateWithoutEmployee_qr_codesInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1475,7 +1475,7 @@ export type usersCreateWithoutFeedbackInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1503,7 +1503,7 @@ export type usersUncheckedCreateWithoutFeedbackInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1546,7 +1546,7 @@ export type usersUpdateWithoutFeedbackInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1574,7 +1574,7 @@ export type usersUncheckedUpdateWithoutFeedbackInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1601,7 +1601,7 @@ export type usersCreateWithoutLogin_historyInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1629,7 +1629,7 @@ export type usersUncheckedCreateWithoutLogin_historyInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1672,7 +1672,7 @@ export type usersUpdateWithoutLogin_historyInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1700,7 +1700,7 @@ export type usersUncheckedUpdateWithoutLogin_historyInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1727,7 +1727,7 @@ export type usersCreateWithoutMonthly_allocations_monthly_allocations_allocated_
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1755,7 +1755,7 @@ export type usersUncheckedCreateWithoutMonthly_allocations_monthly_allocations_a
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1787,7 +1787,7 @@ export type usersCreateWithoutMonthly_allocations_monthly_allocations_user_idTou
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -1815,7 +1815,7 @@ export type usersUncheckedCreateWithoutMonthly_allocations_monthly_allocations_u
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -1858,7 +1858,7 @@ export type usersUpdateWithoutMonthly_allocations_monthly_allocations_allocated_
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1886,7 +1886,7 @@ export type usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_a
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1924,7 +1924,7 @@ export type usersUpdateWithoutMonthly_allocations_monthly_allocations_user_idTou
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1952,7 +1952,7 @@ export type usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_u
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -1979,7 +1979,7 @@ export type usersCreateWithoutNotificationsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2007,7 +2007,7 @@ export type usersUncheckedCreateWithoutNotificationsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2050,7 +2050,7 @@ export type usersUpdateWithoutNotificationsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2078,7 +2078,7 @@ export type usersUncheckedUpdateWithoutNotificationsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2105,7 +2105,7 @@ export type usersCreateWithoutQr_sessions_qr_sessions_employee_idTousersInput = 
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2133,7 +2133,7 @@ export type usersUncheckedCreateWithoutQr_sessions_qr_sessions_employee_idTouser
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2165,7 +2165,7 @@ export type usersCreateWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2193,7 +2193,7 @@ export type usersUncheckedCreateWithoutQr_sessions_qr_sessions_waiter_idTousersI
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2236,7 +2236,7 @@ export type usersUpdateWithoutQr_sessions_qr_sessions_employee_idTousersInput = 
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2264,7 +2264,7 @@ export type usersUncheckedUpdateWithoutQr_sessions_qr_sessions_employee_idTouser
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2302,7 +2302,7 @@ export type usersUpdateWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2330,7 +2330,7 @@ export type usersUncheckedUpdateWithoutQr_sessions_qr_sessions_waiter_idTousersI
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2357,7 +2357,7 @@ export type usersCreateWithoutOrders_orders_employee_idTousersInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2385,7 +2385,7 @@ export type usersUncheckedCreateWithoutOrders_orders_employee_idTousersInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2417,7 +2417,7 @@ export type usersCreateWithoutOrders_orders_waiter_idTousersInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2445,7 +2445,7 @@ export type usersUncheckedCreateWithoutOrders_orders_waiter_idTousersInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2488,7 +2488,7 @@ export type usersUpdateWithoutOrders_orders_employee_idTousersInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2516,7 +2516,7 @@ export type usersUncheckedUpdateWithoutOrders_orders_employee_idTousersInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2554,7 +2554,7 @@ export type usersUpdateWithoutOrders_orders_waiter_idTousersInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2582,7 +2582,7 @@ export type usersUncheckedUpdateWithoutOrders_orders_waiter_idTousersInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2609,7 +2609,7 @@ export type usersCreateWithoutPassword_reset_tokensInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2637,7 +2637,7 @@ export type usersUncheckedCreateWithoutPassword_reset_tokensInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2680,7 +2680,7 @@ export type usersUpdateWithoutPassword_reset_tokensInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2708,7 +2708,7 @@ export type usersUncheckedUpdateWithoutPassword_reset_tokensInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2735,7 +2735,7 @@ export type usersCreateWithoutRefresh_tokensInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2763,7 +2763,7 @@ export type usersUncheckedCreateWithoutRefresh_tokensInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2806,7 +2806,7 @@ export type usersUpdateWithoutRefresh_tokensInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2834,7 +2834,7 @@ export type usersUncheckedUpdateWithoutRefresh_tokensInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2861,7 +2861,7 @@ export type usersCreateWithoutUser_rolesInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2889,7 +2889,7 @@ export type usersUncheckedCreateWithoutUser_rolesInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   department_id?: number | null
   is_active?: boolean | null
@@ -2932,7 +2932,7 @@ export type usersUpdateWithoutUser_rolesInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2960,7 +2960,7 @@ export type usersUncheckedUpdateWithoutUser_rolesInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -2988,7 +2988,7 @@ export type usersCreateManyDepartmentsInput = {
   employee_external_id?: string | null
   fullname: string
   email?: string | null
-  phone_number: string
+  phone_number?: string | null
   password_hash: string
   is_active?: boolean | null
   created_at?: Date | string | null
@@ -2999,7 +2999,7 @@ export type usersUpdateWithoutDepartmentsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3027,7 +3027,7 @@ export type usersUncheckedUpdateWithoutDepartmentsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3055,7 +3055,7 @@ export type usersUncheckedUpdateManyWithoutDepartmentsInput = {
   employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fullname?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone_number?: Prisma.StringFieldUpdateOperationsInput | string
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   password_hash?: Prisma.StringFieldUpdateOperationsInput | string
   is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3336,7 +3336,7 @@ export type $usersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     employee_external_id: string | null
     fullname: string
     email: string | null
-    phone_number: string
+    phone_number: string | null
     password_hash: string
     department_id: number | null
     is_active: boolean | null

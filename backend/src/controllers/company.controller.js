@@ -5,13 +5,18 @@ import { parsePagination } from "../validators/common.validators.js";
 import { sendReportResponse } from "../utils/report.js";
 import {
   assignMonthlyBalance,
+  assignGroupMonthlyBalance,
+  activateMonthlyPaymentSchedule,
   createMonthlyPaymentSchedule,
   createDepartment,
   createCafe,
+  createCompanyManager,
   createEmployee,
+  changeCompanyManagerPassword,
   deleteDepartment,
   removeCafe,
   generateFinancialReport,
+  generateDepartmentUsageReport,
   generateMonthlyReport,
   listEmployees,
   listDepartments,
@@ -23,14 +28,20 @@ import {
   updateDepartment,
   updateEmployee,
   updateMonthlyAllocation,
+  issuePrintableEmployeeQr,
+  issueAllPrintableEmployeeQrs,
 } from "../services/company.service.js";
 import {
   validateAllocationCreate,
+  validateGroupAllocation,
+  validateScheduleActivation,
   validateAllocationUpdate,
   validateMonthlyPaymentSchedule,
   validateCompanyReportQuery,
+  validateDepartmentUsageReportQuery,
   validateCafeCreate,
   validateCafeManagerCreate,
+  validateCompanyManagerCreate,
   validateDepartmentCreate,
   validateDepartmentUpdate,
   validateEmployeeCreate,
@@ -39,6 +50,7 @@ import {
   validateFeedbackQuery,
   validateId,
   validatePasswordReset,
+  validateManagerPasswordChange,
 } from "../validators/company.validators.js";
 
 export const addCafe = asyncHandler(async (req, res) => {
@@ -69,6 +81,16 @@ export const addCafeManager = asyncHandler(async (req, res) => {
 export const addEmployee = asyncHandler(async (req, res) => {
   const employee = await createEmployee(req.user, validateEmployeeCreate(req.body), req.ip);
   return successResponse(res, employee, "Employee created successfully", 201);
+});
+
+export const addCompanyManager = asyncHandler(async (req, res) => {
+  const manager = await createCompanyManager(req.user, validateCompanyManagerCreate(req.body), req.ip);
+  return successResponse(res, manager, "Company manager created successfully", 201);
+});
+
+export const changeOwnPassword = asyncHandler(async (req, res) => {
+  const result = await changeCompanyManagerPassword(req.user, validateManagerPasswordChange(req.body), req.ip);
+  return successResponse(res, result, "Password updated successfully");
 });
 
 export const getEmployees = asyncHandler(async (req, res) => {
@@ -131,12 +153,32 @@ export const allocateBalance = asyncHandler(async (req, res) => {
   return successResponse(res, allocation, "Monthly balance allocated successfully", 201);
 });
 
+export const allocateGroupBalance = asyncHandler(async (req, res) => {
+  const result = await assignGroupMonthlyBalance(req.user, validateGroupAllocation(req.body), req.ip);
+  return successResponse(res, result, "Group balance allocated successfully", 201);
+});
+
 export const scheduleMonthlyPayment = asyncHandler(async (req, res) => {
   const schedule = await createMonthlyPaymentSchedule(req.user, validateMonthlyPaymentSchedule(req.body), req.ip);
-  if (schedule.payout_day === new Date().getUTCDate()) {
+  // A schedule is tied to the exact date selected by the manager.  Comparing
+  // only the day number would also pay a schedule set for (for example) the
+  // 3rd of a future month when it is created on the 3rd today.
+  const today = new Date().toISOString().slice(0, 10);
+  const paymentDate = schedule.payment_date?.toISOString().slice(0, 10);
+  if (paymentDate === today) {
     await processMonthlyPayments();
   }
   return successResponse(res, schedule, "Monthly payment schedule created successfully", 201);
+});
+
+export const activatePaymentSchedule = asyncHandler(async (req, res) => {
+  const schedule = await activateMonthlyPaymentSchedule(
+    req.user,
+    validateId(req.params, "schedule id"),
+    validateScheduleActivation(req.body),
+    req.ip,
+  );
+  return successResponse(res, schedule, "Scheduled payment activated successfully");
 });
 
 export const editAllocation = asyncHandler(async (req, res) => {
@@ -169,6 +211,12 @@ export const financialReport = asyncHandler(async (req, res) => {
   return sendReportResponse(res, report);
 });
 
+export const departmentUsageReport = asyncHandler(async (req, res) => {
+  const report = await generateDepartmentUsageReport(req.user, validateDepartmentUsageReportQuery(req.query), req.ip);
+  if (report.format === "json") return successResponse(res, report.data, "Department usage report generated successfully");
+  return sendReportResponse(res, report);
+});
+
 export const feedback = asyncHandler(async (req, res) => {
   const data = await listFeedback(req.user, validateFeedbackQuery(req.query), parsePagination(req.query), req.ip);
   return successResponse(res, data, "Feedback fetched successfully");
@@ -177,4 +225,14 @@ export const feedback = asyncHandler(async (req, res) => {
 export const resetPassword = asyncHandler(async (req, res) => {
   const result = await resetEmployeePassword(req.user, validatePasswordReset(req.body), req.ip);
   return successResponse(res, result, "Password reset successfully");
+});
+
+export const generateEmployeeQr = asyncHandler(async (req, res) => {
+  const qr = await issuePrintableEmployeeQr(req.user, validateId(req.params, "employee id"), req.ip);
+  return successResponse(res, qr, "Printable employee QR code generated successfully");
+});
+
+export const generateAllEmployeeQrs = asyncHandler(async (req, res) => {
+  const qrCodes = await issueAllPrintableEmployeeQrs(req.user, req.ip);
+  return successResponse(res, qrCodes, "Printable employee QR codes generated successfully");
 });

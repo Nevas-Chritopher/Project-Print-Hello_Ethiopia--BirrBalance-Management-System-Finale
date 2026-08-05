@@ -56,6 +56,7 @@ export default function EmployeePortal() {
     if (path.includes('orders') || path.includes('order')) return 'orders';
     if (path.includes('transactions')) return 'transactions';
     if (path.includes('profile')) return 'profile';
+    if (path.includes('messages')) return 'messages';
     if (path.includes('notifications')) return 'notifications';
     return 'dashboard';
   };
@@ -68,6 +69,8 @@ export default function EmployeePortal() {
   const [selectedCafeId, setSelectedCafeId] = useState<number | null>(null);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [allocationHistory, setAllocationHistory] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [qrToken, setQrToken] = useState('');
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning', message: string } | null>(null);
 
   const loadEmployeeData = async () => {
@@ -107,7 +110,10 @@ export default function EmployeePortal() {
       })));
 
       const profileData = await apiGet('/api/employee/profile');
-      setAllocationHistory(profileData.data?.allocations || []);
+      const profile = profileData?.data ?? profileData;
+      setAllocationHistory(profile?.allocations || []);
+      setTransactions(profile?.transactions || []);
+      setQrToken(profile?.qr_token || profile?.qrToken || '');
     } catch (e) {
       console.error('Error loading employee portal data', e);
     }
@@ -115,6 +121,7 @@ export default function EmployeePortal() {
 
   useEffect(() => {
     if (user && user.role === 'employee') {
+      refreshData();
       loadEmployeeData();
     }
   }, [user, location.pathname]);
@@ -133,6 +140,7 @@ export default function EmployeePortal() {
           myOrders={myOrders}
           onReload={loadEmployeeData}
           allocationHistory={allocationHistory}
+          qrToken={qrToken}
         />
       )}
       {activeTab === 'orders' && (
@@ -162,10 +170,14 @@ export default function EmployeePortal() {
           user={user}
           myOrders={myOrders}
           allocationHistory={allocationHistory}
+          transactions={transactions}
         />
       )}
       {activeTab === 'notifications' && (
         <EmployeeNotificationsPage />
+      )}
+      {activeTab === 'messages' && (
+        <EmployeeMessagesPage apiPost={apiPost} />
       )}
 
       {/* Floating Toast Notification overlay */}
@@ -194,6 +206,44 @@ export default function EmployeePortal() {
   );
 }
 
+function EmployeeMessagesPage({ apiPost }: { apiPost: (path: string, body: any) => Promise<any> }) {
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [sending, setSending] = useState(false);
+
+  const sendMessage = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const trimmed = message.trim();
+    if (!trimmed) return;
+    setSending(true);
+    setStatus(null);
+    try {
+      await apiPost('/api/employee/messages', { message: trimmed });
+      setMessage('');
+      setStatus({ type: 'success', text: 'Your message was sent to the company manager.' });
+    } catch (error: any) {
+      setStatus({ type: 'error', text: error.message || 'Unable to send your message.' });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-6 animate-fadeIn">
+      <div>
+        <h1 className="text-2xl font-extrabold text-primary tracking-tight">Message Company Manager</h1>
+        <p className="mt-1 text-xs font-medium text-subtle-text">Send questions or concerns directly to your company manager.</p>
+      </div>
+      <form onSubmit={sendMessage} className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+        <label className="block text-xs font-bold text-primary" htmlFor="employee-message">Your message</label>
+        <textarea id="employee-message" required maxLength={2000} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Write your message here..." className="min-h-40 w-full resize-y rounded-xl border border-slate-200 p-3 text-sm focus:border-primary focus:outline-none" />
+        {status && <p className={`rounded-xl p-3 text-xs font-bold ${status.type === 'success' ? 'bg-green-50 text-success' : 'bg-red-50 text-danger'}`}>{status.text}</p>}
+        <div className="flex justify-end"><button disabled={sending} className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-3 text-xs font-bold text-white disabled:opacity-60"><Send className="h-4 w-4" />{sending ? 'Sending...' : 'Send message'}</button></div>
+      </form>
+    </div>
+  );
+}
+
 // -----------------------------------------------------------
 // SUB-PAGE 1: EMPLOYEE DASHBOARD
 // -----------------------------------------------------------
@@ -201,12 +251,14 @@ function EmployeeDashboard({
   user,
   myOrders,
   onReload,
-  allocationHistory
+  allocationHistory,
+  qrToken
 }: {
   user: any;
   myOrders: any[];
   onReload: () => Promise<void>;
   allocationHistory: any[];
+  qrToken: string;
 }) {
   const { t } = useTranslation();
   const employee = user ? {
@@ -218,6 +270,11 @@ function EmployeeDashboard({
   // Dynamic low balance check
   const monthlyAllowance = allocationHistory && allocationHistory.length > 0 ? allocationHistory[0].amount : 1000;
   const isLowBalance = user.balance < (monthlyAllowance * 0.2);
+  const recentOrderCount = (myOrders || []).filter((order) => {
+    const orderDate = new Date(order.date);
+    const daysSince = (Date.now() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+    return Number.isFinite(daysSince) && daysSince <= 7;
+  }).length;
 
   const downloadPNG = () => {
     const canvas = document.querySelector('#employee-qr-canvas') as HTMLCanvasElement;
@@ -414,11 +471,11 @@ function EmployeeDashboard({
               </div>
               <div>
                 <h3 className="text-sm font-black text-primary">Daily Streak Counter</h3>
-                <p className="text-[11px] text-subtle-text font-medium mt-0.5">You dined 5 times in the last 7 days! Keep it up!</p>
+                <p className="text-[11px] text-subtle-text font-medium mt-0.5">You ordered {recentOrderCount} time{recentOrderCount === 1 ? '' : 's'} in the last 7 days.</p>
               </div>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-black text-warning">5 Days</span>
+              <span className="text-2xl font-black text-warning">{recentOrderCount}</span>
             </div>
           </div>
         </div>
@@ -434,7 +491,7 @@ function EmployeeDashboard({
           <div className="p-3 bg-white border border-slate-200 rounded-3xl flex items-center justify-center overflow-hidden shadow-inner">
             <QRCodeCanvas
               id="employee-qr-canvas"
-              value={user.encryptedQrToken || ''}
+              value={qrToken || ''}
               size={220}
               bgColor="#FFFFFF"
               fgColor="#0A1628"
@@ -444,7 +501,7 @@ function EmployeeDashboard({
             />
             <QRCodeSVG
               id="employee-qr-svg"
-              value={user.encryptedQrToken || ''}
+              value={qrToken || ''}
               size={220}
               level="H"
               bgColor="#FFFFFF"
@@ -1361,11 +1418,13 @@ interface Transaction {
 function EmployeeTransactionsPage({
   user,
   myOrders,
-  allocationHistory
+  allocationHistory,
+  transactions
 }: {
   user: any;
   myOrders: any[];
   allocationHistory: any[];
+  transactions: any[];
 }) {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -1378,334 +1437,35 @@ function EmployeeTransactionsPage({
 
   // Memoized transactions calculation
   const allTransactions = React.useMemo(() => {
-    // Determine user tier allocation
-    const allocation = user.monthlyAllocation || (user.balanceTier === 'Tier 1' ? 5000 : 3000);
-    const list: Omit<Transaction, 'balanceAfter'>[] = [];
+    const list = (transactions || []).map((entry: any) => ({
+      id: entry.id,
+      date: entry.date,
+      type: entry.type,
+      description: entry.description,
+      orderId: entry.orderId || '—',
+      cafe: entry.cafe || '—',
+      amount: Number(entry.amount || 0),
+      balanceAfter: Number(entry.balanceAfter || 0),
+      orderDetails: entry.orderDetails,
+    }));
 
-    // April Allocation & Orders
-    list.push({
-      id: 'alloc-april',
-      date: '2026-04-01T08:00:00.000Z',
-      type: 'Credit',
-      description: 'Monthly allowance credited',
-      orderId: '—',
-      cafe: '—',
-      amount: allocation,
-    });
-
-    list.push({
-      id: 'ORD-2026-04-05-1105',
-      date: '2026-04-05T12:30:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Addis Café',
-      orderId: '#ORD-2026-04-05-1105',
-      cafe: 'Addis Café',
-      amount: 320,
-      orderDetails: {
-        items: [{ name: 'Special Beyaynetu', quantity: 2, price: 160 }],
-        waiterName: 'Marta Hailu',
-        deliveryConfirmationTime: '12:45 PM',
-        totalAmount: 320
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-04-12-2114',
-      date: '2026-04-12T13:15:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Main Corporate Cafe',
-      orderId: '#ORD-2026-04-12-2114',
-      cafe: 'Main Corporate Cafe',
-      amount: 150,
-      orderDetails: {
-        items: [{ name: 'Macchiato', quantity: 3, price: 50 }],
-        waiterName: 'Abebe Yosef',
-        deliveryConfirmationTime: '01:22 PM',
-        totalAmount: 150
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-04-20-0045',
-      date: '2026-04-20T19:10:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Finfine Café',
-      orderId: '#ORD-2026-04-20-0045',
-      cafe: 'Finfine Café',
-      amount: 450,
-      orderDetails: {
-        items: [{ name: 'Beef Tibs', quantity: 1, price: 450 }],
-        waiterName: 'Yonas Kassa',
-        deliveryConfirmationTime: '07:30 PM',
-        totalAmount: 450
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-04-28-1502',
-      date: '2026-04-28T12:10:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Sheger Café',
-      orderId: '#ORD-2026-04-28-1502',
-      cafe: 'Sheger Café',
-      amount: 220,
-      orderDetails: {
-        items: [{ name: 'Shiro Tegabino', quantity: 1, price: 220 }],
-        waiterName: 'Marta Hailu',
-        deliveryConfirmationTime: '12:25 PM',
-        totalAmount: 220
-      }
-    });
-
-    const aprilSpent = 320 + 150 + 450 + 220;
-    const aprilLeft = allocation - aprilSpent;
-    if (aprilLeft > 0) {
-      list.push({
-        id: 'exp-april',
-        date: '2026-04-30T23:59:59.000Z',
-        type: 'Expiry',
-        description: 'Balance expired',
-        orderId: '—',
-        cafe: '—',
-        amount: aprilLeft,
-      });
-    }
-
-    // May Allocation & Orders
-    list.push({
-      id: 'alloc-may',
-      date: '2026-05-01T08:00:00.000Z',
-      type: 'Credit',
-      description: 'Monthly allowance credited',
-      orderId: '—',
-      cafe: '—',
-      amount: allocation,
-    });
-
-    list.push({
-      id: 'ORD-2026-05-03-0985',
-      date: '2026-05-03T11:45:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Main Corporate Cafe',
-      orderId: '#ORD-2026-05-03-0985',
-      cafe: 'Main Corporate Cafe',
-      amount: 190,
-      orderDetails: {
-        items: [
-          { name: 'Pasta with Tomato Sauce', quantity: 1, price: 140 },
-          { name: 'Soft Drink', quantity: 1, price: 50 }
-        ],
-        waiterName: 'Abebe Yosef',
-        deliveryConfirmationTime: '11:58 AM',
-        totalAmount: 190
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-05-10-1845',
-      date: '2026-05-10T14:20:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Sheger Café',
-      orderId: '#ORD-2026-05-10-1845',
-      cafe: 'Sheger Café',
-      amount: 350,
-      orderDetails: {
-        items: [
-          { name: 'Chicken Cutlet', quantity: 1, price: 300 },
-          { name: 'Black Tea', quantity: 2, price: 25 }
-        ],
-        waiterName: 'Yonas Kassa',
-        deliveryConfirmationTime: '02:40 PM',
-        totalAmount: 350
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-05-18-0422',
-      date: '2026-05-18T13:00:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Addis Café',
-      orderId: '#ORD-2026-05-18-0422',
-      cafe: 'Addis Café',
-      amount: 510,
-      orderDetails: {
-        items: [
-          { name: 'Special Kitfo', quantity: 1, price: 450 },
-          { name: 'Sparkling Water', quantity: 1, price: 60 }
-        ],
-        waiterName: 'Marta Hailu',
-        deliveryConfirmationTime: '01:15 PM',
-        totalAmount: 510
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-05-25-1152',
-      date: '2026-05-25T12:00:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Finfine Café',
-      orderId: '#ORD-2026-05-25-1152',
-      cafe: 'Finfine Café',
-      amount: 280,
-      orderDetails: {
-        items: [{ name: 'Fish Dullet', quantity: 1, price: 280 }],
-        waiterName: 'Abebe Yosef',
-        deliveryConfirmationTime: '12:18 PM',
-        totalAmount: 280
-      }
-    });
-
-    const maySpent = 190 + 350 + 510 + 280;
-    const mayLeft = allocation - maySpent;
-    if (mayLeft > 0) {
-      list.push({
-        id: 'exp-may',
-        date: '2026-05-31T23:59:59.000Z',
-        type: 'Expiry',
-        description: 'Balance expired',
-        orderId: '—',
-        cafe: '—',
-        amount: mayLeft,
-      });
-    }
-
-    // June Allocation & Orders
-    list.push({
-      id: 'alloc-june',
-      date: '2026-06-01T08:00:00.000Z',
-      type: 'Credit',
-      description: 'Monthly allowance credited',
-      orderId: '—',
-      cafe: '—',
-      amount: allocation,
-    });
-
-    list.push({
-      id: 'ORD-2026-06-05-0214',
-      date: '2026-06-05T13:05:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Finfine Café',
-      orderId: '#ORD-2026-06-05-0214',
-      cafe: 'Finfine Café',
-      amount: 180,
-      orderDetails: {
-        items: [{ name: 'Doro Wat Egg & Sauce', quantity: 1, price: 180 }],
-        waiterName: 'Yonas Kassa',
-        deliveryConfirmationTime: '01:25 PM',
-        totalAmount: 180
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-06-12-1452',
-      date: '2026-06-12T12:15:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Addis Café',
-      orderId: '#ORD-2026-06-12-1452',
-      cafe: 'Addis Café',
-      amount: 400,
-      orderDetails: {
-        items: [
-          { name: 'Beef Tibs', quantity: 1, price: 350 },
-          { name: 'Soft Drink', quantity: 1, price: 50 }
-        ],
-        waiterName: 'Marta Hailu',
-        deliveryConfirmationTime: '12:35 PM',
-        totalAmount: 400
-      }
-    });
-
-    list.push({
-      id: 'ORD-2026-06-18-0951',
-      date: '2026-06-18T13:40:00.000Z',
-      type: 'Deduction',
-      description: 'Order from Sheger Café',
-      orderId: '#ORD-2026-06-18-0951',
-      cafe: 'Sheger Café',
-      amount: 120,
-      orderDetails: {
-        items: [{ name: 'Injera Firfir', quantity: 1, price: 120 }],
-        waiterName: 'Abebe Yosef',
-        deliveryConfirmationTime: '01:52 PM',
-        totalAmount: 120
-      }
-    });
-
-    // Dynamic integrations of live data
-    if (allocationHistory && allocationHistory.length > 0) {
-      allocationHistory.forEach((alloc) => {
-        const monthStr = new Date(alloc.date).toLocaleString('default', { month: 'long' });
-        if (!['June', 'May', 'April'].some(m => monthStr.includes(m))) {
-          list.push({
-            id: `alloc-${alloc.id || alloc.cycleMonth}`,
-            date: alloc.date || new Date().toISOString(),
-            type: 'Credit',
-            description: 'Monthly allowance credited',
-            orderId: '—',
-            cafe: '—',
-            amount: alloc.amount,
-          });
-        }
-      });
-    }
-
-    if (myOrders && myOrders.length > 0) {
-      myOrders.forEach((order) => {
-        const isDuplicate = list.some(t => t.id === order.id);
-        if (!isDuplicate) {
-          list.push({
-            id: order.id,
-            date: order.date || new Date().toISOString(),
-            type: 'Deduction',
-            description: `Order from ${order.cafe || order.cafeName || 'Main Corporate Cafe'}`,
-            orderId: `#${order.id}`,
-            cafe: order.cafe || order.cafeName || 'Main Corporate Cafe',
-            amount: order.amount,
-            orderDetails: {
-              items: order.items || [],
-              waiterName: order.waiterName || 'Staff',
-              deliveryConfirmationTime: order.deliveryConfirmationTime || new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              totalAmount: order.amount
-            }
-          });
-        }
-      });
-    }
-
-    // Sort chronologically (oldest first) to compute running balance correctly
     list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return list.reverse();
+  }, [transactions]);
 
-    // Compute running balance
-    let rb = 0;
-    const processedList = list.map((t) => {
-      if (t.type === 'Credit') {
-        rb += t.amount;
-      } else if (t.type === 'Deduction' || t.type === 'Expiry') {
-        rb -= t.amount;
-      }
-      return {
-        ...t,
-        balanceAfter: rb,
-      };
-    });
-
-    // Reverse to show newest first
-    processedList.reverse();
-    return processedList;
-  }, [user, myOrders, allocationHistory]);
-
-  // Compute stats for June 2026 (this month)
+  // Compute stats for the current month from the live ledger
   const juneStats = React.useMemo(() => {
-    const juneTx = allTransactions.filter((t) => {
+    const now = new Date();
+    const currentTx = allTransactions.filter((t) => {
       const d = new Date(t.date);
-      return d.getFullYear() === 2026 && d.getMonth() === 5; // June
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
     });
 
-    const totalCredited = juneTx
+    const totalCredited = currentTx
       .filter((t) => t.type === 'Credit')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalDeducted = juneTx
+    const totalDeducted = currentTx
       .filter((t) => t.type === 'Deduction')
       .reduce((sum, t) => sum + t.amount, 0);
 

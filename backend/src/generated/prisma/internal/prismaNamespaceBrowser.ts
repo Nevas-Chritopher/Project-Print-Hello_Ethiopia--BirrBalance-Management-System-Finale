@@ -212,10 +212,13 @@ export type Monthly_allocationsScalarFieldEnum = (typeof Monthly_allocationsScal
 export const Monthly_payment_schedulesScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
+  payment_date: 'payment_date',
   payout_day: 'payout_day',
   department_id: 'department_id',
   applies_to_all: 'applies_to_all',
   is_active: 'is_active',
+  activation_key_hash: 'activation_key_hash',
+  activated_at: 'activated_at',
   created_by: 'created_by',
   last_processed_month: 'last_processed_month',
   created_at: 'created_at',

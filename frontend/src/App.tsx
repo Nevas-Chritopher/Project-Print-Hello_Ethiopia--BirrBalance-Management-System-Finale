@@ -1,25 +1,41 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { normalizeRole, useApp } from './context/AppContext';
+import { getPortalPathForRole, normalizeRole, useApp } from './context/AppContext';
 import { Sidebar, TopNav } from './components/layout/HeaderSidebar';
 import Login from './pages/auth/Login';
-import ManagerPortal from './pages/manager/ManagerPortal';
-import CafePortal from './pages/cafe/CafePortal';
-import EmployeePortal from './pages/employee/EmployeePortal';
-import WaiterPanel from './pages/waiter/WaiterPanel';
 import { useTranslation } from 'react-i18next';
 import { ShieldAlert, AlertTriangle, Menu, LogOut } from 'lucide-react';
+
+// Load each portal only when its route is opened. This keeps the first page
+// light and avoids parsing dashboard, chart, export, and QR code code before
+// a user needs it.
+const ManagerPortal = lazy(() => import('./pages/manager/ManagerPortal'));
+const CafePortal = lazy(() => import('./pages/cafe/CafePortal'));
+const EmployeePortal = lazy(() => import('./pages/employee/EmployeePortal'));
+const WaiterPanel = lazy(() => import('./pages/waiter/WaiterPanel'));
+
+const PortalLoading = () => (
+  <div className="flex min-h-[60vh] items-center justify-center text-sm font-semibold text-subtle-text">
+    Loading portal…
+  </div>
+);
 
 // Wrapper for Protected Routes with Role Checks.
 // Reads auth from context (not localStorage) so it re-renders on login,
 // logout, and session expiry instead of showing stale pages.
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole?: string }) => {
-  const { token, user } = useApp();
+  const { token, user, logout } = useApp();
   const role = normalizeRole(user?.role ?? localStorage.getItem("role"));
   const normalizedAllowedRole = normalizeRole(allowedRole);
 
   if (!token) return <Navigate to="/login" replace />;
-  if (normalizedAllowedRole && role !== normalizedAllowedRole) return <Navigate to="/login" replace />;
+  if (!role) {
+    logout();
+    return <Navigate to="/login" replace />;
+  }
+  if (normalizedAllowedRole && role !== normalizedAllowedRole) {
+    return <Navigate to="/login" replace />;
+  }
   return <>{children}</>;
 };
 
@@ -57,14 +73,16 @@ function Layout() {
 
         {/* Dynamic page container */}
         <main className={`flex-1 overflow-y-auto bg-page no-scrollbar focus:outline-none ${(user?.role === 'employee' || user?.role === 'manager' || user?.role === 'cafe') ? 'pt-16 md:pt-0' : ''}`}>
-          <Routes>
+          <Suspense fallback={<PortalLoading />}>
+            <Routes>
             <Route path="/manager/*" element={<ProtectedRoute allowedRole="manager"><ManagerPortal /></ProtectedRoute>} />
             <Route path="/cafe/*" element={<ProtectedRoute allowedRole="cafe"><CafePortal /></ProtectedRoute>} />
             <Route path="/employee/*" element={<ProtectedRoute allowedRole="employee"><EmployeePortal /></ProtectedRoute>} />
             <Route path="/waiter" element={<ProtectedRoute allowedRole="waiter"><WaiterPanel /></ProtectedRoute>} />
             <Route path="/waiter/panel" element={<ProtectedRoute allowedRole="waiter"><WaiterPanel /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>
@@ -121,15 +139,7 @@ export default function App() {
           path="/"
           element={
             token && role ? (
-              <Navigate
-                to={
-                  role === 'manager' ? '/manager/dashboard' :
-                  role === 'cafe' ? '/cafe/dashboard' :
-                  role === 'employee' ? '/employee/dashboard' :
-                  role === 'waiter' ? '/waiter/panel' : '/login'
-                }
-                replace
-              />
+              <Navigate to={getPortalPathForRole(role)} replace />
             ) : (
               <Navigate to="/login" replace />
             )

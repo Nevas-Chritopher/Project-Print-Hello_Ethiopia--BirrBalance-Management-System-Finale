@@ -5,11 +5,12 @@ import {
   toMoney,
   toPositiveMoney,
   toPositiveInt,
-  validateEmail,
   validateFormat,
   validateMonth,
+  validateEmployeePin,
   validatePassword,
   validatePhone,
+  validateOptionalPhone,
 } from "./common.validators.js";
 
 const ALLOWED_ROLES = ["employee", "waiter", "cafe_manager", "company_manager"];
@@ -54,9 +55,8 @@ const validateEmployeeOnlyRole = (roles) => {
 export const validateEmployeeCreate = (body) => ({
   employee_external_id: requireString(body.employee_external_id, "employee_external_id", 50),
   fullname: requireString(body.fullname, "fullname", 150),
-  email: validateEmail(body.email),
-  phone_number: validatePhone(body.phone_number),
-  password: validatePassword(body.password),
+  phone_number: validateOptionalPhone(body.phone_number),
+  password: validateEmployeePin(body.password),
   department_id: body.department_id ? toPositiveInt(body.department_id, "department_id") : null,
   roles: validateEmployeeOnlyRole(body.roles),
   cafe_id: null,
@@ -69,8 +69,8 @@ export const validateEmployeeUpdate = (body) => {
     payload.employee_external_id = requireString(body.employee_external_id, "employee_external_id", 50);
   }
   if (body.fullname !== undefined) payload.fullname = requireString(body.fullname, "fullname", 150);
-  if (body.email !== undefined) payload.email = validateEmail(body.email);
-  if (body.phone_number !== undefined) payload.phone_number = validatePhone(body.phone_number);
+  if (body.password !== undefined) payload.password = requireString(body.password, "password", 100);
+  if (body.phone_number !== undefined) payload.phone_number = validateOptionalPhone(body.phone_number);
   if (body.department_id !== undefined) {
     payload.department_id = body.department_id ? toPositiveInt(body.department_id, "department_id") : null;
   }
@@ -101,7 +101,6 @@ export const validateCafeCreate = (body) => ({
 export const validateCafeManagerCreate = (body) => ({
   employee_external_id: requireString(body.employee_external_id, "employee_external_id", 50),
   fullname: requireString(body.fullname, "fullname", 150),
-  email: validateEmail(body.email),
   phone_number: validatePhone(body.phone_number),
   password: validatePassword(body.password),
   cafe_id: toPositiveInt(body.cafe_id, "cafe_id"),
@@ -112,6 +111,18 @@ export const validateAllocationCreate = (body) => ({
   amount: toPositiveMoney(body.amount, "amount"),
   month: validateMonth(body.month),
 });
+
+export const validateGroupAllocation = (body) => {
+  const departmentId = body.department_id ? toPositiveInt(body.department_id, "department_id") : null;
+  const appliesToAll = body.applies_to_all === true;
+  if (!appliesToAll && !departmentId) throw new AppError("Select a department or all employees", 400);
+  return {
+    amount: toPositiveMoney(body.amount, "amount"),
+    month: validateMonth(body.month),
+    department_id: departmentId,
+    applies_to_all: appliesToAll,
+  };
+};
 
 export const validateAllocationUpdate = (body) => ({
   amount: toPositiveMoney(body.amount, "amount"),
@@ -128,14 +139,32 @@ export const validateMonthlyPaymentSchedule = (body) => {
   if (!appliesToAll && !departmentId) throw new AppError("Select a department or all employees", 400);
   return {
     amount: toPositiveMoney(body.amount, "amount"),
+    payment_date: parsed,
     payout_day: parsed.getUTCDate(),
     department_id: departmentId,
     applies_to_all: appliesToAll,
+    activation_key: requireString(body.activation_key, "activation_key", 128),
   };
 };
 
+export const validateScheduleActivation = (body) => ({
+  activation_key: requireString(body.activation_key, "activation_key", 128),
+});
+
 export const validatePasswordReset = (body) => ({
   user_id: toPositiveInt(body.user_id, "user_id"),
+  new_password: requireString(body.new_password, "new_password", 100),
+});
+
+export const validateCompanyManagerCreate = (body) => ({
+  employee_external_id: requireString(body.employee_external_id, "employee_external_id", 50),
+  fullname: requireString(body.fullname, "fullname", 150),
+  phone_number: validatePhone(body.phone_number),
+  password: validatePassword(body.password),
+});
+
+export const validateManagerPasswordChange = (body) => ({
+  old_password: requireString(body.old_password, "old_password", 100),
   new_password: validatePassword(body.new_password, "new_password"),
 });
 
@@ -144,6 +173,12 @@ export const validateId = (params, fieldName = "id") => toPositiveInt(params.id,
 export const validateCompanyReportQuery = (query) => ({
   month: validateMonth(query.month),
   format: validateFormat(query.format),
+});
+
+export const validateDepartmentUsageReportQuery = (query) => ({
+  month: validateMonth(query.month),
+  format: validateFormat(query.format),
+  department_id: query.department_id ? toPositiveInt(query.department_id, "department_id") : undefined,
 });
 
 export const validateFeedbackQuery = (query) => ({

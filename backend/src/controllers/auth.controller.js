@@ -22,9 +22,10 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const login = asyncHandler(async (req, res) => {
   const { employee_external_id, password } = validateLogin(req.body);
+  const normalizedEmployeeId = employee_external_id.trim().toUpperCase();
 
-  const user = await prisma.users.findUnique({
-    where: { employee_external_id },
+  const user = await prisma.users.findFirst({
+    where: { employee_external_id: { equals: normalizedEmployeeId, mode: 'insensitive' } },
     include: {
       user_roles: {
         include: { roles: true },
@@ -34,6 +35,18 @@ export const login = asyncHandler(async (req, res) => {
 
   if (!user) {
     throw new AppError("Invalid credentials", 401);
+  }
+
+  if (user.employee_external_id !== normalizedEmployeeId) {
+    try {
+      await prisma.users.update({
+        where: { id: user.id },
+        data: { employee_external_id: normalizedEmployeeId },
+      });
+    } catch (err) {
+      // Ignore update errors from duplicate casing mismatch if it would conflict.
+      console.warn('Could not normalize employee_external_id on login:', err);
+    }
   }
 
   if (!user.is_active) {

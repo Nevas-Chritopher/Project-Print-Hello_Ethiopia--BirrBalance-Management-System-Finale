@@ -196,11 +196,11 @@ export const lookupEmployee = async (req, res, next) => {
   }
 };
 
-const processOfflineOrder = async (actor, body, ipAddress) => {
-  const { employee_id, password, items, cafe_id, qr_session_id } = validateOfflineOrder({
+const processOfflineOrder = async (actor, body, ipAddress, { requireQrSession = true } = {}) => {
+  const { employee_id, password, items, manual_total, cafe_id, qr_session_id } = validateOfflineOrder({
     ...body,
     cafe_id: body?.cafe_id ?? actor.cafeId,
-  });
+  }, { requireQrSession });
 
   const employee = await prisma.users.findUnique({
     where: { id: employee_id },
@@ -224,16 +224,19 @@ const processOfflineOrder = async (actor, body, ipAddress) => {
     cafeId: cafe_id,
     waiterId: actor.id,
     items,
+    manualTotal: manual_total,
     orderMethod: "offline_qr",
     actor,
     ipAddress,
-    beforeCreate: (tx) => consumeQRSession({
-      sessionId: qr_session_id,
-      employeeId: employee_id,
-      waiterId: actor.id,
-      cafeId: cafe_id,
-      tx,
-    }),
+    ...(requireQrSession ? {
+      beforeCreate: (tx) => consumeQRSession({
+        sessionId: qr_session_id,
+        employeeId: employee_id,
+        waiterId: actor.id,
+        cafeId: cafe_id,
+        tx,
+      }),
+    } : {}),
   });
 };
 
@@ -274,7 +277,9 @@ export const syncOfflineOrders = async (req, res, next) => {
     const results = [];
     for (const [index, entry] of orders.entries()) {
       try {
-        const result = await processOfflineOrder(req.user, entry, req.ip);
+        // Offline sales cannot have a live server QR session.  The employee
+        // password is verified here before the queued order is accepted.
+        const result = await processOfflineOrder(req.user, entry, req.ip, { requireQrSession: false });
         results.push({
           index,
           success: true,

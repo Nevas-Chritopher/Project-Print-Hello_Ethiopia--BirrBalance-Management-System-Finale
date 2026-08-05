@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
+import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,7 @@ import {
 import { exportToExcel, getFileNameFromContentDisposition, downloadBlobFile } from '../../utils/exportHelpers';
 
 export default function CafePortal() {
-  const { user, apiGet, apiPost, apiPostForm, apiPut, apiDelete, apiDownload, setGlobalLoading } = useApp();
+  const { user, apiGet, apiPost, apiPostForm, apiPut, apiPatch, apiDelete, apiDownload, setGlobalLoading } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -45,6 +46,7 @@ export default function CafePortal() {
     if (path.includes('orders')) return 'orders';
     if (path.includes('waiters')) return 'waiters';
     if (path.includes('analytics')) return 'analytics';
+    if (path.includes('reports')) return 'reports';
     return 'dashboard'; // default
   };
 
@@ -81,6 +83,7 @@ export default function CafePortal() {
       setWaiters((waitersData.data || []).map((w: any) => ({
         id: w.id,
         name: w.fullname,
+        employeeId: w.employee_external_id,
         totalOrders: w.total_orders,
         avgDeliveryTime: '—',
         flaggedIssues: 0,
@@ -115,6 +118,7 @@ export default function CafePortal() {
           orders={orders}
           waiters={waiters}
           menuItems={menuItems}
+          apiPost={apiPost}
         />
       )}
       {activeTab === 'menu' && (
@@ -122,6 +126,7 @@ export default function CafePortal() {
           menuItems={menuItems}
           onReload={loadCafeData}
           apiPost={apiPost}
+          apiPatch={apiPatch}
           apiPostForm={apiPostForm}
           apiPut={apiPut}
           apiDelete={apiDelete}
@@ -140,12 +145,15 @@ export default function CafePortal() {
           orders={orders}
           feedbacks={feedbacks}
           apiPost={apiPost}
+          apiPatch={apiPatch}
+          apiDelete={apiDelete}
           onReload={loadCafeData}
         />
       )}
       {activeTab === 'analytics' && (
         <CafeEmployeeUsageAnalytics />
       )}
+      {activeTab === 'reports' && <CafeOperationalReports orders={orders} />}
     </div>
   );
 }
@@ -156,11 +164,13 @@ export default function CafePortal() {
 function CafeDashboardOverview({
   orders,
   waiters,
-  menuItems
+  menuItems,
+  apiPost,
 }: {
   orders: any[];
   waiters: any[];
   menuItems: any[];
+  apiPost: (path: string, body: any) => Promise<any>;
 }) {
   const { t } = useTranslation();
 
@@ -169,6 +179,16 @@ function CafeDashboardOverview({
   const totalRevenue = orders.filter(o => o.status === 'confirmed').reduce((sum, o) => sum + o.amount, 0);
   const activeWaiters = waiters.length;
   const mostOrdered = 'Doro Wot (185)';
+  const [qrCodes, setQrCodes] = useState<any[] | null>(null);
+  const [qrError, setQrError] = useState('');
+
+  const generateAllQrs = async () => {
+    setQrError('');
+    try {
+      const response = await apiPost('/api/cafe/employee-qr-codes', {});
+      setQrCodes(response.data ?? response ?? []);
+    } catch (error: any) { setQrError(error.message || 'Unable to generate employee QR codes.'); }
+  };
 
   const handleExportVolume = () => {
     const volumeData = [
@@ -190,6 +210,10 @@ function CafeDashboardOverview({
         <h1 className="text-2xl font-extrabold text-primary tracking-tight">Café Dashboard</h1>
         <p className="text-xs text-subtle-text font-medium uppercase tracking-wider mt-1">Live order pipeline, inventory and waiter diagnostics</p>
       </div>
+
+      <div className="flex justify-end"><button onClick={generateAllQrs} className="rounded-xl bg-primary px-4 py-3 text-xs font-bold text-white">Generate & Print All Employee QR Codes</button></div>
+      {qrError && <p className="rounded-xl bg-red-50 p-3 text-xs font-bold text-danger">{qrError}</p>}
+      {qrCodes && <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-6"><div className="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-black text-primary">Employee QR Codes</h2><p className="text-xs text-slate-500">Each card includes the employee’s name and ID.</p></div><div className="flex gap-2"><button onClick={() => setQrCodes(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button><button onClick={() => window.print()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All</button></div></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{qrCodes.map((qr) => <div key={qr.id} className="break-inside-avoid rounded-2xl border border-slate-200 p-5 text-center"><QRCodeSVG value={qr.qr_token} size={180} /><p className="mt-3 font-bold text-primary">{qr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">{qr.employee_external_id}</p></div>)}</div></div></div>}
 
       {/* Stats row */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -346,6 +370,7 @@ function CafeMenuManagement({
   menuItems,
   onReload,
   apiPost,
+  apiPatch,
   apiPostForm,
   apiPut,
   apiDelete
@@ -353,6 +378,7 @@ function CafeMenuManagement({
   menuItems: any[];
   onReload: () => Promise<void>;
   apiPost: (path: string, body: any) => Promise<any>;
+  apiPatch: (path: string, body: any) => Promise<any>;
   apiPostForm: (path: string, formData: FormData) => Promise<any>;
   apiPut: (path: string, body: any) => Promise<any>;
   apiDelete: (path: string) => Promise<any>;
@@ -897,18 +923,22 @@ function CafeWaitersPerformance({
   orders,
   feedbacks,
   apiPost,
+  apiPatch,
+  apiDelete,
   onReload,
 }: {
   waiters: any[];
   orders: any[];
   feedbacks: any[];
   apiPost: (path: string, body: any) => Promise<any>;
+  apiPatch: (path: string, body: any) => Promise<any>;
+  apiDelete: (path: string) => Promise<any>;
   onReload: () => Promise<void>;
 }) {
   const [expandedWaiterId, setExpandedWaiterId] = useState<string | null>(null);
   const [showAddWaiter, setShowAddWaiter] = useState(false);
   const [formError, setFormError] = useState('');
-  const [waiter, setWaiter] = useState({ employeeId: '', fullName: '', email: '', phone: '', password: '' });
+  const [waiter, setWaiter] = useState({ employeeId: '', fullName: '', phone: '', password: '' });
 
   const addWaiter = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -916,17 +946,36 @@ function CafeWaitersPerformance({
       await apiPost('/api/cafe/waiters', {
         employee_external_id: waiter.employeeId,
         fullname: waiter.fullName,
-        email: waiter.email,
         phone_number: waiter.phone,
         password: waiter.password,
       });
-      setWaiter({ employeeId: '', fullName: '', email: '', phone: '', password: '' });
       setFormError('');
       setShowAddWaiter(false);
       await onReload();
     } catch (error: any) {
       setFormError(error.message || 'Unable to create waiter');
     }
+  };
+
+  const deleteWaiter = async (waiterToDelete: any) => {
+    if (!window.confirm(`Delete waiter ${waiterToDelete.name}?`)) return;
+    try {
+      await apiDelete(`/api/cafe/waiters/${waiterToDelete.id}`);
+      await onReload();
+    } catch (error: any) {
+      setFormError(error.message || 'Unable to delete waiter');
+    }
+  };
+
+  const editWaiter = async (waiterToEdit: any) => {
+    const employee_external_id = window.prompt('Waiter username / ID', waiterToEdit.employeeId || '');
+    if (!employee_external_id) return;
+    const fullname = window.prompt('Waiter name', waiterToEdit.name);
+    if (!fullname) return;
+    const department_id = window.prompt('Department ID (leave blank for none)', '') ?? '';
+    const password = window.prompt('New password (leave blank to keep current)', '') ?? '';
+    try { await apiPatch(`/api/cafe/waiters/${waiterToEdit.id}`, { employee_external_id, fullname, department_id: department_id ? Number(department_id) : null, ...(password ? { password } : {}) }); await onReload(); }
+    catch (error: any) { setFormError(error.message || 'Unable to update waiter'); }
   };
 
   return (
@@ -950,7 +999,6 @@ function CafeWaitersPerformance({
             <div className="grid grid-cols-2 gap-3">
               <input required placeholder="Waiter ID" value={waiter.employeeId} onChange={(e) => setWaiter({ ...waiter, employeeId: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
               <input required placeholder="Full name" value={waiter.fullName} onChange={(e) => setWaiter({ ...waiter, fullName: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
-              <input required type="email" placeholder="Email" value={waiter.email} onChange={(e) => setWaiter({ ...waiter, email: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
               <input required placeholder="Phone number" value={waiter.phone} onChange={(e) => setWaiter({ ...waiter, phone: e.target.value })} className="rounded-xl border border-slate-200 p-3 text-sm" />
             </div>
             <input required type="password" placeholder="Temporary password" value={waiter.password} onChange={(e) => setWaiter({ ...waiter, password: e.target.value })} className="w-full rounded-xl border border-slate-200 p-3 text-sm" />
@@ -967,10 +1015,12 @@ function CafeWaitersPerformance({
               <tr className="border-b border-slate-100 text-[10px] font-bold text-subtle-text uppercase tracking-wider bg-slate-50/50">
                 <th className="py-4 px-6 w-16"></th>
                 <th className="py-4 px-4">Waiter Name</th>
+                <th className="py-4 px-4">Username / ID</th>
                 <th className="py-4 px-4 text-center">Total Orders Handled</th>
                 <th className="py-4 px-4 text-center">Average Delivery Time</th>
                 <th className="py-4 px-4 text-center">Flagged Issues Count</th>
-                <th className="py-4 px-6 text-center">Performance Rating</th>
+                <th className="py-4 px-4 text-center">Performance Rating</th>
+                <th className="py-4 px-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
@@ -994,6 +1044,7 @@ function CafeWaitersPerformance({
                         </div>
                         <span>{w.name}</span>
                       </td>
+                      <td className="py-4 px-4 font-mono text-slate-500">{w.employeeId || '—'}</td>
                       <td className="py-4 px-4 text-center font-bold text-slate-600">{w.totalOrders}</td>
                       <td className="py-4 px-4 text-center font-medium text-slate-600">{w.avgDeliveryTime}</td>
                       <td className="py-4 px-4 text-center">
@@ -1004,12 +1055,18 @@ function CafeWaitersPerformance({
                         </span>
                       </td>
                       <td className="py-4 px-6 text-center text-amber-500 font-bold">{w.rating} ★</td>
+                      <td className="py-4 px-6 text-right">
+                        <button onClick={(event) => { event.stopPropagation(); editWaiter(w); }} className="rounded-lg p-2 text-primary hover:bg-slate-50" title="Edit waiter">Edit</button>
+                        <button onClick={(event) => { event.stopPropagation(); deleteWaiter(w); }} className="rounded-lg p-2 text-danger hover:bg-red-50" title="Delete waiter">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
 
                     {/* Expands details */}
                     {isExpanded && (
                       <tr>
-                        <td colSpan={6} className="bg-slate-50/30 px-8 py-4">
+                        <td colSpan={8} className="bg-slate-50/30 px-8 py-4">
                           <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-inner space-y-4">
                             <h4 className="text-[10px] font-bold text-subtle-text uppercase tracking-wider border-b pb-2">Completed Logs by {w.name}</h4>
                             {waiterOrders.length === 0 ? (
@@ -1160,8 +1217,18 @@ function CafeEmployeeUsageAnalytics() {
 // SUB-PAGE 6: OPERATIONAL REPORTS
 // -----------------------------------------------------------
 function CafeOperationalReports({ orders }: { orders: any[] }) {
-  const { apiDownload, setGlobalLoading } = useApp();
+  const { apiDownload, apiGet, setGlobalLoading } = useApp();
   const [reportMonth, setReportMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [usageReport, setUsageReport] = useState<any>({ departments: [] });
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+
+  useEffect(() => {
+    const query = new URLSearchParams({ month: reportMonth, format: 'json' });
+    if (selectedDepartment) query.set('department_id', selectedDepartment);
+    apiGet(`/api/cafe/reports/department-usage?${query.toString()}`)
+      .then((response) => setUsageReport(response?.data ?? response ?? { departments: [] }))
+      .catch(() => setUsageReport({ departments: [], employees: [] }));
+  }, [apiGet, reportMonth, selectedDepartment]);
 
   const reportOrders = orders
     .filter(o => o.status === 'confirmed')
@@ -1194,6 +1261,12 @@ function CafeOperationalReports({ orders }: { orders: any[] }) {
   const handleExportXLSX = () => exportOperationalReport('xlsx');
   const handleExportCSV = () => exportOperationalReport('csv');
   const handleExportPDF = () => exportOperationalReport('pdf');
+  const exportUsageReport = async (format: 'xlsx' | 'pdf' | 'csv') => {
+    const query = new URLSearchParams({ month: reportMonth, format });
+    if (selectedDepartment) query.set('department_id', selectedDepartment);
+    const { blob, contentDisposition } = await apiDownload(`/api/cafe/reports/department-usage?${query.toString()}`);
+    downloadBlobFile(blob, getFileNameFromContentDisposition(contentDisposition, `cafe-department-usage-${reportMonth}.${format}`));
+  };
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -1215,6 +1288,11 @@ function CafeOperationalReports({ orders }: { orders: any[] }) {
             className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold w-full"
           />
         </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100"><div><h2 className="text-sm font-black text-primary">Department Usage</h2><p className="text-xs text-subtle-text">Click a department for employee meal-by-meal usage.</p></div><div className="flex gap-2">{(['csv', 'xlsx', 'pdf'] as const).map((format) => <button key={format} onClick={() => exportUsageReport(format)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold uppercase hover:bg-slate-50">{format}</button>)}</div></div>
+        {!selectedDepartment ? <table className="w-full text-left text-xs"><thead><tr className="bg-slate-50 text-slate-500"><th className="p-4">Department</th><th className="p-4">Employees</th><th className="p-4 text-right">Used</th><th className="p-4 text-right">Expired</th></tr></thead><tbody>{usageReport.departments?.map((row: any) => <tr key={row.department_id ?? row.department} onClick={() => row.department_id && setSelectedDepartment(String(row.department_id))} className="border-t cursor-pointer hover:bg-slate-50"><td className="p-4 font-bold">{row.department}</td><td className="p-4">{row.employee_count}</td><td className="p-4 text-right">ETB {row.total_used}</td><td className="p-4 text-right">ETB {row.expired_money}</td></tr>)}</tbody></table> : <table className="w-full text-left text-xs"><thead><tr className="bg-slate-50 text-slate-500"><th className="p-4">Employee</th><th className="p-4 text-right">Total Used</th><th className="p-4">Daily / Meal Usage</th></tr></thead><tbody>{usageReport.employees?.map((row: any) => <tr key={row.employee_id} className="border-t align-top"><td className="p-4 font-bold">{row.employee_name}<div className="text-slate-400">{row.employee_id}</div></td><td className="p-4 text-right">ETB {row.total_used}</td><td className="p-4 text-slate-600">{row.daily_meal_usage}</td></tr>)}</tbody></table>}
       </div>
 
       {/* Summary boxes */}

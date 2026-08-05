@@ -73,3 +73,9 @@ test("GET /api/employee/orders requires authentication", async () => {
   assert.equal(response.status, 401);
   assert.equal(response.body.success, false);
 });
+
+test("GET /api/employee/ledger requires authentication", async () => {
+  const response = await jsonRequest("/api/employee/ledger");
+  assert.equal(response.status, 401);
+  assert.equal(response.body.success, false);
+});

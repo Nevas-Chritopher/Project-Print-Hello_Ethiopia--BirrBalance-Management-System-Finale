@@ -81,12 +81,13 @@ export const createOrderWithBalanceDeduction = async ({
   cafeId,
   waiterId = null,
   items,
+  manualTotal = undefined,
   orderMethod,
   actor,
   ipAddress,
   beforeCreate = null,
 }) => {
-  const normalizedItems = normalizeItems(items);
+  const normalizedItems = manualTotal === undefined ? normalizeItems(items) : [];
 
   return prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock($1)", employeeId);
@@ -118,8 +119,18 @@ export const createOrderWithBalanceDeduction = async ({
       }
     }
 
-    const menuItems = await loadMenuItems(tx, cafeId, normalizedItems);
-    const { orderItems, totalAmount } = buildOrderItems(normalizedItems, menuItems);
+    const { orderItems, totalAmount } = manualTotal === undefined
+      ? buildOrderItems(normalizedItems, await loadMenuItems(tx, cafeId, normalizedItems))
+      : {
+          totalAmount: Number(manualTotal),
+          orderItems: [{
+            menu_item_id: null,
+            item_name_snapshot: "Manual waiter total",
+            unit_price_snapshot: manualTotal,
+            quantity: 1,
+            subtotal: manualTotal,
+          }],
+        };
     const { start } = getMonthRange();
 
     const allocation = await tx.monthly_allocations.findUnique({

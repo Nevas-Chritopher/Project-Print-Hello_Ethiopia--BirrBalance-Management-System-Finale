@@ -45,10 +45,13 @@ export type Monthly_payment_schedulesSumAggregateOutputType = {
 export type Monthly_payment_schedulesMinAggregateOutputType = {
   id: number | null
   amount: runtime.Decimal | null
+  payment_date: Date | null
   payout_day: number | null
   department_id: number | null
   applies_to_all: boolean | null
   is_active: boolean | null
+  activation_key_hash: string | null
+  activated_at: Date | null
   created_by: number | null
   last_processed_month: string | null
   created_at: Date | null
@@ -58,10 +61,13 @@ export type Monthly_payment_schedulesMinAggregateOutputType = {
 export type Monthly_payment_schedulesMaxAggregateOutputType = {
   id: number | null
   amount: runtime.Decimal | null
+  payment_date: Date | null
   payout_day: number | null
   department_id: number | null
   applies_to_all: boolean | null
   is_active: boolean | null
+  activation_key_hash: string | null
+  activated_at: Date | null
   created_by: number | null
   last_processed_month: string | null
   created_at: Date | null
@@ -71,10 +77,13 @@ export type Monthly_payment_schedulesMaxAggregateOutputType = {
 export type Monthly_payment_schedulesCountAggregateOutputType = {
   id: number
   amount: number
+  payment_date: number
   payout_day: number
   department_id: number
   applies_to_all: number
   is_active: number
+  activation_key_hash: number
+  activated_at: number
   created_by: number
   last_processed_month: number
   created_at: number
@@ -102,10 +111,13 @@ export type Monthly_payment_schedulesSumAggregateInputType = {
 export type Monthly_payment_schedulesMinAggregateInputType = {
   id?: true
   amount?: true
+  payment_date?: true
   payout_day?: true
   department_id?: true
   applies_to_all?: true
   is_active?: true
+  activation_key_hash?: true
+  activated_at?: true
   created_by?: true
   last_processed_month?: true
   created_at?: true
@@ -115,10 +127,13 @@ export type Monthly_payment_schedulesMinAggregateInputType = {
 export type Monthly_payment_schedulesMaxAggregateInputType = {
   id?: true
   amount?: true
+  payment_date?: true
   payout_day?: true
   department_id?: true
   applies_to_all?: true
   is_active?: true
+  activation_key_hash?: true
+  activated_at?: true
   created_by?: true
   last_processed_month?: true
   created_at?: true
@@ -128,10 +143,13 @@ export type Monthly_payment_schedulesMaxAggregateInputType = {
 export type Monthly_payment_schedulesCountAggregateInputType = {
   id?: true
   amount?: true
+  payment_date?: true
   payout_day?: true
   department_id?: true
   applies_to_all?: true
   is_active?: true
+  activation_key_hash?: true
+  activated_at?: true
   created_by?: true
   last_processed_month?: true
   created_at?: true
@@ -228,10 +246,13 @@ export type monthly_payment_schedulesGroupByArgs<ExtArgs extends runtime.Types.E
 export type Monthly_payment_schedulesGroupByOutputType = {
   id: number
   amount: runtime.Decimal
+  payment_date: Date | null
   payout_day: number
   department_id: number | null
   applies_to_all: boolean
   is_active: boolean
+  activation_key_hash: string | null
+  activated_at: Date | null
   created_by: number | null
   last_processed_month: string | null
   created_at: Date | null
@@ -264,10 +285,13 @@ export type monthly_payment_schedulesWhereInput = {
   NOT?: Prisma.monthly_payment_schedulesWhereInput | Prisma.monthly_payment_schedulesWhereInput[]
   id?: Prisma.IntFilter<"monthly_payment_schedules"> | number
   amount?: Prisma.DecimalFilter<"monthly_payment_schedules"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
   payout_day?: Prisma.IntFilter<"monthly_payment_schedules"> | number
   department_id?: Prisma.IntNullableFilter<"monthly_payment_schedules"> | number | null
   applies_to_all?: Prisma.BoolFilter<"monthly_payment_schedules"> | boolean
   is_active?: Prisma.BoolFilter<"monthly_payment_schedules"> | boolean
+  activation_key_hash?: Prisma.StringNullableFilter<"monthly_payment_schedules"> | string | null
+  activated_at?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
   created_by?: Prisma.IntNullableFilter<"monthly_payment_schedules"> | number | null
   last_processed_month?: Prisma.StringNullableFilter<"monthly_payment_schedules"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
@@ -278,10 +302,13 @@ export type monthly_payment_schedulesWhereInput = {
 export type monthly_payment_schedulesOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  payment_date?: Prisma.SortOrderInput | Prisma.SortOrder
   payout_day?: Prisma.SortOrder
   department_id?: Prisma.SortOrderInput | Prisma.SortOrder
   applies_to_all?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  activation_key_hash?: Prisma.SortOrderInput | Prisma.SortOrder
+  activated_at?: Prisma.SortOrderInput | Prisma.SortOrder
   created_by?: Prisma.SortOrderInput | Prisma.SortOrder
   last_processed_month?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -295,10 +322,13 @@ export type monthly_payment_schedulesWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.monthly_payment_schedulesWhereInput[]
   NOT?: Prisma.monthly_payment_schedulesWhereInput | Prisma.monthly_payment_schedulesWhereInput[]
   amount?: Prisma.DecimalFilter<"monthly_payment_schedules"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
   payout_day?: Prisma.IntFilter<"monthly_payment_schedules"> | number
   department_id?: Prisma.IntNullableFilter<"monthly_payment_schedules"> | number | null
   applies_to_all?: Prisma.BoolFilter<"monthly_payment_schedules"> | boolean
   is_active?: Prisma.BoolFilter<"monthly_payment_schedules"> | boolean
+  activation_key_hash?: Prisma.StringNullableFilter<"monthly_payment_schedules"> | string | null
+  activated_at?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
   created_by?: Prisma.IntNullableFilter<"monthly_payment_schedules"> | number | null
   last_processed_month?: Prisma.StringNullableFilter<"monthly_payment_schedules"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
@@ -309,10 +339,13 @@ export type monthly_payment_schedulesWhereUniqueInput = Prisma.AtLeast<{
 export type monthly_payment_schedulesOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  payment_date?: Prisma.SortOrderInput | Prisma.SortOrder
   payout_day?: Prisma.SortOrder
   department_id?: Prisma.SortOrderInput | Prisma.SortOrder
   applies_to_all?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  activation_key_hash?: Prisma.SortOrderInput | Prisma.SortOrder
+  activated_at?: Prisma.SortOrderInput | Prisma.SortOrder
   created_by?: Prisma.SortOrderInput | Prisma.SortOrder
   last_processed_month?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -330,10 +363,13 @@ export type monthly_payment_schedulesScalarWhereWithAggregatesInput = {
   NOT?: Prisma.monthly_payment_schedulesScalarWhereWithAggregatesInput | Prisma.monthly_payment_schedulesScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"monthly_payment_schedules"> | number
   amount?: Prisma.DecimalWithAggregatesFilter<"monthly_payment_schedules"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_payment_schedules"> | Date | string | null
   payout_day?: Prisma.IntWithAggregatesFilter<"monthly_payment_schedules"> | number
   department_id?: Prisma.IntNullableWithAggregatesFilter<"monthly_payment_schedules"> | number | null
   applies_to_all?: Prisma.BoolWithAggregatesFilter<"monthly_payment_schedules"> | boolean
   is_active?: Prisma.BoolWithAggregatesFilter<"monthly_payment_schedules"> | boolean
+  activation_key_hash?: Prisma.StringNullableWithAggregatesFilter<"monthly_payment_schedules"> | string | null
+  activated_at?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_payment_schedules"> | Date | string | null
   created_by?: Prisma.IntNullableWithAggregatesFilter<"monthly_payment_schedules"> | number | null
   last_processed_month?: Prisma.StringNullableWithAggregatesFilter<"monthly_payment_schedules"> | string | null
   created_at?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_payment_schedules"> | Date | string | null
@@ -342,9 +378,12 @@ export type monthly_payment_schedulesScalarWhereWithAggregatesInput = {
 
 export type monthly_payment_schedulesCreateInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Date | string | null
   payout_day: number
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: string | null
+  activated_at?: Date | string | null
   created_by?: number | null
   last_processed_month?: string | null
   created_at?: Date | string | null
@@ -355,10 +394,13 @@ export type monthly_payment_schedulesCreateInput = {
 export type monthly_payment_schedulesUncheckedCreateInput = {
   id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Date | string | null
   payout_day: number
   department_id?: number | null
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: string | null
+  activated_at?: Date | string | null
   created_by?: number | null
   last_processed_month?: string | null
   created_at?: Date | string | null
@@ -367,9 +409,12 @@ export type monthly_payment_schedulesUncheckedCreateInput = {
 
 export type monthly_payment_schedulesUpdateInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -380,10 +425,13 @@ export type monthly_payment_schedulesUpdateInput = {
 export type monthly_payment_schedulesUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -393,10 +441,13 @@ export type monthly_payment_schedulesUncheckedUpdateInput = {
 export type monthly_payment_schedulesCreateManyInput = {
   id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Date | string | null
   payout_day: number
   department_id?: number | null
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: string | null
+  activated_at?: Date | string | null
   created_by?: number | null
   last_processed_month?: string | null
   created_at?: Date | string | null
@@ -405,9 +456,12 @@ export type monthly_payment_schedulesCreateManyInput = {
 
 export type monthly_payment_schedulesUpdateManyMutationInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -417,10 +471,13 @@ export type monthly_payment_schedulesUpdateManyMutationInput = {
 export type monthly_payment_schedulesUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -440,10 +497,13 @@ export type monthly_payment_schedulesOrderByRelationAggregateInput = {
 export type monthly_payment_schedulesCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  payment_date?: Prisma.SortOrder
   payout_day?: Prisma.SortOrder
   department_id?: Prisma.SortOrder
   applies_to_all?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  activation_key_hash?: Prisma.SortOrder
+  activated_at?: Prisma.SortOrder
   created_by?: Prisma.SortOrder
   last_processed_month?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
@@ -461,10 +521,13 @@ export type monthly_payment_schedulesAvgOrderByAggregateInput = {
 export type monthly_payment_schedulesMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  payment_date?: Prisma.SortOrder
   payout_day?: Prisma.SortOrder
   department_id?: Prisma.SortOrder
   applies_to_all?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  activation_key_hash?: Prisma.SortOrder
+  activated_at?: Prisma.SortOrder
   created_by?: Prisma.SortOrder
   last_processed_month?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
@@ -474,10 +537,13 @@ export type monthly_payment_schedulesMaxOrderByAggregateInput = {
 export type monthly_payment_schedulesMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  payment_date?: Prisma.SortOrder
   payout_day?: Prisma.SortOrder
   department_id?: Prisma.SortOrder
   applies_to_all?: Prisma.SortOrder
   is_active?: Prisma.SortOrder
+  activation_key_hash?: Prisma.SortOrder
+  activated_at?: Prisma.SortOrder
   created_by?: Prisma.SortOrder
   last_processed_month?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
@@ -540,9 +606,12 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type monthly_payment_schedulesCreateWithoutDepartmentsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Date | string | null
   payout_day: number
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: string | null
+  activated_at?: Date | string | null
   created_by?: number | null
   last_processed_month?: string | null
   created_at?: Date | string | null
@@ -552,9 +621,12 @@ export type monthly_payment_schedulesCreateWithoutDepartmentsInput = {
 export type monthly_payment_schedulesUncheckedCreateWithoutDepartmentsInput = {
   id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Date | string | null
   payout_day: number
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: string | null
+  activated_at?: Date | string | null
   created_by?: number | null
   last_processed_month?: string | null
   created_at?: Date | string | null
@@ -593,10 +665,13 @@ export type monthly_payment_schedulesScalarWhereInput = {
   NOT?: Prisma.monthly_payment_schedulesScalarWhereInput | Prisma.monthly_payment_schedulesScalarWhereInput[]
   id?: Prisma.IntFilter<"monthly_payment_schedules"> | number
   amount?: Prisma.DecimalFilter<"monthly_payment_schedules"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
   payout_day?: Prisma.IntFilter<"monthly_payment_schedules"> | number
   department_id?: Prisma.IntNullableFilter<"monthly_payment_schedules"> | number | null
   applies_to_all?: Prisma.BoolFilter<"monthly_payment_schedules"> | boolean
   is_active?: Prisma.BoolFilter<"monthly_payment_schedules"> | boolean
+  activation_key_hash?: Prisma.StringNullableFilter<"monthly_payment_schedules"> | string | null
+  activated_at?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
   created_by?: Prisma.IntNullableFilter<"monthly_payment_schedules"> | number | null
   last_processed_month?: Prisma.StringNullableFilter<"monthly_payment_schedules"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_payment_schedules"> | Date | string | null
@@ -606,9 +681,12 @@ export type monthly_payment_schedulesScalarWhereInput = {
 export type monthly_payment_schedulesCreateManyDepartmentsInput = {
   id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Date | string | null
   payout_day: number
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: string | null
+  activated_at?: Date | string | null
   created_by?: number | null
   last_processed_month?: string | null
   created_at?: Date | string | null
@@ -617,9 +695,12 @@ export type monthly_payment_schedulesCreateManyDepartmentsInput = {
 
 export type monthly_payment_schedulesUpdateWithoutDepartmentsInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -629,9 +710,12 @@ export type monthly_payment_schedulesUpdateWithoutDepartmentsInput = {
 export type monthly_payment_schedulesUncheckedUpdateWithoutDepartmentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -641,9 +725,12 @@ export type monthly_payment_schedulesUncheckedUpdateWithoutDepartmentsInput = {
 export type monthly_payment_schedulesUncheckedUpdateManyWithoutDepartmentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  payment_date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   payout_day?: Prisma.IntFieldUpdateOperationsInput | number
   applies_to_all?: Prisma.BoolFieldUpdateOperationsInput | boolean
   is_active?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  activation_key_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   last_processed_month?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -655,10 +742,13 @@ export type monthly_payment_schedulesUncheckedUpdateManyWithoutDepartmentsInput 
 export type monthly_payment_schedulesSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   amount?: boolean
+  payment_date?: boolean
   payout_day?: boolean
   department_id?: boolean
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: boolean
+  activated_at?: boolean
   created_by?: boolean
   last_processed_month?: boolean
   created_at?: boolean
@@ -669,10 +759,13 @@ export type monthly_payment_schedulesSelect<ExtArgs extends runtime.Types.Extens
 export type monthly_payment_schedulesSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   amount?: boolean
+  payment_date?: boolean
   payout_day?: boolean
   department_id?: boolean
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: boolean
+  activated_at?: boolean
   created_by?: boolean
   last_processed_month?: boolean
   created_at?: boolean
@@ -683,10 +776,13 @@ export type monthly_payment_schedulesSelectCreateManyAndReturn<ExtArgs extends r
 export type monthly_payment_schedulesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   amount?: boolean
+  payment_date?: boolean
   payout_day?: boolean
   department_id?: boolean
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: boolean
+  activated_at?: boolean
   created_by?: boolean
   last_processed_month?: boolean
   created_at?: boolean
@@ -697,17 +793,20 @@ export type monthly_payment_schedulesSelectUpdateManyAndReturn<ExtArgs extends r
 export type monthly_payment_schedulesSelectScalar = {
   id?: boolean
   amount?: boolean
+  payment_date?: boolean
   payout_day?: boolean
   department_id?: boolean
   applies_to_all?: boolean
   is_active?: boolean
+  activation_key_hash?: boolean
+  activated_at?: boolean
   created_by?: boolean
   last_processed_month?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type monthly_payment_schedulesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "payout_day" | "department_id" | "applies_to_all" | "is_active" | "created_by" | "last_processed_month" | "created_at" | "updated_at", ExtArgs["result"]["monthly_payment_schedules"]>
+export type monthly_payment_schedulesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "payment_date" | "payout_day" | "department_id" | "applies_to_all" | "is_active" | "activation_key_hash" | "activated_at" | "created_by" | "last_processed_month" | "created_at" | "updated_at", ExtArgs["result"]["monthly_payment_schedules"]>
 export type monthly_payment_schedulesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   departments?: boolean | Prisma.monthly_payment_schedules$departmentsArgs<ExtArgs>
 }
@@ -726,10 +825,13 @@ export type $monthly_payment_schedulesPayload<ExtArgs extends runtime.Types.Exte
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     amount: runtime.Decimal
+    payment_date: Date | null
     payout_day: number
     department_id: number | null
     applies_to_all: boolean
     is_active: boolean
+    activation_key_hash: string | null
+    activated_at: Date | null
     created_by: number | null
     last_processed_month: string | null
     created_at: Date | null
@@ -1160,10 +1262,13 @@ export interface Prisma__monthly_payment_schedulesClient<T, Null = never, ExtArg
 export interface monthly_payment_schedulesFieldRefs {
   readonly id: Prisma.FieldRef<"monthly_payment_schedules", 'Int'>
   readonly amount: Prisma.FieldRef<"monthly_payment_schedules", 'Decimal'>
+  readonly payment_date: Prisma.FieldRef<"monthly_payment_schedules", 'DateTime'>
   readonly payout_day: Prisma.FieldRef<"monthly_payment_schedules", 'Int'>
   readonly department_id: Prisma.FieldRef<"monthly_payment_schedules", 'Int'>
   readonly applies_to_all: Prisma.FieldRef<"monthly_payment_schedules", 'Boolean'>
   readonly is_active: Prisma.FieldRef<"monthly_payment_schedules", 'Boolean'>
+  readonly activation_key_hash: Prisma.FieldRef<"monthly_payment_schedules", 'String'>
+  readonly activated_at: Prisma.FieldRef<"monthly_payment_schedules", 'DateTime'>
   readonly created_by: Prisma.FieldRef<"monthly_payment_schedules", 'Int'>
   readonly last_processed_month: Prisma.FieldRef<"monthly_payment_schedules", 'String'>
   readonly created_at: Prisma.FieldRef<"monthly_payment_schedules", 'DateTime'>

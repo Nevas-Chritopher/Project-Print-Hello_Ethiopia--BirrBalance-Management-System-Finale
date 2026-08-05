@@ -5,9 +5,15 @@ import { assignMonthlyBalance } from "../services/company.service.js";
 export const processMonthlyPayments = async () => {
   const now = new Date();
   const month = now.toISOString().slice(0, 7);
-  const day = now.getUTCDate();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = today.getUTCDate();
   const schedules = await prisma.monthly_payment_schedules.findMany({
-    where: { is_active: true, payout_day: day, last_processed_month: { not: month } },
+    where: {
+      is_active: true,
+      last_processed_month: { not: month },
+      // payout_day keeps schedules created before payment_date was introduced working.
+      OR: [{ payment_date: today }, { payment_date: null, payout_day: day }],
+    },
   });
 
   for (const schedule of schedules) {
@@ -43,5 +49,7 @@ export const startMonthlyPaymentsJob = () => {
   cron.schedule("5 0 * * *", () => {
     processMonthlyPayments().catch((error) => console.error("Monthly payment job failed:", error));
   });
+  // Catch up a payment due today when the server starts after midnight.
+  processMonthlyPayments().catch((error) => console.error("Initial monthly payment processing failed:", error));
   console.log("Monthly payment cron job scheduled.");
 };

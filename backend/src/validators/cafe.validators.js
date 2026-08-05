@@ -7,7 +7,7 @@ import {
   validateFormat,
   validateMonth,
 } from "./common.validators.js";
-import { validateEmail, validatePassword, validatePhone } from "./common.validators.js";
+import { validatePassword, validateOptionalPhone } from "./common.validators.js";
 
 const parseBoolean = (value, fieldName) => {
   if (value === undefined) return undefined;
@@ -64,10 +64,23 @@ export const validateCafeAnalyticsQuery = (query) => ({
 export const validateWaiterCreate = (body) => ({
   employee_external_id: requireString(body.employee_external_id, "employee_external_id", 50),
   fullname: requireString(body.fullname, "fullname", 150),
-  email: validateEmail(body.email),
-  phone_number: validatePhone(body.phone_number),
+  // A phone number is useful but must not prevent a cafe manager from
+  // creating a waiter account.  The service supplies a safe internal value
+  // for older databases that still require the column.
+  phone_number: validateOptionalPhone(body.phone_number),
   password: validatePassword(body.password),
 });
+
+export const validateWaiterUpdate = (body) => {
+  const payload = {};
+  if (body.employee_external_id !== undefined) payload.employee_external_id = requireString(body.employee_external_id, "employee_external_id", 50);
+  if (body.fullname !== undefined) payload.fullname = requireString(body.fullname, "fullname", 150);
+  if (body.phone_number !== undefined) payload.phone_number = validateOptionalPhone(body.phone_number);
+  if (body.department_id !== undefined) payload.department_id = body.department_id ? toPositiveInt(body.department_id, "department_id") : null;
+  if (body.password !== undefined) payload.password = validatePassword(body.password);
+  if (Object.keys(payload).length === 0) throw new AppError("At least one field is required", 400);
+  return payload;
+};
 
 const validateMenuPrice = (value) => {
   const price = toPositiveMoney(value, "price");

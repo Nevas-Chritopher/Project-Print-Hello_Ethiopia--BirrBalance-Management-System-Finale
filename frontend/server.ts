@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'fs';
+import https from 'https';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { createProxyMiddleware } from 'http-proxy-middleware';
@@ -32,8 +34,19 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  const defaultPfxPath = path.join(process.cwd(), 'certs', 'hello-ethiopia-local.pfx');
+  // A certificate is opt-in: a certificate generated for an old LAN IP makes
+  // every other device reject the application after that IP changes.
+  const pfxPath = process.env.ENABLE_HTTPS === 'true'
+    ? (process.env.HTTPS_PFX_PATH || (fs.existsSync(defaultPfxPath) ? defaultPfxPath : undefined))
+    : undefined;
+  const server = pfxPath
+    ? https.createServer({ pfx: fs.readFileSync(pfxPath), passphrase: process.env.HTTPS_PFX_PASSWORD || 'hello-ethiopia-local' }, app)
+    : app;
+  const protocol = pfxPath ? 'https' : 'http';
+
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on ${protocol}://localhost:${PORT}`);
   });
 }
 

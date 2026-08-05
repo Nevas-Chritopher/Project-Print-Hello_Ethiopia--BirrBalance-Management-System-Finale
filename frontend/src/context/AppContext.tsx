@@ -72,10 +72,29 @@ function normalizeApiData<T = any>(data: any): T {
 export function normalizeRole(role?: string | null) {
   if (!role) return null;
 
-  const normalizedRole = role.toLowerCase();
-  if (normalizedRole === 'company_manager') return 'manager';
-  if (normalizedRole === 'cafe_manager') return 'cafe';
-  return normalizedRole;
+  const normalizedRole = String(role).toLowerCase().trim();
+  if (normalizedRole === 'company_manager' || normalizedRole === 'manager') return 'manager';
+  if (normalizedRole === 'cafe_manager' || normalizedRole === 'cafe') return 'cafe';
+  if (normalizedRole === 'employee') return 'employee';
+  if (normalizedRole === 'waiter') return 'waiter';
+  return null;
+}
+
+export function getPrimaryRole(roleOrRoles?: string | string[] | null) {
+  if (!roleOrRoles) return null;
+  const roles = Array.isArray(roleOrRoles) ? roleOrRoles : [roleOrRoles];
+  const normalizedRoles = roles.map(normalizeRole).filter(Boolean) as string[];
+  const priority = ['manager', 'cafe', 'waiter', 'employee'];
+  return priority.find((acceptedRole) => normalizedRoles.includes(acceptedRole)) ?? null;
+}
+
+export function getPortalPathForRole(role?: string | null) {
+  const normalizedRole = normalizeRole(role);
+  if (normalizedRole === 'manager') return '/manager/dashboard';
+  if (normalizedRole === 'cafe') return '/cafe/dashboard';
+  if (normalizedRole === 'employee') return '/employee/dashboard';
+  if (normalizedRole === 'waiter') return '/waiter/panel';
+  return '/login';
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -102,6 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [globalLoading, setGlobalLoading] = useState(false);
   const [activeCafe, setActiveCafe] = useState<any>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const autoSyncAttemptKeyRef = useRef('');
 
   // Synced state triggers
   // Attempt to refresh token using stored refresh_token. Single-flight:
@@ -255,7 +275,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ]);
       const apiUser = normalizeApiData(res.data || res);
 
-      const mappedRole = normalizeRole(apiUser.roles?.[0]);
+      const mappedRole = getPrimaryRole(apiUser.roles || apiUser.role);
       const balance = Number(balanceRes?.data?.balance ?? balanceRes?.balance ?? 0);
       const userData = { ...apiUser, balance, role: mappedRole || apiUser.role || 'employee' };
       setUser(userData);
@@ -363,19 +383,23 @@ const login = async (employeeId: string, password: string): Promise<any> => {
     // apiPost responses are camelCased by normalizeApiData (refresh_token -> refreshToken)
     const { token, refreshToken, user: apiUser } = res.data;
 
-    const mappedRole = normalizeRole(apiUser.roles[0]);
-    const userData = { ...apiUser, role: mappedRole || apiUser.role || 'employee' };
+    const role = getPrimaryRole(apiUser.roles || apiUser.role) ?? 'employee';
+    const userData = { ...apiUser, role };
 
     localStorage.setItem('token', token);
-    localStorage.setItem('role', mappedRole || userData.role || 'employee');
+    localStorage.setItem('role', role);
     localStorage.setItem('user', JSON.stringify(userData));
     if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
 
     setToken(token);
     setUser(userData);
 
+    if (role === 'employee') {
+      await fetchMe();
+    }
+
     setGlobalLoading(false);
-    return res.data;
+    return { token, refreshToken, user: userData };
   } catch (e) {
     setGlobalLoading(false);
     throw e;
@@ -450,9 +474,13 @@ const login = async (employeeId: string, password: string): Promise<any> => {
     if (offlineQueue.length === 0 || isOffline) return;
     setGlobalLoading(true);
     try {
-      await apiPost('/api/waiter/sync-orders', { orders: offlineQueue });
-      setOfflineQueue([]);
-      localStorage.setItem('esrom_offline_queue', '[]');
+      const response = await apiPost('/api/waiter/sync-orders', { orders: offlineQueue });
+      const results = response.data?.results ?? response.results ?? [];
+      // Keep only orders the server did not accept, so a temporary validation
+      // issue never silently loses a meal order.
+      const remaining = offlineQueue.filter((_, index) => !results.find((item: any) => item.index === index && item.success));
+      setOfflineQueue(remaining);
+      localStorage.setItem('esrom_offline_queue', JSON.stringify(remaining));
       setGlobalLoading(false);
       fetchNotifications();
     } catch (e) {
@@ -465,7 +493,14 @@ const login = async (employeeId: string, password: string): Promise<any> => {
   // Auto-sync when online restores
   useEffect(() => {
     if (!isOffline && offlineQueue.length > 0 && token) {
-      triggerSync().catch(console.error);
+      const queueKey = offlineQueue.map((order) => order.queued_at ?? order.employee_id).join('|');
+      if (autoSyncAttemptKeyRef.current !== queueKey) {
+        autoSyncAttemptKeyRef.current = queueKey;
+        triggerSync().catch(console.error);
+      }
+    } else if (isOffline) {
+      // The next online event should always make a fresh sync attempt.
+      autoSyncAttemptKeyRef.current = '';
     }
   }, [isOffline, offlineQueue, token]);
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { normalizeRole, useApp } from '../../context/AppContext';
+import { getPortalPathForRole, normalizeRole, useApp } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, ShieldAlert, KeyRound, UserSquare2, Sparkles } from 'lucide-react';
 import { EsromLogo } from '../../components/layout/HeaderSidebar';
@@ -41,10 +41,7 @@ export default function Login() {
     const token = localStorage.getItem("token");
     const role = normalizeRole(localStorage.getItem("role"));
     if (token && role) {
-      if (role === "manager") navigate("/manager/dashboard");
-      else if (role === "cafe") navigate("/cafe/dashboard");
-      else if (role === "employee") navigate("/employee/dashboard");
-      else if (role === "waiter") navigate("/waiter/panel");
+      navigate(getPortalPathForRole(role), { replace: true });
     }
   }, [navigate]);
 
@@ -59,15 +56,14 @@ export default function Login() {
   setLoading(true);
 
   try {
-    await login(employeeId.toUpperCase(), password);
-    // AppContext already set token, role, and user in localStorage
-    // Just grab the role and navigate
-    const role = normalizeRole(localStorage.getItem('role'));
-    if (role === "manager") navigate("/manager/dashboard");
-    else if (role === "cafe") navigate("/cafe/dashboard");
-    else if (role === "employee") navigate("/employee/dashboard");
-    else if (role === "waiter") navigate("/waiter/panel");
-    else navigate("/login");
+    const { user: loggedInUser } = await login(employeeId.toUpperCase(), password);
+    const role = normalizeRole(loggedInUser.role);
+    if (role) {
+      navigate(getPortalPathForRole(role), { replace: true });
+    } else {
+      setErrorMsg('Unable to determine portal for this account. Contact support.');
+      navigate('/login', { replace: true });
+    }
   } catch (err: any) {
     setErrorMsg("Incorrect Employee ID or password. Please try again.");
     setPassword('');
