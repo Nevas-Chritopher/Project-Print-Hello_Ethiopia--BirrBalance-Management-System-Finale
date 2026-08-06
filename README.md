@@ -11,7 +11,7 @@ It replaces manual meal vouchers or cash handling with a digital balance ledger:
 - [High-Level Architecture](#high-level-architecture)
 - [Real-Time Communication](#real-time-communication)
 - [Technology Stack](#technology-stack)
-- [User Roles & Portals](#user-roles--portals)
+- [User Roles & Portals](#user-roles--portals).
 - [Core Features](#core-features)
 - [Database Schema](#database-schema)
 - [Project Structure](#project-structure)
