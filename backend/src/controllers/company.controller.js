@@ -94,7 +94,7 @@ export const changeOwnPassword = asyncHandler(async (req, res) => {
 });
 
 export const getEmployees = asyncHandler(async (req, res) => {
-  const data = await listEmployees(req.user, validateEmployeeQuery(req.query), parsePagination(req.query), req.ip);
+  const data = await listEmployees(req.user, validateEmployeeQuery(req.query), parsePagination(req.query, 500), req.ip);
   return successResponse(res, data, "Employees fetched successfully");
 });
 

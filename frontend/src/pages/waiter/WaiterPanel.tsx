@@ -79,6 +79,19 @@ export default function WaiterPanel() {
     loadMenu();
   }, []);
 
+
+  // temporaty
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const employeeId = params.get('id');
+    if (employeeId) {
+      handleLookupEmployee(employeeId);
+    }
+  }, []);
+
+  //
+
   // HTML5 QR code scanning initialization
   useEffect(() => {
     let cancelled = false;

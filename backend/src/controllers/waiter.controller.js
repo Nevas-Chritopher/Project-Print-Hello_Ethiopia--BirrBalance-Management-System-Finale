@@ -32,7 +32,7 @@ export const scanQR = async (req, res, next) => {
     const { qr_token } = req.body;
 
     if (!qr_token) {
-      throw new AppError("QR token is required", 400);
+      throw new AppError(" is required", 400);
     }
 
     const decoded = decryptQRToken(qr_token);

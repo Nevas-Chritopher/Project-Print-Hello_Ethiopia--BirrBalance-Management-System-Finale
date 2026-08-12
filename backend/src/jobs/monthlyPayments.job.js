@@ -30,14 +30,14 @@ export const processMonthlyPayments = async () => {
       try {
         await assignMonthlyBalance({ id: schedule.created_by ?? null }, {
           user_id: employee.id,
-          amount: schedule.amount,
+          amount: Number(schedule.amount),
           month,
         }, null);
       } catch (error) {
-        // Existing allocations are expected if an administrator funded the same month manually.
         if (error?.statusCode !== 409) console.error("Monthly payment allocation failed:", error);
       }
     }
+
     await prisma.monthly_payment_schedules.update({
       where: { id: schedule.id },
       data: { last_processed_month: month, updated_at: new Date() },

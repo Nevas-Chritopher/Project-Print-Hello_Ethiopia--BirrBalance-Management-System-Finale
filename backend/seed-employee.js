@@ -1,27 +1,25 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import prisma from './src/config/db.js';
 import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
-
-async function main() {
-  console.log('Seeding test employee...');
-  
-  // Create a default role if it doesn't exist
-  let role = await prisma.roles.findUnique({ where: { name: 'employee' } });
+async function ensureRole(name) {
+  let role = await prisma.roles.findUnique({ where: { name } });
   if (!role) {
     role = await prisma.roles.create({
-      data: {
-        name: 'employee',
-        description: 'Standard employee role'
-      }
+      data: { name },
     });
-    console.log('Created missing role: employee');
+    console.log(`Created missing role: ${name}`);
   }
+  return role;
+}
 
-  // Check if test employee already exists
+async function seedTestEmployee() {
+  console.log('Seeding test employee...');
+
+  const role = await ensureRole('employee');
+
   const existingUser = await prisma.users.findUnique({
-    where: { employee_external_id: 'EMP-999' }
+    where: { employee_external_id: 'EMP-999' },
   });
 
   if (existingUser) {
@@ -29,10 +27,8 @@ async function main() {
     return;
   }
 
-  // Hash the password
   const passwordHash = await bcrypt.hash('password123', 12);
 
-  // Create the user and assign the role
   const employee = await prisma.users.create({
     data: {
       employee_external_id: 'EMP-999',
@@ -43,10 +39,10 @@ async function main() {
       is_active: true,
       user_roles: {
         create: [
-          { role_id: role.id }
-        ]
-      }
-    }
+          { role_id: role.id },
+        ],
+      },
+    },
   });
 
   console.log('Successfully created test employee:');
@@ -55,9 +51,52 @@ async function main() {
   console.log('- Full Name:', employee.fullname);
 }
 
+async function seedCompanyManager() {
+  console.log('Seeding default company manager...');
+
+  const role = await ensureRole('company_manager');
+
+  const existingManager = await prisma.users.findUnique({
+    where: { employee_external_id: 'MGR-001' },
+  });
+
+  if (existingManager) {
+    console.log('Company manager MGR-001 already exists. Skipping.');
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash('ChangeMe123!', 12);
+
+  const manager = await prisma.users.create({
+    data: {
+      employee_external_id: 'MGR-001',
+      fullname: 'Company Manager',
+      email: 'manager@example.com',
+      phone_number: '+251900000001',
+      password_hash: passwordHash,
+      is_active: true,
+      user_roles: {
+        create: [
+          { role_id: role.id },
+        ],
+      },
+    },
+  });
+
+  console.log('Successfully created default company manager:');
+  console.log('- Employee ID: MGR-001');
+  console.log('- Password: ChangeMe123!');
+  console.log('- Full Name:', manager.fullname);
+}
+
+async function main() {
+  await seedTestEmployee();
+  await seedCompanyManager();
+}
+
 main()
   .catch((e) => {
-    console.error('Error seeding employee:', e);
+    console.error('Error seeding users:', e);
     process.exit(1);
   })
   .finally(async () => {

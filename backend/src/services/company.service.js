@@ -74,6 +74,15 @@ const normalizeEmployeeExternalId = (employeeExternalId) => {
   return employeeExternalId.trim().toUpperCase();
 };
 
+export const normalizeDepartmentName = (name) => {
+  if (!name || typeof name !== "string") return "";
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+};
+
+export const departmentNamesMatch = (left, right) => {
+  return normalizeDepartmentName(left) === normalizeDepartmentName(right);
+};
+
 const ensureRoles = async (roles, tx) => {
   const uniqueRoles = [...new Set(roles)];
   const invalid = uniqueRoles.filter((role) => !ALLOWED_ROLES.includes(role));
@@ -476,7 +485,17 @@ export const issueAllPrintableEmployeeQrs = async (actor, ipAddress) => {
 
 export const createDepartment = async (actor, payload, ipAddress) => {
   return prisma.$transaction(async (tx) => {
-    const department = await tx.departments.create({ data: payload });
+    const departmentName = String(payload.name ?? "").trim();
+    if (!departmentName) throw new AppError("Department name is required", 400);
+
+    const existing = await tx.departments.findFirst({
+      where: { name: { equals: departmentName, mode: "insensitive" } },
+    });
+    if (existing) {
+      throw new AppError(`Department "${departmentName}" already exists`, 409);
+    }
+
+    const department = await tx.departments.create({ data: { ...payload, name: departmentName } });
     await writeAuditLog(
       {
         userId: actor.id,
@@ -494,7 +513,22 @@ export const createDepartment = async (actor, payload, ipAddress) => {
 
 export const updateDepartment = async (actor, departmentId, payload, ipAddress) => {
   return prisma.$transaction(async (tx) => {
-    const department = await tx.departments.update({ where: { id: departmentId }, data: payload });
+    const nextName = payload.name !== undefined ? String(payload.name ?? "").trim() : undefined;
+    if (nextName !== undefined && !nextName) throw new AppError("Department name is required", 400);
+
+    if (nextName) {
+      const existing = await tx.departments.findFirst({
+        where: {
+          name: { equals: nextName, mode: "insensitive" },
+          id: { not: departmentId },
+        },
+      });
+      if (existing) {
+        throw new AppError(`Department "${nextName}" already exists`, 409);
+      }
+    }
+
+    const department = await tx.departments.update({ where: { id: departmentId }, data: nextName ? { ...payload, name: nextName } : payload });
     await writeAuditLog(
       {
         userId: actor.id,

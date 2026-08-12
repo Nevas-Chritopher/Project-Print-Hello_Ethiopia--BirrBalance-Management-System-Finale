@@ -21,12 +21,20 @@ const corsOptions = {
 
 app.use(helmet());
 app.use(cors(corsOptions));
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
-}));
+
+if (env.NODE_ENV === "production") {
+  app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }));
+} else {
+  // In local development, disable the global rate limiter to avoid
+  // blocking UI actions during interactive testing.
+  app.use((req, res, next) => next());
+}
+
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 

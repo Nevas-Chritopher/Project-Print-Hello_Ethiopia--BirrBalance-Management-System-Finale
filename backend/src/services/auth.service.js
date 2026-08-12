@@ -7,7 +7,17 @@ export const hashPassword = async (password) => {
 };
 
 export const comparePassword = async (password, hashedPassword) => {
-  return await bcrypt.compare(password, hashedPassword);
+  if (!hashedPassword) return false;
+
+  if (typeof hashedPassword === 'string' && hashedPassword.startsWith('$2')) {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
+  if (typeof hashedPassword === 'string' && hashedPassword === password) {
+    return true;
+  }
+
+  return false;
 };
 
 export const generateAccessToken = (payload) => {

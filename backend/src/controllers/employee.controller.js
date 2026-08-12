@@ -77,7 +77,7 @@ export const getProfile = asyncHandler(async (req, res) => {
         amount: Number(allocation.amount),
       })),
       transactions: ledgerEntries,
-      qr_token: token,
+      qr_token: `http://10.23.139.26:3000/waiter/panel?id=${req.user.id}`,
       qr_expires_at: expiresAt,
     },
     "Profile fetched successfully",
@@ -230,7 +230,7 @@ export const generateQR = asyncHandler(async (req, res) => {
     action: "employee.qr.generate",
     entityType: "employee_qr_codes",
     entityId: existing?.id ?? null,
-    description: "Generated employee QR token",
+    description: "Generated employee ",
     ipAddress: req.ip,
   });
 

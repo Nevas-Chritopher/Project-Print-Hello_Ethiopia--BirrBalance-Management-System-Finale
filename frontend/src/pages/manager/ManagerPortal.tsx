@@ -1011,7 +1011,7 @@ function ManagerEmployeesPage({
     if (!normalizedTarget) return null;
     return departmentsList.find((item) => {
       const normalizedName = (item.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
-      return normalizedName === normalizedTarget || normalizedName.includes(normalizedTarget) || normalizedTarget.includes(normalizedName);
+      return normalizedName === normalizedTarget;
     }) ?? null;
   };
 
@@ -1995,11 +1995,10 @@ function ManagerBalancePage({
   apiPost: (path: string, body: any) => Promise<any>;
 }) {
   const { t } = useTranslation();
-  const [option, setOption] = useState<'department' | 'employee' | 'scheduled'>('department');
+  const [option, setOption] = useState<'scheduled' | 'employee'>('scheduled');
   const [targetId, setTargetId] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [activationKey, setActivationKey] = useState('');
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [successAllocMsg, setSuccessAllocMsg] = useState('');
 
@@ -2016,7 +2015,7 @@ function ManagerBalancePage({
   // Financial preview
   const getAffectedCount = () => {
     if (!amount || isNaN(Number(amount))) return 0;
-    if (option === 'department' || option === 'scheduled') {
+    if (option === 'scheduled') {
       return employeesList.filter((e) =>
         e.isActive && e.roles?.includes('employee') && (targetId === 'all' || String(e.departmentId) === targetId)
       ).length;
@@ -2042,7 +2041,7 @@ function ManagerBalancePage({
         month: paymentDate.slice(0, 7),
       });
       successCount = 1;
-    } else if (option === 'department') {
+    } else {
       const result = await apiPost('/api/company-manager/balances/group-allocations', {
         amount: Number(amount),
         month: paymentDate.slice(0, 7),
@@ -2051,23 +2050,10 @@ function ManagerBalancePage({
       });
       successCount = result?.data?.allocated ?? result?.allocated ?? getAffectedCount();
       failCount = result?.data?.skipped ?? result?.skipped ?? 0;
-    } else {
-      const scheduleResponse = await apiPost('/api/company-manager/balances/schedules', {
-        amount: Number(amount),
-        payment_date: paymentDate,
-        applies_to_all: targetId === 'all',
-        department_id: targetId === 'all' ? null : Number(targetId),
-        activation_key: activationKey,
-      });
-      const schedule = scheduleResponse?.data ?? scheduleResponse;
-      await apiPost(`/api/company-manager/balances/schedules/${schedule.id}/activate`, { activation_key: activationKey });
-      successCount = getAffectedCount();
-      setSuccessAllocMsg(`Scheduled wallet renewal activated for ${successCount} employee(s) on day ${new Date(paymentDate + 'T00:00:00').getDate()}.`);
+      setSuccessAllocMsg(`Paid scheduled group balance immediately to ${successCount} employee(s).`);
     }
 
-    if (option === 'scheduled') {
-      // The schedule confirmation was already shown above.
-    } else if (failCount > 0) {
+    if (failCount > 0) {
       setSuccessAllocMsg(`Allocated to ${successCount} employees, ${failCount} failed (likely already allocated for this month).`);
     } else {
       setSuccessAllocMsg(`Allocated ${formatETB(Number(amount))} successfully to ${successCount} employee(s)!`);
@@ -2076,7 +2062,6 @@ function ManagerBalancePage({
     setAmount('');
     setTargetId('');
     setSearchEmp('');
-    setActivationKey('');
     onReload();
     window.dispatchEvent(new Event('esrom-balance-updated'));
     setTimeout(() => {
@@ -2108,18 +2093,7 @@ function ManagerBalancePage({
           <h3 className="text-sm font-black text-primary tracking-tight">Configure Subsidy</h3>
 
           {/* Option Selector */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <button
-              id="balance-opt-dept"
-              onClick={() => { setOption('department'); setTargetId(''); }}
-              className={`py-3 rounded-xl border text-xs font-bold transition-all text-center min-h-[44px] ${
-                option === 'department'
-                  ? 'border-primary bg-primary text-white'
-                  : 'border-slate-200 text-subtle-text hover:bg-slate-50'
-              }`}
-            >
-              Pay Group Now
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
               id="balance-opt-emp"
               onClick={() => { setOption('employee'); setTargetId(''); }}
@@ -2129,7 +2103,7 @@ function ManagerBalancePage({
                   : 'border-slate-200 text-subtle-text hover:bg-slate-50'
               }`}
             >
-              Set by Individual
+              Pay Individually
             </button>
             <button
               id="balance-opt-scheduled"
@@ -2140,13 +2114,13 @@ function ManagerBalancePage({
                   : 'border-slate-200 text-subtle-text hover:bg-slate-50'
               }`}
             >
-              Scheduled Renewal
+              Pay Scheduled
             </button>
           </div>
 
           <div className="space-y-4 text-xs">
             {/* Target Select */}
-            {option === 'department' || option === 'scheduled' ? (
+            {option === 'scheduled' ? (
               <div className="space-y-1.5">
               <label className="font-bold text-slate-700">Select Target Department</label>
                 <select
@@ -2211,22 +2185,9 @@ function ManagerBalancePage({
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
             </div>
-            {option === 'scheduled' && (
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-700">Activation Key</label>
-                <input
-                  id="schedule-activation-key-input"
-                  type="password"
-                  value={activationKey}
-                  onChange={(e) => setActivationKey(e.target.value)}
-                  placeholder="Create a key to activate this renewal"
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
-                />
-              </div>
-            )}
              {/* Month */}
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-700">{option === 'scheduled' ? 'Monthly Renewal Date' : 'Allocation Month'}</label>
+              <label className="font-bold text-slate-700">Payment Month</label>
               <input
                 id="alloc-payment-date-input"
                 type="date"
@@ -2234,7 +2195,7 @@ function ManagerBalancePage({
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
-              <p className="text-[10px] text-slate-400">{option === 'scheduled' ? 'On this day each month, unused wallet funds are replaced with the new balance.' : 'Group and individual payments are added to the selected month.'}</p>
+              <p className="text-[10px] text-slate-400">{option === 'scheduled' ? 'Scheduled group payments are processed immediately for the selected month and departments.' : 'Individual payments are allocated to a single employee.'}</p>
             </div>
 
             {/* Financial Commitment Preview section */}
@@ -2256,7 +2217,7 @@ function ManagerBalancePage({
             <button
               id="confirm-allocation-trigger-btn"
               type="button"
-              disabled={!amount || !targetId || isNaN(Number(amount)) || (option === 'scheduled' && !activationKey)}
+              disabled={!amount || !targetId || isNaN(Number(amount))}
               onClick={() => setShowWarningModal(true)}
               className="w-full py-4 rounded-xl bg-primary hover:bg-secondary text-white font-bold text-xs tracking-wider uppercase disabled:opacity-45 disabled:hover:bg-primary transition-all shadow-md min-h-[44px]"
             >

@@ -100,9 +100,9 @@ export const validateEmployeePin = (value, fieldName = "password") => {
   return password;
 };
 
-export const parsePagination = (query) => {
+export const parsePagination = (query, maxLimit = 100) => {
   const page = Math.max(Number.parseInt(query.page || "1", 10), 1);
-  const limit = Math.min(Math.max(Number.parseInt(query.limit || "20", 10), 1), 100);
+  const limit = Math.min(Math.max(Number.parseInt(query.limit || "20", 10), 1), maxLimit);
 
   return {
     page,
