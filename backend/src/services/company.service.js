@@ -462,13 +462,20 @@ const issueEmployeeQrCode = async (actor, employee, ipAddress, tx) => {
     description: `Issued printable QR code for ${employee.fullname}`,
     ipAddress,
   }, tx);
-  return { id: employee.id, employee_external_id: employee.employee_external_id, fullname: employee.fullname, qr_token: token, expires_at: expiresAt };
+  return {
+    id: employee.id,
+    employee_external_id: employee.employee_external_id,
+    fullname: employee.fullname,
+    department: employee.departments?.name ?? null,
+    qr_token: token,
+    expires_at: expiresAt,
+  };
 };
 
 export const issuePrintableEmployeeQr = async (actor, employeeId, ipAddress) => {
   const employee = await prisma.users.findFirst({
     where: { id: employeeId, is_active: true, user_roles: { some: { roles: { name: "employee" } } } },
-    select: { id: true, employee_external_id: true, fullname: true },
+    select: { id: true, employee_external_id: true, fullname: true, departments: { select: { name: true } } },
   });
   if (!employee) throw new AppError("Active employee not found", 404);
   return prisma.$transaction((tx) => issueEmployeeQrCode(actor, employee, ipAddress, tx));
@@ -477,7 +484,7 @@ export const issuePrintableEmployeeQr = async (actor, employeeId, ipAddress) => 
 export const issueAllPrintableEmployeeQrs = async (actor, ipAddress) => {
   const employees = await prisma.users.findMany({
     where: { is_active: true, user_roles: { some: { roles: { name: "employee" } } } },
-    select: { id: true, employee_external_id: true, fullname: true },
+    select: { id: true, employee_external_id: true, fullname: true, departments: { select: { name: true } } },
     orderBy: { fullname: "asc" },
   });
   return prisma.$transaction(async (tx) => Promise.all(employees.map((employee) => issueEmployeeQrCode(actor, employee, ipAddress, tx))), { timeout: 30000 });

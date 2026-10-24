@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { useTranslation } from 'react-i18next';
@@ -993,6 +993,7 @@ function ManagerEmployeesPage({
   const [isResettingQr, setIsResettingQr] = useState(false);
   const [printQr, setPrintQr] = useState<any | null>(null);
   const [printAllQrs, setPrintAllQrs] = useState<any[] | null>(null);
+  const [isPreparingBulkPrint, setIsPreparingBulkPrint] = useState(false);
   const [printPassword, setPrintPassword] = useState('');
 
   // Filter list
@@ -1179,10 +1180,112 @@ function ManagerEmployeesPage({
   };
 
   const generateAllPrintableQrs = async () => {
+    setFormError('');
+    setIsPreparingBulkPrint(true);
     try {
       const response = await apiPost('/api/company-manager/employees/qr-codes', {});
-      setPrintAllQrs(response.data ?? response ?? []);
-    } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR codes.'); }
+      const qrCodes = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
+      const uniqueQrCodes = new Map<string, any>();
+
+      qrCodes.forEach((qr: any) => {
+        const id = String(qr.id ?? '');
+        const qrToken = qr.qr_token ?? qr.qrToken ?? '';
+        if (id && qrToken && !uniqueQrCodes.has(id)) {
+          uniqueQrCodes.set(id, {
+            id,
+            fullname: qr.fullname ?? qr.fullName ?? '',
+            employee_external_id: qr.employee_external_id ?? qr.employeeId ?? '',
+            department: qr.department?.name ?? qr.department ?? '',
+            qr_token: qrToken,
+          });
+        }
+      });
+
+      if (qrCodes.length === 0) {
+        setFormError('There are no active employee QR codes available to print.');
+        return;
+      }
+      if (uniqueQrCodes.size !== qrCodes.length) {
+        throw new Error('Unable to prepare every employee QR code. Please try again.');
+      }
+
+      setPrintAllQrs([...uniqueQrCodes.values()]);
+    } catch (e: any) {
+      setFormError(e.message || 'Unable to generate employee QR codes.');
+    } finally {
+      setIsPreparingBulkPrint(false);
+    }
+  };
+
+  const escapePrintHtml = (value: unknown) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+
+  const printAllEmployeeQrs = async () => {
+    if (!printAllQrs?.length) return;
+
+    const qrImages = new Map(
+      Array.from(document.querySelectorAll<HTMLCanvasElement>('canvas[data-bulk-qr-id]')).map((canvas) => [
+        canvas.dataset.bulkQrId,
+        canvas.toDataURL('image/png'),
+      ]),
+    );
+    const missingQrImage = printAllQrs.some((qr) => !qrImages.get(String(qr.id)));
+    if (missingQrImage) {
+      setFormError('QR codes are still preparing. Please wait a moment and try again.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      setFormError('The print window was blocked. Please allow pop-ups and try again.');
+      return;
+    }
+
+    const pages = Array.from({ length: Math.ceil(printAllQrs.length / 4) }, (_, index) => printAllQrs.slice(index * 4, index * 4 + 4));
+    const cards = pages.map((page) => `
+      <section class="print-page">
+        ${page.map((qr) => `
+          <article class="qr-card">
+            <div class="header">Hello_Ethiopia BirrBalance</div>
+            <img class="qr-image" src="${qrImages.get(String(qr.id))}" alt="QR code for ${escapePrintHtml(qr.fullname)}" />
+            <div class="name">Name: ${escapePrintHtml(qr.fullname)}</div>
+            <div class="details">ID: ${escapePrintHtml(qr.employee_external_id)}</div>
+            ${qr.department ? `<div class="details">Department: ${escapePrintHtml(qr.department)}</div>` : ''}
+            <div class="note">Present this card at the cafeteria counter.<br/>Do not share your QR code with others.</div>
+          </article>
+        `).join('')}
+      </section>
+    `).join('');
+
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html>
+      <html><head><title>Hello_Ethiopia Employee QR Codes</title>
+      <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; background: white; color: #0F172A; font-family: Arial, sans-serif; }
+        .print-page { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, auto); gap: 12mm 10mm; break-after: page; page-break-after: always; }
+        .print-page:last-child { break-after: auto; page-break-after: auto; }
+        .qr-card { display: flex; min-height: 335px; flex-direction: column; align-items: center; justify-content: center; break-inside: avoid; page-break-inside: avoid; text-align: center; }
+        .header { margin-bottom: 24px; border-radius: 8px; background: #0A1628; padding: 12px 32px; color: white; font-size: 18px; font-weight: bold; }
+        .qr-image { width: 200px; height: 200px; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px; }
+        .name { margin-top: 16px; color: #0F172A; font-size: 16px; font-weight: bold; }
+        .details { margin-top: 4px; color: #64748B; font-size: 13px; }
+        .note { margin-top: 20px; color: #94A3B8; font-size: 11px; text-align: center; }
+        @media screen { body { padding: 40px; } .print-page { margin: 0 auto 40px; max-width: 900px; } }
+        @media print { .print-page { width: 100%; } }
+      </style></head><body>${cards}
+      <script>
+        window.addEventListener('load', async () => {
+          if (document.fonts && document.fonts.ready) await document.fonts.ready;
+          await Promise.all(Array.from(document.images).map((image) => image.complete ? Promise.resolve() : new Promise((resolve) => { image.onload = image.onerror = resolve; })));
+          requestAnimationFrame(() => { window.focus(); window.print(); });
+        });
+      </script></body></html>`);
+    printWindow.document.close();
   };
 
   const getPrintableQrSvg = (): string | null => {
@@ -1285,8 +1388,8 @@ function ManagerEmployeesPage({
           <p className="text-xs text-subtle-text font-medium uppercase tracking-wider mt-1">Add, edit, or control staff meal allocations</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={generateAllPrintableQrs} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-200">
-            <Download className="w-4 h-4" /> Print Employee QR Codes
+          <button disabled={isPreparingBulkPrint} onClick={generateAllPrintableQrs} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-200 disabled:cursor-wait disabled:opacity-60">
+            <Download className="w-4 h-4" /> {isPreparingBulkPrint ? 'Preparing QR Codes...' : 'Print All Employee QR Codes'}
           </button>
           <label className="inline-flex items-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold shadow-sm transition-all min-h-[44px] cursor-pointer hover:bg-slate-200">
             <Download className="w-4 h-4" />
@@ -1304,6 +1407,9 @@ function ManagerEmployeesPage({
         </div>
       </div>
 
+      {formError && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-xs font-bold text-danger">{formError}</div>
+      )}
       {importError && (
         <div className="p-3 rounded-2xl border border-red-100 bg-red-50 text-xs font-bold text-danger">{importError}</div>
       )}
@@ -1721,7 +1827,44 @@ function ManagerEmployeesPage({
         </div>
       )}
       {printAllQrs && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-6"><div className="mx-auto max-w-6xl rounded-3xl bg-white p-6 shadow-2xl"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-black text-primary">Employee QR Codes</h2><p className="text-xs text-slate-500">Name, ID and department are printed before each QR code.</p></div><div className="flex gap-2"><button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button><button onClick={() => window.print()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All</button></div></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{printAllQrs.map((qr) => <div key={qr.id} className="break-inside-avoid rounded-2xl border border-slate-200 p-5 text-center"><p className="font-bold text-primary">{qr.fullname}</p><p className="mt-1 text-xs font-mono text-slate-500">ID: {qr.employee_external_id}</p>{qr.department && <p className="text-xs font-mono text-slate-500">Department: {qr.department}</p>}<div className="mt-4"><QRCodeSVG value={qr.qr_token} size={180} /></div></div>)}</div></div></div>
+        <>
+          <div aria-hidden="true" className="pointer-events-none fixed -left-[10000px] top-0 opacity-0">
+            {printAllQrs.map((qr) => <QRCodeCanvas key={qr.id} data-bulk-qr-id={qr.id} value={qr.qr_token} size={220} bgColor="#FFFFFF" fgColor="#0A1628" />)}
+          </div>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 p-6">
+            <div className="mx-auto max-w-5xl rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-black text-primary">All Employee QR Codes</h2>
+                  <p className="text-xs text-slate-500">Ready to print {printAllQrs.length} active employee{printAllQrs.length === 1 ? '' : 's'} in the employee card format, four per page.</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button>
+                  <button onClick={printAllEmployeeQrs} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All ({printAllQrs.length})</button>
+                </div>
+              </div>
+              <div className="space-y-6">
+                {Array.from({ length: Math.ceil(printAllQrs.length / 4) }, (_, pageIndex) => (
+                  <div key={pageIndex} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Print page {pageIndex + 1}</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {printAllQrs.slice(pageIndex * 4, pageIndex * 4 + 4).map((qr) => (
+                        <div key={qr.id} className="flex min-h-80 break-inside-avoid flex-col items-center justify-center rounded-xl bg-white p-5 text-center shadow-sm">
+                          <div className="mb-6 rounded-lg bg-[#0A1628] px-8 py-3 text-lg font-bold text-white">Hello_Ethiopia BirrBalance</div>
+                          <div className="rounded-lg border border-slate-200 p-2"><QRCodeSVG value={qr.qr_token} size={200} bgColor="#FFFFFF" fgColor="#0A1628" /></div>
+                          <p className="mt-4 text-base font-bold text-slate-900">Name: {qr.fullname}</p>
+                          <p className="mt-1 text-[13px] text-slate-500">ID: {qr.employee_external_id}</p>
+                          {qr.department && <p className="mt-1 text-[13px] text-slate-500">Department: {qr.department}</p>}
+                          <p className="mt-5 text-[11px] text-slate-400">Present this card at the cafeteria counter.<br />Do not share your QR code with others.</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
