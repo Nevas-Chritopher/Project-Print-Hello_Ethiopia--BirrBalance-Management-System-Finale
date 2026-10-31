@@ -13,6 +13,7 @@ import {
   scheduleMonthlyPayment,
   deactivateEmployee,
   deleteEmployee,
+  deleteAllEmployees,
   deleteCafe,
   editAllocation,
   editDepartment,
@@ -41,6 +42,7 @@ router.post("/employees", addEmployee);
 router.post("/admins", addCompanyManager);
 router.patch("/profile/password", changeOwnPassword);
 router.patch("/employees/:id", editEmployee);
+router.delete("/employees", deleteAllEmployees);
 router.delete("/employees/:id", deleteEmployee);
 router.patch("/employees/:id/activate", activateEmployee);
 router.patch("/employees/:id/deactivate", deactivateEmployee);

@@ -3,7 +3,7 @@ import { getEmployeeBalance, getEmployeeLedgerEntries } from "../services/balanc
 import { createOrderWithBalanceDeduction } from "../services/order.service.js";
 import { validateOnlineOrder } from "../validators/order.validators.js";
 import { successResponse } from "../utils/response.js";
-import { buildWaiterPanelUrl, generateQRToken, hashQRToken } from "../services/qr.service.js";
+import { generateQRToken, hashQRToken } from "../services/qr.service.js";
 import { writeAuditLog } from "../services/audit.service.js";
 import {
   getNotifications as listUserNotifications,
@@ -77,7 +77,7 @@ export const getProfile = asyncHandler(async (req, res) => {
         amount: Number(allocation.amount),
       })),
       transactions: ledgerEntries,
-      qr_token: buildWaiterPanelUrl(req.user.id),
+      qr_token: `http://10.142.173.230:3000/waiter/panel?id=${req.user.id}`,
       qr_expires_at: expiresAt,
     },
     "Profile fetched successfully",
@@ -236,7 +236,7 @@ export const generateQR = asyncHandler(async (req, res) => {
 
   return successResponse(
     res,
-    { qr_token: buildWaiterPanelUrl(req.user.id), expires_at: expiresAt },
+    { qr_token: token, expires_at: expiresAt },
     "QR code generated successfully",
   );
 });

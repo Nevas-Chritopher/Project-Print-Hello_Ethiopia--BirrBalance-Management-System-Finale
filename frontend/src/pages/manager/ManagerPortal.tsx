@@ -983,6 +983,9 @@ function ManagerEmployeesPage({
   // Delete modal
   const [deleteEmp, setDeleteEmp] = useState<any | null>(null);
   const [deleteTypedConfirm, setDeleteTypedConfirm] = useState('');
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [deleteAllTypedConfirm, setDeleteAllTypedConfirm] = useState('');
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [importError, setImportError] = useState('');
   const [importSuccess, setImportSuccess] = useState('');
   const [importing, setImporting] = useState(false);
@@ -1152,6 +1155,25 @@ function ManagerEmployeesPage({
       onReload();
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (deleteAllTypedConfirm.trim().toUpperCase() !== 'DELETE ALL') return;
+
+    setIsDeletingAll(true);
+    setFormError('');
+    try {
+      const response = await apiDelete('/api/company-manager/employees');
+      const deleted = response?.data?.deleted ?? response?.deleted ?? 0;
+      setShowDeleteAllModal(false);
+      setDeleteAllTypedConfirm('');
+      setImportSuccess(`Permanently deleted ${deleted} employee account(s).`);
+      await onReload();
+    } catch (e: any) {
+      setFormError(e.message || 'Unable to delete all employee accounts.');
+    } finally {
+      setIsDeletingAll(false);
     }
   };
 
@@ -1438,6 +1460,14 @@ function ManagerEmployeesPage({
             <span>{importing ? 'Importing...' : 'Import Excel'}</span>
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleImportEmployees} />
           </label>
+          <button
+            id="delete-all-employees-trigger-btn"
+            disabled={!employeesList.some((employee) => employee.roles?.includes('employee'))}
+            onClick={() => { setDeleteAllTypedConfirm(''); setShowDeleteAllModal(true); }}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-danger shadow-sm transition-all hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 className="w-4 h-4" /> Delete All Employees
+          </button>
           <button
             id="add-employee-trigger-btn"
             onClick={() => setShowAddModal(true)}
@@ -1763,6 +1793,50 @@ function ManagerEmployeesPage({
                 className="flex-1 py-3 bg-danger text-white font-bold rounded-xl hover:bg-red-600 disabled:opacity-40 disabled:hover:bg-danger transition-all min-h-[44px]"
               >
                 Permanently Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteAllModal && (
+        <div id="delete-all-employees-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md space-y-5 rounded-3xl bg-white p-6 shadow-2xl">
+            <div>
+              <h3 className="text-base font-black tracking-tight text-danger">Permanently Delete All Employees</h3>
+              <p className="mt-1 text-xs text-subtle-text">This removes every employee account and its related meal, balance, and login data. This cannot be undone.</p>
+            </div>
+
+            <div className="rounded-2xl border border-red-100 bg-red-50 p-3 text-xs text-danger">
+              <strong>{employeesList.filter((employee) => employee.roles?.includes('employee')).length}</strong> employee account(s) will be deleted. Your current manager account will be kept.
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <label className="block font-bold text-slate-700">Type <span className="font-mono text-danger">DELETE ALL</span> to confirm:</label>
+              <input
+                id="delete-all-employees-confirm-typed"
+                type="text"
+                value={deleteAllTypedConfirm}
+                onChange={(event) => setDeleteAllTypedConfirm(event.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 focus:border-red-400 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex gap-3 text-xs">
+              <button
+                disabled={isDeletingAll}
+                onClick={() => { setShowDeleteAllModal(false); setDeleteAllTypedConfirm(''); }}
+                className="min-h-[44px] flex-1 rounded-xl border border-slate-200 py-3 font-bold hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                id="delete-all-employees-confirm-btn"
+                disabled={isDeletingAll || deleteAllTypedConfirm.trim().toUpperCase() !== 'DELETE ALL'}
+                onClick={handleDeleteAll}
+                className="min-h-[44px] flex-1 rounded-xl bg-danger py-3 font-bold text-white transition-all hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {isDeletingAll ? 'Deleting...' : 'Permanently Delete All'}
               </button>
             </div>
           </div>

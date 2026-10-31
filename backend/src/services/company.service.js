@@ -392,35 +392,7 @@ export const removeEmployee = async (actor, userId, ipAddress) => {
   const existing = await getUserOrThrow(userId);
 
   return prisma.$transaction(async (tx) => {
-    // Explicitly remove every dependent record.  Some installations were
-    // created before the cascade constraints existed, so relying on database
-    // cascades made waiter deletion fail with a foreign-key error.
-    await tx.qr_sessions.deleteMany({ where: { OR: [{ employee_id: userId }, { waiter_id: userId }] } });
-    await tx.employee_qr_codes.deleteMany({ where: { user_id: userId } });
-    await tx.order_items.deleteMany({
-      where: {
-        orders: {
-          OR: [{ employee_id: userId }, { waiter_id: userId }],
-        },
-      },
-    });
-
-    await tx.orders.deleteMany({
-      where: {
-        OR: [{ employee_id: userId }, { waiter_id: userId }],
-      },
-    });
-
-    await tx.balance_transactions.deleteMany({ where: { user_id: userId } });
-    await tx.monthly_allocations.deleteMany({ where: { user_id: userId } });
-    await tx.feedback.deleteMany({ where: { user_id: userId } });
-    await tx.notifications.deleteMany({ where: { user_id: userId } });
-    await tx.login_history.deleteMany({ where: { user_id: userId } });
-    await tx.password_reset_tokens.deleteMany({ where: { user_id: userId } });
-    await tx.refresh_tokens.deleteMany({ where: { user_id: userId } });
-    await tx.cafe_staff.deleteMany({ where: { user_id: userId } });
-    await tx.user_roles.deleteMany({ where: { user_id: userId } });
-    await tx.audit_logs.deleteMany({ where: { user_id: userId } });
+    await removeEmployeesAndRelatedRecords(tx, [userId]);
 
     const employee = await tx.users.delete({
       where: { id: userId },
@@ -441,6 +413,66 @@ export const removeEmployee = async (actor, userId, ipAddress) => {
 
     return formatEmployee(employee);
   });
+};
+
+// Explicitly remove every dependent record. Some installations were created
+// before the cascade constraints existed, so relying on database cascades can
+// leave account deletion vulnerable to foreign-key errors.
+const removeEmployeesAndRelatedRecords = async (tx, userIds) => {
+  if (!userIds.length) return;
+
+  const usersWhere = { in: userIds };
+  const ordersWhere = {
+    OR: [{ employee_id: usersWhere }, { waiter_id: usersWhere }],
+  };
+
+  await tx.qr_sessions.deleteMany({
+    where: { OR: [{ employee_id: usersWhere }, { waiter_id: usersWhere }] },
+  });
+  await tx.employee_qr_codes.deleteMany({ where: { user_id: usersWhere } });
+  await tx.order_items.deleteMany({ where: { orders: ordersWhere } });
+  await tx.orders.deleteMany({ where: ordersWhere });
+  await tx.balance_transactions.deleteMany({ where: { user_id: usersWhere } });
+  await tx.monthly_allocations.deleteMany({ where: { user_id: usersWhere } });
+  await tx.feedback.deleteMany({ where: { user_id: usersWhere } });
+  await tx.notifications.deleteMany({ where: { user_id: usersWhere } });
+  await tx.login_history.deleteMany({ where: { user_id: usersWhere } });
+  await tx.password_reset_tokens.deleteMany({ where: { user_id: usersWhere } });
+  await tx.refresh_tokens.deleteMany({ where: { user_id: usersWhere } });
+  await tx.cafe_staff.deleteMany({ where: { user_id: usersWhere } });
+  await tx.user_roles.deleteMany({ where: { user_id: usersWhere } });
+  await tx.audit_logs.deleteMany({ where: { user_id: usersWhere } });
+};
+
+export const removeAllEmployees = async (actor, ipAddress) => {
+  return prisma.$transaction(async (tx) => {
+    // Never allow this convenience action to remove the manager currently
+    // operating the portal, even if their account has multiple roles.
+    const employees = await tx.users.findMany({
+      where: {
+        id: { not: actor.id },
+        user_roles: { some: { roles: { name: "employee" } } },
+      },
+      select: { id: true },
+    });
+    const employeeIds = employees.map((employee) => employee.id);
+
+    await removeEmployeesAndRelatedRecords(tx, employeeIds);
+    const { count } = await tx.users.deleteMany({ where: { id: { in: employeeIds } } });
+
+    await writeAuditLog(
+      {
+        userId: actor.id,
+        action: "company.employee.remove_all",
+        entityType: "users",
+        description: `Permanently removed ${count} employee account(s)`,
+        ipAddress,
+      },
+      tx,
+    );
+
+    return { deleted: count };
+  }, { timeout: 30000 });
 };
 
 export const setEmployeeActive = async (actor, userId, isActive, ipAddress) => {

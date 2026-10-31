@@ -23,6 +23,7 @@ import {
   listFeedback,
   listCafes,
   removeEmployee,
+  removeAllEmployees,
   resetEmployeePassword,
   setEmployeeActive,
   updateDepartment,
@@ -111,6 +112,11 @@ export const editEmployee = asyncHandler(async (req, res) => {
 export const deleteEmployee = asyncHandler(async (req, res) => {
   const employee = await removeEmployee(req.user, validateId(req.params, "employee id"), req.ip);
   return successResponse(res, employee, "Employee removed successfully");
+});
+
+export const deleteAllEmployees = asyncHandler(async (req, res) => {
+  const result = await removeAllEmployees(req.user, req.ip);
+  return successResponse(res, result, `${result.deleted} employee account(s) removed successfully`);
 });
 
 export const activateEmployee = asyncHandler(async (req, res) => {
