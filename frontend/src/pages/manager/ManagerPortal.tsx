@@ -995,6 +995,8 @@ function ManagerEmployeesPage({
   const [printAllQrs, setPrintAllQrs] = useState<any[] | null>(null);
   const [isPreparingBulkPrint, setIsPreparingBulkPrint] = useState(false);
   const [printPassword, setPrintPassword] = useState('');
+  const [printPasswordsByEmployeeId, setPrintPasswordsByEmployeeId] = useState<Record<string, string>>({});
+  const [printPasswordImportError, setPrintPasswordImportError] = useState('');
 
   // Filter list
   const filteredEmployees = employeesList.filter((emp) => {
@@ -1174,9 +1176,47 @@ function ManagerEmployeesPage({
   const generatePrintableQr = async (emp: any) => {
     try {
       const response = await apiPost(`/api/company-manager/employees/${emp.id}/qr`, {});
-      setPrintPassword('');
+      setPrintPassword(printPasswordsByEmployeeId[String(emp.employeeId ?? emp.employee_external_id ?? '')] ?? '');
       setPrintQr(response.data ?? response);
     } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR code.'); }
+  };
+
+  const loadPrintPasswords = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setPrintPasswordImportError('');
+    try {
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      const passwords: Record<string, string> = {};
+
+      for (const row of rows as Record<string, unknown>[]) {
+        const normalized: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          normalized[String(key).trim().toLowerCase().replace(/[^a-z0-9]/g, '')] = String(value ?? '').trim();
+        });
+
+        const employeeId = normalized.employeeid || normalized.empid || normalized.id || normalized.employeeexternalid;
+        const password = normalized.password || normalized.pass;
+        if (employeeId && /^\d{6}$/.test(password)) passwords[String(employeeId)] = password;
+      }
+
+      if (Object.keys(passwords).length === 0) {
+        throw new Error('No Employee ID and 6-digit Password pairs were found in this spreadsheet.');
+      }
+
+      setPrintPasswordsByEmployeeId(passwords);
+      setPrintAllQrs((current) => current?.map((qr) => ({
+        ...qr,
+        password: passwords[String(qr.employee_external_id)] ?? '',
+      })) ?? null);
+      if (printQr) setPrintPassword(passwords[String(printQr.employee_external_id)] ?? '');
+      event.target.value = '';
+    } catch (e: any) {
+      setPrintPasswordImportError(e.message || 'Unable to read the password spreadsheet.');
+    }
   };
 
   const generateAllPrintableQrs = async () => {
@@ -1197,6 +1237,7 @@ function ManagerEmployeesPage({
             employee_external_id: qr.employee_external_id ?? qr.employeeId ?? '',
             department: qr.department?.name ?? qr.department ?? '',
             qr_token: qrToken,
+            password: printPasswordsByEmployeeId[String(qr.employee_external_id ?? qr.employeeId ?? '')] ?? '',
           });
         }
       });
@@ -1254,6 +1295,7 @@ function ManagerEmployeesPage({
             <img class="qr-image" src="${qrImages.get(String(qr.id))}" alt="QR code for ${escapePrintHtml(qr.fullname)}" />
             <div class="name">Name: ${escapePrintHtml(qr.fullname)}</div>
             <div class="details">ID: ${escapePrintHtml(qr.employee_external_id)}</div>
+            ${qr.password ? `<div class="details">Password: ${escapePrintHtml(qr.password)}</div>` : ''}
             ${qr.department ? `<div class="details">Department: ${escapePrintHtml(qr.department)}</div>` : ''}
             <div class="note">Present this card at the cafeteria counter.<br/>Do not share your QR code with others.</div>
           </article>
@@ -1302,9 +1344,9 @@ function ManagerEmployeesPage({
     const height = Number(svgRoot.getAttribute('height') || '220');
     const lines = [
       `ID: ${printQr.employee_external_id}`,
+      printPassword ? `Password: ${printPassword}` : null,
       printQr.fullname,
       printQr.department ? `Department: ${printQr.department}` : null,
-      printPassword ? `Password: ${printPassword}` : null,
     ].filter(Boolean) as string[];
     const textHeight = lines.length * 18 + 16;
     const wrapperHeight = height + textHeight + 24;
@@ -1772,10 +1814,20 @@ function ManagerEmployeesPage({
             <h2 className="text-lg font-black text-primary">Employee QR Code</h2>
             <p className="mt-4 font-bold text-primary">{printQr.fullname}</p>
             <p className="mt-1 text-xs font-mono text-slate-500">ID: {printQr.employee_external_id}</p>
+            {printPassword && <p className="mt-1 text-xs font-mono text-slate-600">Password: {printPassword}</p>}
             {printQr.department && (
               <p className="text-xs font-mono text-slate-500 mt-1">Department: {printQr.department}</p>
             )}
             <div className="mt-4 text-left">
+              <label className="block text-xs font-bold text-slate-700">Load passwords from spreadsheet</label>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={loadPrintPasswords}
+                className="mt-2 block w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-xs file:font-bold file:text-slate-700"
+              />
+              <p className="mt-2 text-[10px] text-slate-500">Use Coupon.xlsx. Passwords stay only in this browser while preparing the cards.</p>
+              {printPasswordImportError && <p className="mt-2 text-[10px] font-bold text-danger">{printPasswordImportError}</p>}
               <label className="block text-xs font-bold text-slate-700">Password to include</label>
               <input
                 type="password"
@@ -1790,7 +1842,6 @@ function ManagerEmployeesPage({
               <QRCodeSVG id="print-qr-svg" value={printQr.qr_token} size={220} />
             </div>
             <p className="mt-3 text-[10px] text-slate-400">Valid until {new Date(printQr.expires_at).toLocaleDateString()}</p>
-            {printPassword && <p className="mt-2 text-xs text-slate-600">Password: {printPassword}</p>}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <button
                 onClick={() => { setPrintQr(null); setPrintPassword(''); }}
@@ -1838,11 +1889,16 @@ function ManagerEmployeesPage({
                   <h2 className="text-lg font-black text-primary">All Employee QR Codes</h2>
                   <p className="text-xs text-slate-500">Ready to print {printAllQrs.length} active employee{printAllQrs.length === 1 ? '' : 's'} in the employee card format, four per page.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="cursor-pointer rounded-xl border px-4 py-2 text-xs font-bold text-slate-700">
+                    Load Coupon.xlsx
+                    <input type="file" accept=".xlsx,.xls" onChange={loadPrintPasswords} className="hidden" />
+                  </label>
                   <button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button>
                   <button onClick={printAllEmployeeQrs} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All ({printAllQrs.length})</button>
                 </div>
               </div>
+              {printPasswordImportError && <p className="mb-4 text-xs font-bold text-danger">{printPasswordImportError}</p>}
               <div className="space-y-6">
                 {Array.from({ length: Math.ceil(printAllQrs.length / 4) }, (_, pageIndex) => (
                   <div key={pageIndex} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -1854,6 +1910,7 @@ function ManagerEmployeesPage({
                           <div className="rounded-lg border border-slate-200 p-2"><QRCodeSVG value={qr.qr_token} size={200} bgColor="#FFFFFF" fgColor="#0A1628" /></div>
                           <p className="mt-4 text-base font-bold text-slate-900">Name: {qr.fullname}</p>
                           <p className="mt-1 text-[13px] text-slate-500">ID: {qr.employee_external_id}</p>
+                          {qr.password && <p className="mt-1 text-[13px] font-medium text-slate-600">Password: {qr.password}</p>}
                           {qr.department && <p className="mt-1 text-[13px] text-slate-500">Department: {qr.department}</p>}
                           <p className="mt-5 text-[11px] text-slate-400">Present this card at the cafeteria counter.<br />Do not share your QR code with others.</p>
                         </div>

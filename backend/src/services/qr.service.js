@@ -10,6 +10,14 @@ const QR_TOKEN_VERSION = "v1";
 export const hashQRToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 export const hashQRSessionId = (sessionId) => crypto.createHash("sha256").update(sessionId).digest("hex");
 
+// QR readers recognize URLs and open them directly. Keep the host configurable
+// so deployed environments do not need a source-code change when their IP/domain changes.
+export const buildWaiterPanelUrl = (employeeId) => {
+  const url = new URL(env.WAITER_PANEL_URL);
+  url.searchParams.set("id", String(employeeId));
+  return url.toString();
+};
+
 const createStableQRToken = (employeeId) => {
   const payload = `${QR_TOKEN_VERSION}:${employeeId}`;
   const signature = crypto.createHmac("sha256", env.AES_SECRET).update(payload).digest("hex");

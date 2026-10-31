@@ -123,9 +123,10 @@ export const lookupEmployee = async (req, res, next) => {
       typeof req.body.employee_external_id === "string"
         ? req.body.employee_external_id.trim()
         : "";
+    const employeeId = Number.parseInt(req.body.employee_id, 10);
 
-    if (!employeeExternalId) {
-      throw new AppError("employee_external_id is required", 400);
+    if (!employeeExternalId && (!Number.isInteger(employeeId) || employeeId <= 0)) {
+      throw new AppError("employee_external_id or employee_id is required", 400);
     }
 
     if (!req.user.cafeId) {
@@ -134,7 +135,9 @@ export const lookupEmployee = async (req, res, next) => {
 
     const employee = await prisma.users.findFirst({
       where: {
-        employee_external_id: { equals: employeeExternalId, mode: "insensitive" },
+        ...(employeeExternalId
+          ? { employee_external_id: { equals: employeeExternalId, mode: "insensitive" } }
+          : { id: employeeId }),
         user_roles: { some: { roles: { name: "employee" } } },
       },
       select: {
@@ -167,7 +170,7 @@ export const lookupEmployee = async (req, res, next) => {
           action: "waiter.employee.lookup",
           entityType: "users",
           entityId: employee.id,
-          description: `Looked up employee ${employee.employee_external_id} by external ID`,
+          description: `Looked up employee ${employee.id} by ${employeeExternalId ? "external ID" : "QR URL"}`,
           ipAddress: req.ip,
         },
         tx,

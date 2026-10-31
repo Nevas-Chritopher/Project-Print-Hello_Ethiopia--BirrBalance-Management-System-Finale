@@ -9,6 +9,7 @@ const env = {
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN || "30d",
   AES_SECRET: process.env.AES_SECRET,
   CORS_ORIGIN: process.env.CORS_ORIGIN,
+  WAITER_PANEL_URL: process.env.WAITER_PANEL_URL || "http://10.23.134.240:3000/waiter/panel",
   NODE_ENV: process.env.NODE_ENV || "development",
 };
 

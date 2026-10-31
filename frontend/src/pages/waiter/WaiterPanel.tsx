@@ -86,7 +86,7 @@ export default function WaiterPanel() {
     const params = new URLSearchParams(window.location.search);
     const employeeId = params.get('id');
     if (employeeId) {
-      handleLookupEmployee(employeeId);
+      handleLookupEmployee(employeeId, true);
     }
   }, []);
 
@@ -154,6 +154,17 @@ export default function WaiterPanel() {
     setLookupError('');
 
     try {
+      const qrUrl = new URL(qrString);
+      const employeeId = qrUrl.searchParams.get('id');
+      if (qrUrl.pathname === '/waiter/panel' && employeeId && /^\d+$/.test(employeeId)) {
+        await handleLookupEmployee(employeeId, true);
+        return;
+      }
+    } catch {
+      // Legacy signed QR codes are not URLs and are verified by the API below.
+    }
+
+    try {
       const res = await apiPost('/api/waiter/scan', { qr_token: qrString });
       if (res.data?.employee) {
         const employee = { ...res.data.employee, qrSessionId: res.data.qrSessionId };
@@ -170,7 +181,7 @@ export default function WaiterPanel() {
   };
 
   // Query employee detail (manual ID fallback)
-  const handleLookupEmployee = async (empId: string) => {
+  const handleLookupEmployee = async (empId: string, isInternalId = false) => {
     if (!empId.trim()) return;
     setLookupError('');
 
@@ -182,7 +193,9 @@ export default function WaiterPanel() {
     }
 
     try {
-      const res = await apiPost('/api/waiter/lookup-employee', { employee_external_id: empId });
+      const res = await apiPost('/api/waiter/lookup-employee', isInternalId
+        ? { employee_id: Number(empId) }
+        : { employee_external_id: empId });
       if (res.data?.employee) {
         const employee = { ...res.data.employee, qrSessionId: res.data.qrSessionId };
         cacheEmployee(employee);

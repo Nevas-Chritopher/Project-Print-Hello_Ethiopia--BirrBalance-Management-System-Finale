@@ -6,7 +6,7 @@ import { AppError } from "../utils/AppError.js";
 import { getMonthRange } from "../utils/date.js";
 import { buildCsv, buildPdf, buildXlsx } from "../utils/report.js";
 import crypto from "crypto";
-import { generateQRToken, hashQRToken } from "./qr.service.js";
+import { buildWaiterPanelUrl, generateQRToken, hashQRToken } from "./qr.service.js";
 
 const REPORT_FIELDS = [
   { key: "employee_id", header: "Employee ID", width: 18 },
@@ -467,7 +467,7 @@ const issueEmployeeQrCode = async (actor, employee, ipAddress, tx) => {
     employee_external_id: employee.employee_external_id,
     fullname: employee.fullname,
     department: employee.departments?.name ?? null,
-    qr_token: token,
+    qr_token: buildWaiterPanelUrl(employee.id),
     expires_at: expiresAt,
   };
 };
