@@ -267,18 +267,19 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <>
-      <header id="top-navbar" className="bg-white dark:bg-primary border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 px-4 py-3 xl:px-8 shadow-sm h-16 flex items-center relative">
+      <header id="top-navbar" className="bg-[#233f87] text-white border-b border-white/15 sticky top-0 z-40 px-4 py-3 xl:px-8 shadow-sm h-16 flex items-center relative">
         <div className="flex items-center justify-between gap-4 w-full max-w-7xl mx-auto">
           
           {/* Expanded Search Bar Overlay for Mobile/Tablet */}
           {isSearchExpanded && (
-            <div className="absolute inset-0 bg-white dark:bg-primary px-4 py-3 flex items-center gap-3 z-50 animate-fadeIn">
+            <div className="absolute inset-0 bg-[#233f87] px-4 py-3 flex items-center gap-3 z-50 animate-fadeIn">
               <button
                 id="search-close-btn"
+              aria-label="Close search"
                 onClick={() => setIsSearchExpanded(false)}
-                className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none min-h-[44px] min-w-[44px] cursor-pointer"
+                className="inline-flex items-center justify-center p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none min-h-[44px] min-w-[44px] cursor-pointer"
               >
-                <X className="w-5 h-5 dark:text-white" />
+                <X className="w-5 h-5" />
               </button>
               <div className="flex-1 relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -287,7 +288,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                   type="text"
                   autoFocus
                   placeholder={t('common.search')}
-                  className="w-full text-sm py-2.5 pl-10 pr-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent dark:text-white min-h-[48px]"
+                  className="w-full text-sm py-2.5 pl-10 pr-4 bg-card-hover border border-border-default rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-text-primary placeholder:text-text-subtle min-h-[48px]"
                 />
               </div>
             </div>
@@ -298,17 +299,17 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             <button
               id="mobile-hamburger-btn"
               onClick={onMenuClick}
-              className="xl:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none min-h-[44px] min-w-[44px] cursor-pointer"
+              className="inline-flex items-center justify-center xl:hidden p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none min-h-[44px] min-w-[44px] cursor-pointer"
             >
-              <Menu className="w-6 h-6 dark:text-white" />
+              <Menu className="w-6 h-6" />
             </button>
             <div className="xl:hidden">
-              <EsromLogo collapsedResponsive />
+              <EsromLogo light collapsedResponsive />
             </div>
             {/* Desktop Top Links (Fitshop style) */}
             <div className="hidden xl:flex items-center gap-6 pl-2">
-              <EsromLogo />
-              <div className="h-5 w-px bg-slate-200 dark:bg-slate-800"></div>
+              <EsromLogo light />
+              <div className="h-5 w-px bg-white/20"></div>
               <nav className="flex items-center gap-1">
                 {links.slice(0, 5).map((link) => {
                   const isActive = location.pathname === link.path;
@@ -319,8 +320,8 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       onClick={() => navigate(link.path)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all cursor-pointer ${
                         isActive
-                          ? 'text-secondary dark:text-accent-blue bg-blue-50 dark:bg-blue-950/40'
-                          : 'text-subtle-text dark:text-slate-300 hover:text-dark-text dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                          ? 'text-white bg-white/15'
+                          : 'text-blue-100 hover:text-white hover:bg-white/10'
                       }`}
                     >
                       {link.label}
@@ -340,15 +341,16 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                 id="header-search-input"
                 type="text"
                 placeholder={t('common.search')}
-                className="w-full text-xs py-2 pl-9 pr-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent dark:text-white"
+                className="w-full text-xs py-2 pl-9 pr-4 bg-card-hover border border-border-default rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent text-text-primary placeholder:text-text-subtle"
               />
             </div>
 
             {/* Collapse Search Icon (Tablet / Mobile trigger) */}
             <button
               id="mobile-search-trigger"
+              aria-label="Open search"
               onClick={() => setIsSearchExpanded(true)}
-              className="xl:hidden p-2.5 rounded-xl text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all min-h-[44px] min-w-[44px] cursor-pointer"
+              className="inline-flex items-center justify-center xl:hidden p-2.5 rounded-xl text-white hover:bg-white/10 border border-white/25 transition-all min-h-[44px] min-w-[44px] cursor-pointer"
             >
               <Search className="w-4 h-4" />
             </button>
@@ -356,8 +358,9 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             {/* Theme Toggle (Hidden on mobile) */}
             <button
               id="theme-toggle-btn"
+              aria-label="Toggle theme"
               onClick={toggleTheme}
-              className="hidden md:flex p-2.5 rounded-xl text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all min-h-[44px] min-w-[44px] cursor-pointer"
+              className="hidden md:flex items-center justify-center p-2.5 rounded-xl text-white hover:bg-white/10 border border-white/25 transition-all min-h-[44px] min-w-[44px] cursor-pointer"
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </button>
@@ -366,11 +369,12 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="relative">
               <button
                 id="notifications-bell-btn"
+              aria-label="Notifications"
                 onClick={() => {
                   setShowNotificationsMenu(!showNotificationsMenu);
                   setShowProfileMenu(false);
                 }}
-                className="relative p-2.5 rounded-xl text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-all min-h-[44px] min-w-[44px] cursor-pointer"
+                className="relative inline-flex items-center justify-center p-2.5 rounded-xl text-white hover:bg-white/10 border border-white/25 transition-all min-h-[44px] min-w-[44px] cursor-pointer"
               >
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
@@ -382,8 +386,8 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
 
               {/* Notifications Dropdown */}
               {showNotificationsMenu && (
-                <div id="notifications-dropdown" className="absolute right-0 mt-3 w-80 bg-white dark:bg-primary border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden">
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900">
+                <div id="notifications-dropdown" className="absolute right-0 mt-3 w-80 bg-sidebar border border-border-default rounded-2xl shadow-xl z-50 overflow-hidden">
+                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-card-hover">
                     <h3 className="text-xs font-bold text-dark-text dark:text-white uppercase tracking-wider">
                       Recent Notifications
                     </h3>
@@ -421,7 +425,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       ))
                     )}
                   </div>
-                  <div className="p-3 border-t border-slate-100 dark:border-slate-800 text-center bg-slate-50 dark:bg-slate-900">
+                  <div className="p-3 border-t border-slate-100 dark:border-slate-800 text-center bg-card-hover">
                     <button
                       onClick={() => {
                         setShowNotificationsMenu(false);
@@ -440,28 +444,31 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="relative">
               <button
                 id="profile-dropdown-btn"
+              aria-label="Open profile menu"
+                aria-expanded={showProfileMenu}
+                aria-controls="profile-dropdown"
                 onClick={() => {
                   setShowProfileMenu(!showProfileMenu);
                   setShowNotificationsMenu(false);
                 }}
-                className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-800 transition-all min-h-[44px] cursor-pointer"
+                className="flex items-center justify-center gap-2 p-1 rounded-xl text-white hover:bg-white/10 border border-transparent hover:border-white/25 transition-all h-11 min-w-11 cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center font-bold text-white uppercase shadow-inner flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center font-bold text-sm leading-none text-white uppercase shadow-inner flex-shrink-0">
                   {user?.fullName?.charAt(0) || "?"}
 
                 </div>
-                <span className="hidden xl:inline text-xs font-bold text-text-primary max-w-[120px] truncate">
+                <span className="hidden xl:inline text-xs font-bold text-white max-w-[120px] truncate">
                   {user.fullName}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                <ChevronDown className="hidden xl:block w-3.5 h-3.5 text-blue-100" />
               </button>
 
               {/* Profile Dropdown Menu */}
               {showProfileMenu && (
-                <div id="profile-dropdown" className="absolute right-0 mt-3 w-56 bg-white dark:bg-primary border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden">
-                  <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60">
-                    <p className="text-xs text-subtle-text">Logged in as</p>
-                    <h4 className="text-sm font-black text-dark-text dark:text-white truncate mt-0.5">{user.fullName}</h4>
+                <div id="profile-dropdown" className="absolute right-0 mt-3 w-56 bg-sidebar border border-border-default rounded-2xl shadow-xl z-50 overflow-hidden">
+                  <div className="p-4 border-b border-border-default bg-card-hover">
+                    <p className="text-xs text-text-secondary">Logged in as</p>
+                    <h4 className="text-sm font-bold text-text-primary truncate mt-1">{user.fullName}</h4>
                     <span className="inline-block mt-1 text-[10px] font-bold text-white bg-secondary px-2 py-0.5 rounded-full capitalize">
                       {user.role}
                     </span>
@@ -488,7 +495,7 @@ export function TopNav({ onMenuClick }: { onMenuClick?: () => void }) {
                       <span>Toggle Dark Mode</span>
                     </button>
                   </div>}
-                  <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+                  <div className="p-2">
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
