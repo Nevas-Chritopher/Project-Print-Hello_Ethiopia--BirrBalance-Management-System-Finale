@@ -35,10 +35,10 @@ export function EsromLogo({ className = "h-8", light = false, collapsedResponsiv
         <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-success animate-pulse"></div>
       </div>
       <div className={`flex flex-col ${collapsedResponsive ? 'xl:flex md:hidden' : 'flex'}`}>
-        <span className="font-black text-lg leading-none tracking-tight text-text-primary">
+        <span className={`font-black text-lg leading-none tracking-tight ${light ? 'text-white' : 'text-text-primary'}`}>
           Print(&quot;Hello_Ethiopia&quot;)
         </span>
-        <span className="text-[9px] font-bold tracking-widest uppercase text-text-subtle">
+        <span className={`text-[9px] font-bold tracking-widest uppercase ${light ? 'text-blue-100' : 'text-text-subtle'}`}>
           BirrBalance Management System
         </span>
       </div>
@@ -163,7 +163,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
 
         {(normalizeRole(user.role) === 'employee' || normalizeRole(user.role) === 'manager' || normalizeRole(user.role) === 'cafe') && (
           <div className="theme-toggle-wrapper mb-3 xl:flex md:hidden flex" onClick={toggleTheme}>
-            <span>{theme === 'light' ? '☀️ Light' : '🌙 Dark'}</span>
+            <span className="flex items-center gap-2">{theme === 'light' ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}{theme === 'light' ? 'Light' : 'Dark'}</span>
             <button
               type="button"
               className="theme-toggle-btn"
@@ -199,7 +199,7 @@ export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose
   return (
     <>
       {/* Desktop and Tablet Sidebar */}
-      <aside id="main-sidebar" className="hidden md:flex flex-col xl:w-[240px] md:w-16 bg-sidebar text-text-secondary border-r border-border-default h-screen sticky top-0 transition-all duration-300 z-30 flex-shrink-0">
+      <aside id="main-sidebar" className="hidden md:flex flex-col xl:w-[304px] md:w-16 bg-sidebar text-text-secondary border-r border-border-default h-screen sticky top-0 transition-all duration-300 z-30 flex-shrink-0">
         {renderContent(false)}
       </aside>
 

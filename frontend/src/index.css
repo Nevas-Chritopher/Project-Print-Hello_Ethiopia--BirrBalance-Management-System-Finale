@@ -60,7 +60,7 @@
   --chart-tooltip-text:#F8FAFC;   /* white tooltip text */
 
   /* Sidebar */
-  --sidebar-width:     240px;
+  --sidebar-width:     304px;
   --sidebar-border:    #E2E8F0;
   --sidebar-icon:      #64748B;
   --sidebar-icon-active: #1E3A8A;
@@ -1044,3 +1044,27 @@ h3 { font-size: clamp(16px, 2.5vw, 20px) !important; }
 
 
 
+
+/* Shared button feedback without changing button layout or clipping tooltips. */
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+input[type="button"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="reset"]:not(:disabled) {
+  cursor: pointer;
+}
+
+.button-ripple-overlay {
+  position: fixed;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2147483647;
+}
+
+.button-ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
