@@ -395,6 +395,19 @@ function CafeMenuManagement({
   const [formError, setFormError] = useState('');
   const [editingItem, setEditingItem] = useState<any | null>(null);
 
+  const closeItemModal = () => {
+    setShowAddModal(false);
+    setEditingItem(null);
+    setName('');
+    setDescription('');
+    setPrice('');
+    setCategory('Food');
+    setImage(null);
+    setPhoto('');
+    setFormError('');
+  };
+
+
   // Delete handlers
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
 
@@ -541,7 +554,7 @@ function CafeMenuManagement({
           </label>
           <button
             id="add-menu-trigger-btn"
-            onClick={() => setShowAddModal(true)}
+            onClick={() => { closeItemModal(); setShowAddModal(true); }}
             className="flex items-center gap-2 px-5 py-3 bg-primary hover:bg-secondary text-white rounded-xl text-xs font-bold shadow-md transition-all min-h-[44px]"
           >
             <Plus className="w-4 h-4" />
@@ -630,14 +643,16 @@ function CafeMenuManagement({
         <div id="add-menu-modal" className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative space-y-6 modal-card">
             <button
-              onClick={() => setShowAddModal(false)}
+              type="button"
+              aria-label="Close dish dialog"
+              onClick={closeItemModal}
               className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div>
-              <h3 className="text-lg font-black text-primary tracking-tight">Add New Dish</h3>
+              <h3 className="text-lg font-black text-primary tracking-tight">{editingItem ? 'Edit Dish' : 'Add New Dish'}</h3>
               <p className="text-xs text-subtle-text">Create foods or beverages in the cafeteria database</p>
             </div>
 
@@ -715,7 +730,7 @@ function CafeMenuManagement({
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={closeItemModal}
                   className="flex-1 py-3 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 min-h-[44px]"
                 >
                   Cancel
