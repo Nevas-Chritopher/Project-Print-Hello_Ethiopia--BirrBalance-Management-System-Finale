@@ -1199,7 +1199,16 @@ function ManagerEmployeesPage({
     try {
       const response = await apiPost(`/api/company-manager/employees/${emp.id}/qr`, {});
       setPrintPassword(printPasswordsByEmployeeId[String(emp.employeeId ?? emp.employee_external_id ?? '')] ?? '');
-      setPrintQr(response.data ?? response);
+      const qr = response.data ?? response;
+      if (!qr.qrToken) throw new Error('The employee QR token is missing. Please try again.');
+      setPrintQr({
+        id: qr.id,
+        fullname: qr.fullName,
+        employee_external_id: qr.employeeId,
+        department: qr.department?.name ?? qr.department ?? '',
+        qr_token: qr.qrToken,
+        expires_at: qr.expiresAt,
+      });
     } catch (e: any) { setFormError(e.message || 'Unable to generate employee QR code.'); }
   };
 
@@ -1287,8 +1296,11 @@ function ManagerEmployeesPage({
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 
-  const printAllEmployeeQrs = async () => {
-    if (!printAllQrs?.length) return;
+  const printEmployeeQrs = (individual = false) => {
+    const qrCodes = individual && printQr
+      ? [{ ...printQr, password: printPassword }]
+      : printAllQrs;
+    if (!qrCodes?.length) return;
 
     const qrImages = new Map(
       Array.from(document.querySelectorAll<HTMLCanvasElement>('canvas[data-bulk-qr-id]')).map((canvas) => [
@@ -1296,7 +1308,13 @@ function ManagerEmployeesPage({
         canvas.toDataURL('image/png'),
       ]),
     );
-    const missingQrImage = printAllQrs.some((qr) => !qrImages.get(String(qr.id)));
+    if (individual) {
+      const svg = document.querySelector('#print-qr-svg');
+      if (svg) {
+        qrImages.set(String(printQr.id), `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(svg))}`);
+      }
+    }
+    const missingQrImage = qrCodes.some((qr) => !qrImages.get(String(qr.id)));
     if (missingQrImage) {
       setFormError('QR codes are still preparing. Please wait a moment and try again.');
       return;
@@ -1308,9 +1326,9 @@ function ManagerEmployeesPage({
       return;
     }
 
-    const pages = Array.from({ length: Math.ceil(printAllQrs.length / 4) }, (_, index) => printAllQrs.slice(index * 4, index * 4 + 4));
+    const pages = Array.from({ length: Math.ceil(qrCodes.length / 4) }, (_, index) => qrCodes.slice(index * 4, index * 4 + 4));
     const cards = pages.map((page) => `
-      <section class="print-page">
+      <section class="print-page${individual ? ' single-card-page' : ''}">
         ${page.map((qr) => `
           <article class="qr-card">
             <div class="header">Hello_Ethiopia BirrBalance</div>
@@ -1333,6 +1351,7 @@ function ManagerEmployeesPage({
         body { margin: 0; background: white; color: #0F172A; font-family: Arial, sans-serif; }
         .print-page { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, auto); gap: 12mm 10mm; break-after: page; page-break-after: always; }
         .print-page:last-child { break-after: auto; page-break-after: auto; }
+        .single-card-page { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr; place-items: center; min-height: calc(100vh - 80px); }
         .qr-card { display: flex; min-height: 335px; flex-direction: column; align-items: center; justify-content: center; break-inside: avoid; page-break-inside: avoid; text-align: center; }
         .header { margin-bottom: 24px; border-radius: 8px; background: #0A1628; padding: 12px 32px; color: white; font-size: 18px; font-weight: bold; }
         .qr-image { width: 200px; height: 200px; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px; }
@@ -1340,7 +1359,7 @@ function ManagerEmployeesPage({
         .details { margin-top: 4px; color: #64748B; font-size: 13px; }
         .note { margin-top: 20px; color: #94A3B8; font-size: 11px; text-align: center; }
         @media screen { body { padding: 40px; } .print-page { margin: 0 auto 40px; max-width: 900px; } }
-        @media print { .print-page { width: 100%; } }
+        @media print { .print-page { width: 100%; } .single-card-page { height: 100vh; min-height: 0; } }
       </style></head><body>${cards}
       <script>
         window.addEventListener('load', async () => {
@@ -1374,7 +1393,7 @@ function ManagerEmployeesPage({
     const wrapperHeight = height + textHeight + 24;
     const inner = svgRoot.innerHTML;
 
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${wrapperHeight}" viewBox="0 0 ${width} ${wrapperHeight}">\n  <rect width="100%" height="100%" fill="#ffffff" />\n  <g transform="translate(0,0)">${inner}</g>\n  ${lines.map((line, index) => `<text x="${width / 2}" y="${height + 18 + index * 18}" text-anchor="middle" font-family="Arial" font-size="12" fill="#0F172A">${line}</text>`).join('')}\n</svg>`;
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${wrapperHeight}" viewBox="0 0 ${width} ${wrapperHeight}">\n  <rect width="100%" height="100%" fill="#ffffff" />\n  <svg width="${width}" height="${height}" viewBox="${svgRoot.getAttribute('viewBox') || `0 0 ${width} ${height}`}">${inner}</svg>\n  ${lines.map((line, index) => `<text x="${width / 2}" y="${height + 18 + index * 18}" text-anchor="middle" font-family="Arial" font-size="12" fill="#0F172A">${escapePrintHtml(line)}</text>`).join('')}\n</svg>`;
   };
 
   const renderPrintableQrCanvas = async () => {
@@ -1915,7 +1934,7 @@ function ManagerEmployeesPage({
             <div className="my-5 inline-block rounded-2xl border border-slate-200 p-5">
               <QRCodeSVG id="print-qr-svg" value={printQr.qr_token} size={220} />
             </div>
-            <p className="mt-3 text-[10px] text-slate-400">Valid until {new Date(printQr.expires_at).toLocaleDateString()}</p>
+            {printQr.expires_at && <p className="mt-3 text-[10px] text-slate-400">Valid until {new Date(printQr.expires_at).toLocaleDateString()}</p>}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <button
                 onClick={() => { setPrintQr(null); setPrintPassword(''); }}
@@ -1924,7 +1943,7 @@ function ManagerEmployeesPage({
                 Close
               </button>
               <button
-                onClick={() => window.print()}
+                onClick={() => printEmployeeQrs(true)}
                 className="rounded-xl bg-primary py-3 text-xs font-bold text-white"
               >
                 Print
@@ -1969,7 +1988,7 @@ function ManagerEmployeesPage({
                     <input type="file" accept=".xlsx,.xls" onChange={loadPrintPasswords} className="hidden" />
                   </label>
                   <button onClick={() => setPrintAllQrs(null)} className="rounded-xl border px-4 py-2 text-xs font-bold">Close</button>
-                  <button onClick={printAllEmployeeQrs} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All ({printAllQrs.length})</button>
+                  <button onClick={() => printEmployeeQrs()} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white">Print All ({printAllQrs.length})</button>
                 </div>
               </div>
               {printPasswordImportError && <p className="mb-4 text-xs font-bold text-danger">{printPasswordImportError}</p>}
