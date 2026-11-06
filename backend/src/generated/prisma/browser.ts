@@ -76,8 +76,18 @@ export type monthly_allocations = Prisma.monthly_allocationsModel
  */
 export type monthly_payment_schedules = Prisma.monthly_payment_schedulesModel
 /**
- * Model notifications
+ * Model monthly_allocation_settings
  * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+ */
+export type monthly_allocation_settings = Prisma.monthly_allocation_settingsModel
+/**
+ * Model monthly_allocation_approvals
+ * 
+ */
+export type monthly_allocation_approvals = Prisma.monthly_allocation_approvalsModel
+/**
+ * Model notifications
+ * 
  */
 export type notifications = Prisma.notificationsModel
 /**

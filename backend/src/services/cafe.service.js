@@ -5,6 +5,7 @@ import PDFDocument from "pdfkit";
 import { stringify } from "csv-stringify";
 import prisma from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
+import { getEthiopianMonthRange, getCurrentMonthRange } from "../utils/date.js";
 import { assertValidUploadedImage, UPLOAD_MENU_DIR } from "../middleware/upload.middleware.js";
 import { writeAuditLog } from "./audit.service.js";
 
@@ -43,19 +44,11 @@ const OPERATIONAL_REPORT_FIELDS = [
 ];
 
 const parseMonth = (month) => {
-  const value = month || new Date().toISOString().slice(0, 7);
-  const [year, monthNumber] = value.split("-").map(Number);
-
-  if (!Number.isInteger(year) || !Number.isInteger(monthNumber) || monthNumber < 1 || monthNumber > 12) {
-    throw new AppError("Invalid month", 400);
-  }
-
-  const monthStart = new Date(Date.UTC(year, monthNumber - 1, 1));
-  const monthEnd = new Date(Date.UTC(year, monthNumber, 1));
+  const range = getEthiopianMonthRange(month || getCurrentMonthRange().month);
   return {
-    monthString: value,
-    monthStart,
-    monthEnd,
+    monthString: range.month,
+    monthStart: range.start,
+    monthEnd: range.end,
   };
 };
 

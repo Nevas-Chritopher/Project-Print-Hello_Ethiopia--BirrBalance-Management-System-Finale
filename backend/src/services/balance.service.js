@@ -2,7 +2,7 @@ import prisma from "../config/db.js";
 import { getMonthRange } from "../utils/date.js";
 
 export const getEmployeeCurrentMonthSummary = async (userId, tx = prisma) => {
-  const { start, end } = getMonthRange();
+  const { start, end, startAt, endAt } = getMonthRange();
 
   const allocation = await tx.monthly_allocations.findUnique({
     where: { user_id_allocation_month: { user_id: userId, allocation_month: start } },
@@ -21,7 +21,7 @@ export const getEmployeeCurrentMonthSummary = async (userId, tx = prisma) => {
   const credits = await tx.balance_transactions.aggregate({
     where: {
       user_id: userId,
-      created_at: { gte: start, lt: end },
+      created_at: { gte: startAt, lt: endAt },
       direction: "credit",
     },
     _sum: { amount: true },
@@ -30,7 +30,7 @@ export const getEmployeeCurrentMonthSummary = async (userId, tx = prisma) => {
   const debits = await tx.balance_transactions.aggregate({
     where: {
       user_id: userId,
-      created_at: { gte: start, lt: end },
+      created_at: { gte: startAt, lt: endAt },
       direction: "debit",
     },
     _sum: { amount: true },

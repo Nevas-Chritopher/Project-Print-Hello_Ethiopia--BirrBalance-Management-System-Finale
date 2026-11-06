@@ -6,8 +6,12 @@ import { sendReportResponse } from "../utils/report.js";
 import {
   assignMonthlyBalance,
   assignGroupMonthlyBalance,
+  approveMonthlyAllocationRequest,
   activateMonthlyPaymentSchedule,
+  createMonthlyAllocationApprovalRequest,
   createMonthlyPaymentSchedule,
+  getAutomaticMonthlyAllocationStatus,
+  getMonthlyAllowancePreview,
   createDepartment,
   createCafe,
   createCompanyManager,
@@ -29,6 +33,7 @@ import {
   updateDepartment,
   updateEmployee,
   updateMonthlyAllocation,
+  updateAutomaticMonthlyAllocationSetting,
   issuePrintableEmployeeQr,
   issueAllPrintableEmployeeQrs,
 } from "../services/company.service.js";
@@ -37,6 +42,8 @@ import {
   validateGroupAllocation,
   validateScheduleActivation,
   validateAllocationUpdate,
+  validateAutomaticAllocationSetting,
+  validateMonthlyAllocationApproval,
   validateMonthlyPaymentSchedule,
   validateCompanyReportQuery,
   validateDepartmentUsageReportQuery,
@@ -162,6 +169,41 @@ export const allocateBalance = asyncHandler(async (req, res) => {
 export const allocateGroupBalance = asyncHandler(async (req, res) => {
   const result = await assignGroupMonthlyBalance(req.user, validateGroupAllocation(req.body), req.ip);
   return successResponse(res, result, "Group balance allocated successfully", 201);
+});
+
+export const monthlyAllowancePreview = asyncHandler(async (req, res) => {
+  const month = req.query.month ? validateMonthlyAllocationApproval(req.query).month : undefined;
+  const preview = await getMonthlyAllowancePreview(month);
+  return successResponse(res, preview, "Monthly allowance calculated successfully");
+});
+
+export const automaticMonthlyAllocationStatus = asyncHandler(async (_req, res) => {
+  const status = await getAutomaticMonthlyAllocationStatus();
+  return successResponse(res, status, "Automatic monthly allocation status fetched successfully");
+});
+
+export const setAutomaticMonthlyAllocation = asyncHandler(async (req, res) => {
+  const status = await updateAutomaticMonthlyAllocationSetting(
+    req.user,
+    validateAutomaticAllocationSetting(req.body),
+    req.ip,
+  );
+  return successResponse(res, status, "Automatic monthly allocation setting updated");
+});
+
+export const requestMonthlyAllocationApproval = asyncHandler(async (req, res) => {
+  const { month } = validateMonthlyAllocationApproval(req.body);
+  const approval = await createMonthlyAllocationApprovalRequest(req.user, month, req.ip);
+  return successResponse(res, approval, "Monthly allocation prepared for manager approval", 201);
+});
+
+export const approveMonthlyAllocation = asyncHandler(async (req, res) => {
+  const approval = await approveMonthlyAllocationRequest(
+    req.user,
+    validateId(req.params, "approval id"),
+    req.ip,
+  );
+  return successResponse(res, approval, "Monthly allocation approved and processed");
 });
 
 export const scheduleMonthlyPayment = asyncHandler(async (req, res) => {

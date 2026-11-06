@@ -5,13 +5,13 @@
   "description": "Backend REST API for the ESROM BirrBalance Management System. This system manages employee meal balances, cafeteria transactions, and financial reporting between a company and its partnered cafés.",
   "main": "index.js",
   "scripts": {
-  "start": "node server.js",
-  "dev": "dotenvx run -- tsx watch server.js",
-  "test": "node --import tsx --test tests/*.test.js",
-  "seed:users": "node seed-employee.js",
-  "prisma:generate": "prisma generate",
-  "prisma:migrate": "prisma migrate deploy"
-   },
+    "start": "node server.js",
+    "dev": "dotenvx run -- tsx watch server.js",
+    "test": "node --import tsx --test tests/*.test.js",
+    "seed:users": "node seed-employee.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eyoba146/esrom-birr-backend.git"
@@ -36,6 +36,7 @@
     "express-rate-limit": "^7.0.0",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.3",
+    "kenat": "^4.0.0",
     "multer": "^2.2.0",
     "node-cron": "^4.5.0",
     "nodemon": "^3.1.14",

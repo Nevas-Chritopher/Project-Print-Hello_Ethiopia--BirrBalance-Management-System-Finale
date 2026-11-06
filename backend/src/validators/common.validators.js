@@ -138,8 +138,8 @@ export const validateMonth = (month) => {
   if (month === undefined || month === null || month === "") return undefined;
   const value = requireString(month, "month", 7);
 
-  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) {
-    throw new AppError("month must use YYYY-MM format", 400);
+  if (!/^\d{4}-(0[1-9]|1[0-3])$/.test(value)) {
+    throw new AppError("month must use Ethiopian YYYY-MM format", 400);
   }
 
   return value;

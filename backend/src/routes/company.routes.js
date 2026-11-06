@@ -9,6 +9,8 @@ import {
   changeOwnPassword,
   allocateBalance,
   allocateGroupBalance,
+  approveMonthlyAllocation,
+  automaticMonthlyAllocationStatus,
   activatePaymentSchedule,
   scheduleMonthlyPayment,
   deactivateEmployee,
@@ -29,6 +31,9 @@ import {
   resetPassword,
   generateEmployeeQr,
   generateAllEmployeeQrs,
+  monthlyAllowancePreview,
+  requestMonthlyAllocationApproval,
+  setAutomaticMonthlyAllocation,
 } from "../controllers/company.controller.js";
 import { authenticate, requireRole } from "../middleware/auth.middleware.js";
 import { ROLES } from "../config/constants.js";
@@ -62,6 +67,11 @@ router.delete("/departments/:id", removeDepartment);
 
 router.post("/balances/allocations", allocateBalance);
 router.post("/balances/group-allocations", allocateGroupBalance);
+router.get("/balances/allowance-preview", monthlyAllowancePreview);
+router.get("/balances/automatic-allocation", automaticMonthlyAllocationStatus);
+router.patch("/balances/automatic-allocation", setAutomaticMonthlyAllocation);
+router.post("/balances/automatic-allocation/approvals", requestMonthlyAllocationApproval);
+router.post("/balances/automatic-allocation/approvals/:id/approve", approveMonthlyAllocation);
 router.post("/balances/schedules", scheduleMonthlyPayment);
 router.post("/balances/schedules/:id/activate", activatePaymentSchedule);
 router.patch("/balances/allocations/:id", editAllocation);

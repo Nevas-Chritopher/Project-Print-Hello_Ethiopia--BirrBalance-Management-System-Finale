@@ -213,7 +213,7 @@ export const notifyPasswordReset = (userId, actor, ipAddress, tx = prisma) => {
 };
 
 export const getCurrentMonthBalance = async (userId, tx = prisma) => {
-  const { start, end } = getCurrentMonthRange();
+  const { start, end, startAt, endAt } = getCurrentMonthRange();
   const allocation = await tx.monthly_allocations.findFirst({
     where: {
       user_id: userId,
@@ -234,7 +234,7 @@ export const getCurrentMonthBalance = async (userId, tx = prisma) => {
   const spent = await tx.balance_transactions.aggregate({
     where: {
       user_id: userId,
-      created_at: { gte: start, lt: end },
+      created_at: { gte: startAt, lt: endAt },
       direction: "debit",
     },
     _sum: { amount: true },
@@ -243,7 +243,7 @@ export const getCurrentMonthBalance = async (userId, tx = prisma) => {
   const credits = await tx.balance_transactions.aggregate({
     where: {
       user_id: userId,
-      created_at: { gte: start, lt: end },
+      created_at: { gte: startAt, lt: endAt },
       direction: "credit",
     },
     _sum: { amount: true },

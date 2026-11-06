@@ -3,7 +3,14 @@ import { comparePassword, hashPassword } from "./auth.service.js";
 import { writeAuditLog } from "./audit.service.js";
 import { createNotification, notifyAllocation, notifyPasswordReset } from "./notification.service.js";
 import { AppError } from "../utils/AppError.js";
-import { getMonthRange } from "../utils/date.js";
+import {
+  DAILY_ALLOWANCE_ETB,
+  getCurrentEthiopianDate,
+  getEthiopianMonthCalendar,
+  getMonthRange,
+  getEthiopianMonthRange,
+  gregorianToEthiopian,
+} from "../utils/date.js";
 import { buildCsv, buildPdf, buildXlsx } from "../utils/report.js";
 import crypto from "crypto";
 import { buildWaiterPanelUrl, generateQRToken, hashQRToken } from "./qr.service.js";
@@ -296,7 +303,7 @@ export const listEmployees = async (actor, filters, pagination, ipAddress) => {
   // lookup ran hundreds of queries when the overview opened, making the
   // manager portal slow and prone to database timeouts.
   const employeeIds = items.map((employee) => employee.id);
-  const { start, end } = getMonthRange();
+  const { start, startAt, endAt } = getMonthRange();
   const [allocations, transactions] = employeeIds.length ? await Promise.all([
     prisma.monthly_allocations.findMany({
       where: { user_id: { in: employeeIds }, allocation_month: start },
@@ -304,7 +311,7 @@ export const listEmployees = async (actor, filters, pagination, ipAddress) => {
     }),
     prisma.balance_transactions.groupBy({
       by: ["user_id", "direction"],
-      where: { user_id: { in: employeeIds }, created_at: { gte: start, lt: end } },
+      where: { user_id: { in: employeeIds }, created_at: { gte: startAt, lt: endAt } },
       _sum: { amount: true },
     }),
   ]) : [[], []];
@@ -698,6 +705,158 @@ export const assignGroupMonthlyBalance = async (actor, payload, ipAddress) => {
   return { allocated, skipped, total: employees.length };
 };
 
+export const getMonthlyAllowancePreview = async (month) => {
+  const calendar = getEthiopianMonthCalendar(month);
+  const workingDays = calendar.days.filter((day) => day.working_day).length;
+  const employeeCount = await prisma.users.count({
+    where: {
+      is_active: true,
+      user_roles: { some: { roles: { name: "employee" } } },
+    },
+  });
+  const amount = workingDays * DAILY_ALLOWANCE_ETB;
+
+  return {
+    ...calendar,
+    daily_allowance: DAILY_ALLOWANCE_ETB,
+    working_days: workingDays,
+    monthly_allowance: amount,
+    active_employee_count: employeeCount,
+    total_budget: amount * employeeCount,
+  };
+};
+
+const createMonthlyAllocationApproval = async (month, submittedBy = null) => {
+  const preview = await getMonthlyAllowancePreview(month);
+  const existing = await prisma.monthly_allocation_approvals.findUnique({
+    where: { month: preview.month },
+  });
+
+  if (existing) {
+    if (existing.status !== "pending") return existing;
+    return prisma.monthly_allocation_approvals.update({
+      where: { id: existing.id },
+      data: {
+        amount: preview.monthly_allowance,
+        employee_count: preview.active_employee_count,
+      },
+    });
+  }
+
+  return prisma.monthly_allocation_approvals.create({
+    data: {
+      month: preview.month,
+      amount: preview.monthly_allowance,
+      employee_count: preview.active_employee_count,
+      submitted_by: submittedBy,
+    },
+  });
+};
+
+export const getAutomaticMonthlyAllocationStatus = async () => {
+  const settings = await prisma.monthly_allocation_settings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, enabled: false },
+  });
+  const approvals = await prisma.monthly_allocation_approvals.findMany({
+    orderBy: { month: "desc" },
+    take: 12,
+  });
+  return { enabled: settings.enabled, approvals };
+};
+
+export const updateAutomaticMonthlyAllocationSetting = async (actor, payload, ipAddress) => {
+  const settings = await prisma.monthly_allocation_settings.upsert({
+    where: { id: 1 },
+    update: { enabled: payload.enabled, updated_at: new Date() },
+    create: { id: 1, enabled: payload.enabled },
+  });
+
+  if (settings.enabled) {
+    const current = getCurrentEthiopianDate();
+    await createMonthlyAllocationApproval(`${current.year}-${String(current.month).padStart(2, "0")}`, actor.id);
+  }
+
+  await writeAuditLog({
+    userId: actor.id,
+    action: "company.balance.automatic_allocation.setting",
+    entityType: "monthly_allocation_settings",
+    description: `Automatic monthly allocation ${settings.enabled ? "enabled" : "disabled"}`,
+    ipAddress,
+  });
+  return getAutomaticMonthlyAllocationStatus();
+};
+
+export const createMonthlyAllocationApprovalRequest = async (actor, month, ipAddress) => {
+  const approval = await createMonthlyAllocationApproval(month, actor.id);
+  if (approval.status !== "pending") {
+    throw new AppError("This month already has a processed allocation request", 409);
+  }
+  await writeAuditLog({
+    userId: actor.id,
+    action: "company.balance.automatic_allocation.request",
+    entityType: "monthly_allocation_approvals",
+    entityId: approval.id,
+    description: `Prepared ETB ${approval.amount} for manager approval for ${approval.month}`,
+    ipAddress,
+  });
+  return approval;
+};
+
+export const approveMonthlyAllocationRequest = async (actor, approvalId, ipAddress) => {
+  const approval = await prisma.monthly_allocation_approvals.findUnique({ where: { id: approvalId } });
+  if (!approval) throw new AppError("Monthly allocation approval not found", 404);
+  if (approval.status !== "pending") throw new AppError("This monthly allocation is not pending approval", 409);
+
+  const reservation = await prisma.monthly_allocation_approvals.updateMany({
+    where: { id: approvalId, status: "pending" },
+    data: { status: "processing" },
+  });
+  if (reservation.count !== 1) {
+    throw new AppError("This monthly allocation is already being processed", 409);
+  }
+
+  try {
+    const result = await assignGroupMonthlyBalance(actor, {
+      amount: Number(approval.amount),
+      month: approval.month,
+      applies_to_all: true,
+      department_id: null,
+    }, ipAddress);
+    return await prisma.monthly_allocation_approvals.update({
+      where: { id: approvalId },
+      data: {
+        status: "approved",
+        allocated_count: result.allocated,
+        skipped_count: result.skipped,
+        approved_by: actor.id,
+        approved_at: new Date(),
+      },
+    });
+  } catch (error) {
+    await prisma.monthly_allocation_approvals.updateMany({
+      where: { id: approvalId, status: "processing" },
+      data: { status: "pending" },
+    });
+    throw error;
+  }
+};
+
+export const prepareAutomaticMonthlyAllocationApproval = async () => {
+  const settings = await prisma.monthly_allocation_settings.findUnique({
+    where: { id: 1 },
+    select: { enabled: true },
+  });
+  if (!settings?.enabled) return null;
+
+  const current = getCurrentEthiopianDate();
+  const month = `${current.year}-${String(current.month).padStart(2, "0")}`;
+  const existing = await prisma.monthly_allocation_approvals.findUnique({ where: { month } });
+  if (existing) return existing;
+  return createMonthlyAllocationApproval(month);
+};
+
 export const createMonthlyPaymentSchedule = async (actor, payload, ipAddress) => {
   if (payload.department_id) await ensureDepartmentExists(payload.department_id);
   const activationKeyHash = crypto.createHash("sha256").update(payload.activation_key).digest("hex");
@@ -750,11 +909,11 @@ export const updateMonthlyAllocation = async (actor, allocationId, payload, ipAd
     const existing = await tx.monthly_allocations.findUnique({ where: { id: allocationId } });
     if (!existing) throw new AppError("Allocation not found", 404);
 
-    const monthEnd = new Date(Date.UTC(existing.allocation_month.getUTCFullYear(), existing.allocation_month.getUTCMonth() + 1, 1));
+    const monthRange = getEthiopianMonthRange(gregorianToEthiopian(existing.allocation_month));
     const usedAggregate = await tx.balance_transactions.aggregate({
       where: {
         user_id: existing.user_id,
-        created_at: { gte: existing.allocation_month, lt: monthEnd },
+        created_at: { gte: monthRange.startAt, lt: monthRange.endAt },
         direction: "debit",
         transaction_type: { in: ["order", "expiration"] },
       },
@@ -1044,7 +1203,7 @@ export const generateFinancialReport = async (actor, params, ipAddress) => {
 };
 
 export const generateDepartmentUsageReport = async (actor, params, ipAddress, cafeId = null) => {
-  const { start, end, month } = getMonthRange(params.month);
+  const { start, startAt, endAt, month } = getMonthRange(params.month);
   const users = await prisma.users.findMany({
     where: {
       ...(params.department_id ? { department_id: params.department_id } : {}),
@@ -1056,12 +1215,12 @@ export const generateDepartmentUsageReport = async (actor, params, ipAddress, ca
   const userIds = users.map((user) => user.id);
   const [orders, expirations, allocations] = await Promise.all([
     prisma.orders.findMany({
-      where: { employee_id: { in: userIds }, created_at: { gte: start, lt: end }, ...(cafeId ? { cafe_id: cafeId } : {}) },
+      where: { employee_id: { in: userIds }, created_at: { gte: startAt, lt: endAt }, ...(cafeId ? { cafe_id: cafeId } : {}) },
       include: { order_items: { select: { item_name_snapshot: true, quantity: true } } },
       orderBy: { created_at: "asc" },
     }),
     prisma.balance_transactions.findMany({
-      where: { user_id: { in: userIds }, transaction_type: "expiration", created_at: { gte: start, lt: end } },
+      where: { user_id: { in: userIds }, transaction_type: "expiration", created_at: { gte: startAt, lt: endAt } },
       select: { user_id: true, amount: true },
     }),
     prisma.monthly_allocations.findMany({

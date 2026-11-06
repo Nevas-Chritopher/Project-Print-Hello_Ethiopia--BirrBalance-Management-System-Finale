@@ -1,11 +1,16 @@
 import cron from "node-cron";
 import prisma from "../config/db.js";
-import { assignMonthlyBalance } from "../services/company.service.js";
+import {
+  assignMonthlyBalance,
+  prepareAutomaticMonthlyAllocationApproval,
+} from "../services/company.service.js";
+import { getCurrentMonthRange, getAddisAbabaDateParts } from "../utils/date.js";
 
 export const processMonthlyPayments = async () => {
   const now = new Date();
-  const month = now.toISOString().slice(0, 7);
-  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const { month } = getCurrentMonthRange();
+  const todayParts = getAddisAbabaDateParts(now);
+  const today = new Date(Date.UTC(todayParts.year, todayParts.month - 1, todayParts.day));
   const day = today.getUTCDate();
   const schedules = await prisma.monthly_payment_schedules.findMany({
     where: {
@@ -43,6 +48,8 @@ export const processMonthlyPayments = async () => {
       data: { last_processed_month: month, updated_at: new Date() },
     });
   }
+
+  await prepareAutomaticMonthlyAllocationApproval();
 };
 
 export const startMonthlyPaymentsJob = () => {

@@ -30,7 +30,10 @@ import {
   Send,
   MessageCircle,
   Pencil,
-  RefreshCw
+  RefreshCw,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   MiniSparklineChart,
@@ -275,6 +278,8 @@ export default function ManagerPortal() {
           employeesList={employeesList}
           onReload={loadPortalData}
           apiPost={apiPost}
+          apiGet={apiGet}
+          apiPatch={apiPatch}
         />
       )}
       {activeTab === 'reports' && <ManagerReportsPage employeesList={employeesList} recentOrders={recentOrders} departmentsList={departmentsList} waitersList={waitersList} />}
@@ -2280,20 +2285,68 @@ function ManagerBalancePage({
   departmentsList,
   employeesList,
   onReload,
-  apiPost
+  apiPost,
+  apiGet,
+  apiPatch,
 }: {
   departmentsList: any[];
   employeesList: any[];
   onReload: () => Promise<void>;
   apiPost: (path: string, body: any) => Promise<any>;
+  apiGet: (path: string) => Promise<any>;
+  apiPatch: (path: string, body: any) => Promise<any>;
 }) {
   const { t } = useTranslation();
   const [option, setOption] = useState<'scheduled' | 'employee'>('scheduled');
   const [targetId, setTargetId] = useState('');
   const [amount, setAmount] = useState('');
-  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [allowancePreview, setAllowancePreview] = useState<any>(null);
+  const [automaticAllocationEnabled, setAutomaticAllocationEnabled] = useState(false);
+  const [approvalRequests, setApprovalRequests] = useState<any[]>([]);
+  const [calendarError, setCalendarError] = useState('');
+  const [approvalBusy, setApprovalBusy] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [successAllocMsg, setSuccessAllocMsg] = useState('');
+
+  const loadAutomaticAllocation = async () => {
+    const response = await apiGet('/api/company-manager/balances/automatic-allocation');
+    const data = response?.data ?? {};
+    setAutomaticAllocationEnabled(Boolean(data.enabled));
+    setApprovalRequests(data.approvals ?? []);
+  };
+
+  useEffect(() => {
+    let active = true;
+    apiGet('/api/company-manager/balances/automatic-allocation')
+      .then((response) => {
+        if (!active) return;
+        const data = response?.data ?? {};
+        setAutomaticAllocationEnabled(Boolean(data.enabled));
+        setApprovalRequests(data.approvals ?? []);
+      })
+      .catch((error: any) => {
+        if (active) setCalendarError(error.message || 'Could not load automatic allocation settings.');
+      });
+    return () => { active = false; };
+  }, [apiGet]);
+
+  useEffect(() => {
+    let active = true;
+    const query = selectedMonth ? `?month=${encodeURIComponent(selectedMonth)}` : '';
+    apiGet(`/api/company-manager/balances/allowance-preview${query}`)
+      .then((response) => {
+        if (!active) return;
+        const data = response?.data;
+        setAllowancePreview(data ?? null);
+        if (!selectedMonth && data?.month) setSelectedMonth(data.month);
+        setCalendarError('');
+      })
+      .catch((error: any) => {
+        if (active) setCalendarError(error.message || 'Could not calculate the selected month.');
+      });
+    return () => { active = false; };
+  }, [apiGet, selectedMonth]);
 
   // Search input for employee target
   const [searchEmp, setSearchEmp] = useState('');
@@ -2322,7 +2375,7 @@ function ManagerBalancePage({
   };
 
  const handleAllocate = async () => {
-  if (!amount || !targetId || !paymentDate) return;
+  if (!amount || !targetId || !selectedMonth) return;
   try {
     let successCount = 0;
     let failCount = 0;
@@ -2331,13 +2384,13 @@ function ManagerBalancePage({
       await apiPost('/api/company-manager/balances/allocations', {
         user_id: Number(targetId),
         amount: Number(amount),
-        month: paymentDate.slice(0, 7),
+        month: selectedMonth,
       });
       successCount = 1;
     } else {
       const result = await apiPost('/api/company-manager/balances/group-allocations', {
         amount: Number(amount),
-        month: paymentDate.slice(0, 7),
+        month: selectedMonth,
         applies_to_all: targetId === 'all',
         department_id: targetId === 'all' ? null : Number(targetId),
       });
@@ -2365,6 +2418,68 @@ function ManagerBalancePage({
   }
 };
 
+  const moveSelectedMonth = (offset: number) => {
+    if (!selectedMonth) return;
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const nextMonth = month + offset;
+    if (nextMonth < 1) setSelectedMonth(`${year - 1}-${String(13).padStart(2, '0')}`);
+    else if (nextMonth > 13) setSelectedMonth(`${year + 1}-01`);
+    else setSelectedMonth(`${year}-${String(nextMonth).padStart(2, '0')}`);
+  };
+
+  const setAutomaticAllocation = async (enabled: boolean) => {
+    setApprovalBusy(true);
+    try {
+      const response = await apiPatch('/api/company-manager/balances/automatic-allocation', { enabled });
+      const data = response?.data ?? {};
+      setAutomaticAllocationEnabled(Boolean(data.enabled));
+      setApprovalRequests(data.approvals ?? []);
+      setSuccessAllocMsg(enabled
+        ? 'Automatic monthly calculation is on. A manager must approve each monthly allocation before funds are sent.'
+        : 'Automatic monthly calculation is off.');
+    } catch (error: any) {
+      setCalendarError(error.message || 'Could not update automatic allocation settings.');
+    } finally {
+      setApprovalBusy(false);
+    }
+  };
+
+  const requestApproval = async () => {
+    if (!selectedMonth) return;
+    setApprovalBusy(true);
+    try {
+      await apiPost('/api/company-manager/balances/automatic-allocation/approvals', { month: selectedMonth });
+      await loadAutomaticAllocation();
+      setSuccessAllocMsg(`ETB ${Number(allowancePreview?.monthly_allowance ?? 0).toLocaleString()} has been calculated for ${selectedMonth} and is awaiting manager approval.`);
+    } catch (error: any) {
+      setCalendarError(error.message || 'Could not prepare the monthly allocation for approval.');
+    } finally {
+      setApprovalBusy(false);
+    }
+  };
+
+  const approveRequest = async (approvalId: number) => {
+    setApprovalBusy(true);
+    try {
+      const response = await apiPost(`/api/company-manager/balances/automatic-allocation/approvals/${approvalId}/approve`, {});
+      const result = response?.data ?? {};
+      await loadAutomaticAllocation();
+      await onReload();
+      window.dispatchEvent(new Event('esrom-balance-updated'));
+      setSuccessAllocMsg(`Approved monthly allocation: ${result.allocatedCount ?? result.allocated_count ?? 0} employees credited; ${result.skippedCount ?? result.skipped_count ?? 0} skipped.`);
+    } catch (error: any) {
+      setCalendarError(error.message || 'Could not approve this monthly allocation.');
+    } finally {
+      setApprovalBusy(false);
+    }
+  };
+
+  const ethMonthNames = ['Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miyazya', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'];
+  const monthParts = selectedMonth.split('-').map(Number);
+  const calendarDays = allowancePreview?.days ?? [];
+  const calendarOffset = calendarDays[0]?.weekday ?? 0;
+  const previewAmount = Number(allowancePreview?.monthly_allowance ?? 0);
+
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Header */}
@@ -2378,6 +2493,9 @@ function ManagerBalancePage({
           <CheckCircle className="w-5 h-5 flex-shrink-0" />
           <span>{successAllocMsg}</span>
         </div>
+      )}
+      {calendarError && (
+        <div className="p-3 rounded-2xl border border-red-200 bg-red-50 text-xs font-bold text-danger">{calendarError}</div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -2478,18 +2596,70 @@ function ManagerBalancePage({
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
             </div>
-             {/* Month */}
-            <div className="space-y-1.5">
-              <label className="font-bold text-slate-700">Payment Month</label>
-              <input
-                id="alloc-payment-date-input"
-                type="date"
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
-              />
-              <p className="text-[10px] text-slate-400">{option === 'scheduled' ? 'Scheduled group payments are processed immediately for the selected month and departments.' : 'Individual payments are allocated to a single employee.'}</p>
-            </div>
+             <section className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4" aria-label="Ethiopian working-day calendar">
+               <div className="flex items-center justify-between gap-3">
+                 <div className="flex items-center gap-2">
+                   <CalendarDays className="w-4 h-4 text-primary" />
+                   <h4 className="font-bold text-primary">Ethiopian Calendar</h4>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <button type="button" aria-label="Previous Ethiopian month" onClick={() => moveSelectedMonth(-1)} className="rounded-lg border border-slate-200 p-2 hover:bg-slate-50"><ChevronLeft className="w-4 h-4" /></button>
+                   <span className="min-w-32 text-center font-bold">{ethMonthNames[(monthParts[1] || 1) - 1]} {monthParts[0] || ''}</span>
+                   <button type="button" aria-label="Next Ethiopian month" onClick={() => moveSelectedMonth(1)} className="rounded-lg border border-slate-200 p-2 hover:bg-slate-50"><ChevronRight className="w-4 h-4" /></button>
+                 </div>
+               </div>
+               <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500">
+                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => <span key={day} className="py-1">{day}</span>)}
+                 {Array.from({ length: calendarOffset }, (_, index) => <span key={`empty-${index}`} />)}
+                 {calendarDays.map((day: any) => (
+                   <div
+                     key={day.day}
+                     title={day.holiday ? 'Public holiday: excluded from allowance' : day.weekend ? 'Weekend: excluded from allowance' : 'Working day: included in allowance'}
+                     className={`relative flex min-h-9 flex-col items-center justify-center rounded-lg border text-xs font-semibold ${
+                       day.working_day ? 'border-green-100 bg-green-50 text-green-800' :
+                       day.holiday ? 'border-red-200 bg-red-50 text-red-700' :
+                       'border-slate-200 bg-slate-100 text-slate-500'
+                     }`}
+                   >
+                     {day.day}
+                     {!day.working_day && <Lock className="absolute right-0.5 top-0.5 h-2.5 w-2.5" aria-label="Restricted day" />}
+                   </div>
+                 ))}
+               </div>
+               <div className="flex flex-wrap gap-x-4 gap-y-2 text-[10px] text-slate-600">
+                 <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-green-500" />Working day</span>
+                 <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-slate-400" />Weekend (restricted)</span>
+                 <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-red-500" />Public holiday (restricted)</span>
+               </div>
+               <div className="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3">
+                 <div><p className="text-[10px] uppercase text-slate-500">Working days × daily allowance</p><p className="font-bold">{allowancePreview?.working_days ?? 0} × {formatETB(Number(allowancePreview?.daily_allowance ?? 40))}</p></div>
+                 <div><p className="text-[10px] uppercase text-slate-500">Calculated per employee</p><p className="font-black text-primary">{formatETB(previewAmount)}</p></div>
+                 <div className="col-span-2 rounded-xl bg-slate-50 p-3"><p className="text-[10px] uppercase text-slate-500">Estimated total for {allowancePreview?.active_employee_count ?? 0} active employees</p><p className="font-black text-secondary">{formatETB(Number(allowancePreview?.total_budget ?? 0))}</p></div>
+                 <button type="button" onClick={() => setAmount(String(previewAmount))} disabled={!allowancePreview} className="col-span-2 rounded-xl border border-primary px-3 py-2 font-bold text-primary hover:bg-slate-50 disabled:opacity-50">Use calculated monthly amount</button>
+               </div>
+             </section>
+
+             <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+               <div>
+                 <p className="text-xs font-bold text-primary">Automatic Monthly Allocation</p>
+                 <p className="mt-1 text-[10px] text-slate-500">Calculates monthly amounts automatically. A manager must approve before money is credited.</p>
+               </div>
+               <button
+                 type="button"
+                 role="switch"
+                 aria-checked={automaticAllocationEnabled}
+                 aria-label="Automatic Monthly Allocation"
+                 disabled={approvalBusy}
+                 onClick={() => setAutomaticAllocation(!automaticAllocationEnabled)}
+                 className={`relative h-7 w-12 rounded-full transition-colors disabled:opacity-50 ${automaticAllocationEnabled ? 'bg-primary' : 'bg-slate-300'}`}
+               >
+                 <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${automaticAllocationEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+               </button>
+             </div>
+
+             <button type="button" onClick={requestApproval} disabled={approvalBusy || !selectedMonth || !allowancePreview} className="w-full rounded-xl border border-primary bg-white px-4 py-3 text-xs font-bold text-primary hover:bg-slate-50 disabled:opacity-50">
+               {approvalBusy ? 'Preparing...' : `Calculate and request approval for ${selectedMonth || 'selected month'}`}
+             </button>
 
             {/* Financial Commitment Preview section */}
             {getAffectedCount() > 0 && (
@@ -2501,7 +2671,7 @@ function ManagerBalancePage({
                 </div>
                 <div className="flex justify-between items-center text-sm pt-2 border-t border-slate-200">
                   <span className="text-primary font-bold">Total Budget Impact:</span>
-                  <span className="font-black text-secondary">{formatETB(getCommitment())}</span>
+                  <span className="font-black text-secondary">{formatETB(option === 'scheduled' && amount ? getCommitment() : Number(allowancePreview?.total_budget ?? getCommitment()))}</span>
                 </div>
               </div>
             )}
@@ -2521,6 +2691,26 @@ function ManagerBalancePage({
 
         {/* Info rules cards */}
         <div className="space-y-6">
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-4">
+            <h3 className="text-xs font-black text-primary uppercase tracking-wider">Monthly Allocation Approvals</h3>
+            {approvalRequests.length === 0 && <p className="text-xs text-slate-500">No monthly allocation requests yet.</p>}
+            <div className="space-y-3">
+              {approvalRequests.map((request: any) => (
+                <div key={request.id} className="rounded-xl border border-slate-100 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold text-primary">{request.month}</p>
+                      <p className="mt-1 text-[10px] text-slate-500">{request.employee_count ?? request.employeeCount} active employees · {formatETB(Number(request.amount))} each</p>
+                      <p className={`mt-1 text-[10px] font-bold ${request.status === 'pending' ? 'text-amber-700' : request.status === 'approved' ? 'text-green-700' : 'text-slate-500'}`}>{request.status}</p>
+                    </div>
+                    {request.status === 'pending' && (
+                      <button type="button" disabled={approvalBusy} onClick={() => approveRequest(request.id)} className="rounded-lg bg-primary px-3 py-2 text-[10px] font-bold text-white disabled:opacity-50">Approve & Allocate</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-4">
             <h3 className="text-xs font-black text-primary uppercase tracking-wider">Allotment Rules & Cycles</h3>
             <div className="space-y-3.5 text-xs">

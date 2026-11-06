@@ -32,6 +32,8 @@ Backend REST API for the ESROM BirrBalance Management System. This system manage
 - Encrypted QR code generation per employee
 - Online and offline (QR-assisted) ordering
 - Monthly balance allocation and automatic expiry
+- Ethiopian working-day allowance previews with restricted-day calendar markers
+- Optional automatic monthly allowance calculation with manager approval before crediting
 - Real-time password verification for offline orders
 - Audit logging for every system action
 - Notifications for low balance and new allocations
@@ -108,6 +110,9 @@ npm run prisma:generate
 - Employee feedback: `POST /api/employee/feedback`.
 - Audit logs: `GET /api/audit-logs` for company managers with `page`, `limit`, `action`, `user_id`, `from`, and `to`.
 - Employee orders and notifications support `page`, `limit`, and `sort`; default limit is 20 and max is 100.
+- `GET /api/company-manager/balances/allowance-preview?month=2019-02` returns Ethiopian calendar days and the ETB 40-per-working-day allowance calculation. Weekends and confirmed public holidays are excluded.
+- `PATCH /api/company-manager/balances/automatic-allocation` accepts `{ "enabled": true }` to prepare monthly approval requests automatically. Requests do not credit balances until a manager approves them with `POST /api/company-manager/balances/automatic-allocation/approvals/:id/approve`.
+- Managers can also request a calculation for a month with `POST /api/company-manager/balances/automatic-allocation/approvals` and `{ "month": "2019-02" }`.
 
 ## Schema Migration Notes
 
@@ -117,6 +122,13 @@ Migration `20260703120000_production_order_qr_ledger` adds:
 - `transaction_direction` enum and `balance_transactions.direction`.
 - Backfill that converts old negative adjustments to positive debit entries.
 - Additional notification types for order status, refunds, and feedback.
+
+Migration `20261106000000_automatic_monthly_allocation_approval` adds the persisted optional monthly-allocation setting and manager approval queue. Apply migrations before starting the updated backend:
+
+```bash
+npm run prisma:migrate
+npm run prisma:generate
+```
 
 Deploy with:
 

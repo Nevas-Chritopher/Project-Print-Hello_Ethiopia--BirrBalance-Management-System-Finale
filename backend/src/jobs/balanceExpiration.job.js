@@ -1,9 +1,9 @@
 import cron from "node-cron";
 import prisma from "../config/db.js";
+import { getCurrentMonthRange, gregorianToEthiopian, getEthiopianMonthRange } from "../utils/date.js";
 
 const expirePreviousMonthBalances = async () => {
-  const now = new Date();
-  const currentMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const { start: currentMonthStart } = getCurrentMonthRange();
 
   const allocations = await prisma.monthly_allocations.findMany({
     where: {
@@ -12,8 +12,8 @@ const expirePreviousMonthBalances = async () => {
   });
 
   for (const allocation of allocations) {
-    const monthStart = allocation.allocation_month;
-    const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1));
+    const ethiopianMonth = gregorianToEthiopian(allocation.allocation_month);
+    const { start: monthStart, end: monthEnd } = getEthiopianMonthRange(ethiopianMonth);
 
     const existingExpiration = await prisma.balance_transactions.findFirst({
       where: {

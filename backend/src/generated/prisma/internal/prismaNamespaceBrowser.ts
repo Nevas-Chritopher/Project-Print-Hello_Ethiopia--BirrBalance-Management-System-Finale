@@ -62,6 +62,8 @@ export const ModelName = {
   menu_items: 'menu_items',
   monthly_allocations: 'monthly_allocations',
   monthly_payment_schedules: 'monthly_payment_schedules',
+  monthly_allocation_settings: 'monthly_allocation_settings',
+  monthly_allocation_approvals: 'monthly_allocation_approvals',
   notifications: 'notifications',
   qr_sessions: 'qr_sessions',
   order_items: 'order_items',
@@ -226,6 +228,33 @@ export const Monthly_payment_schedulesScalarFieldEnum = {
 } as const
 
 export type Monthly_payment_schedulesScalarFieldEnum = (typeof Monthly_payment_schedulesScalarFieldEnum)[keyof typeof Monthly_payment_schedulesScalarFieldEnum]
+
+
+export const Monthly_allocation_settingsScalarFieldEnum = {
+  id: 'id',
+  enabled: 'enabled',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type Monthly_allocation_settingsScalarFieldEnum = (typeof Monthly_allocation_settingsScalarFieldEnum)[keyof typeof Monthly_allocation_settingsScalarFieldEnum]
+
+
+export const Monthly_allocation_approvalsScalarFieldEnum = {
+  id: 'id',
+  month: 'month',
+  amount: 'amount',
+  employee_count: 'employee_count',
+  status: 'status',
+  allocated_count: 'allocated_count',
+  skipped_count: 'skipped_count',
+  submitted_by: 'submitted_by',
+  approved_by: 'approved_by',
+  created_at: 'created_at',
+  approved_at: 'approved_at'
+} as const
+
+export type Monthly_allocation_approvalsScalarFieldEnum = (typeof Monthly_allocation_approvalsScalarFieldEnum)[keyof typeof Monthly_allocation_approvalsScalarFieldEnum]
 
 
 export const NotificationsScalarFieldEnum = {

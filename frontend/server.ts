@@ -8,9 +8,10 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 async function startServer() {
   const app = express();
   const PORT = 3000;
+  const apiTarget = process.env.API_PROXY_TARGET || 'http://localhost:5000';
 
   app.use('/api', createProxyMiddleware({
-  target: 'http://localhost:5000',
+  target: apiTarget,
   changeOrigin: true,
   pathRewrite: {
     '^': '/api',

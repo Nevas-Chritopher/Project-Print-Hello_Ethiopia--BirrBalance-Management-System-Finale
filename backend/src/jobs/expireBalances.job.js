@@ -1,10 +1,10 @@
 import cron from "node-cron";
 import prisma from "../config/db.js";
 import { writeAuditLog } from "../services/audit.service.js";
+import { getCurrentMonthRange, gregorianToEthiopian, getEthiopianMonthRange } from "../utils/date.js";
 
 export const expireBalances = async () => {
-  const now = new Date();
-  const currentMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const { start: currentMonthStart } = getCurrentMonthRange();
 
   const allocations = await prisma.monthly_allocations.findMany({
     where: { allocation_month: { lt: currentMonthStart } },
@@ -23,8 +23,8 @@ export const expireBalances = async () => {
 
       if (existingExpiration) return;
 
-      const monthStart = allocation.allocation_month;
-      const monthEnd = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1));
+      const ethiopianMonth = gregorianToEthiopian(allocation.allocation_month);
+      const { start: monthStart, end: monthEnd } = getEthiopianMonthRange(ethiopianMonth);
       const credits = await tx.balance_transactions.aggregate({
         where: {
           allocation_id: allocation.id,

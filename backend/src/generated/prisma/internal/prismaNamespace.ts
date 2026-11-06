@@ -395,6 +395,8 @@ export const ModelName = {
   menu_items: 'menu_items',
   monthly_allocations: 'monthly_allocations',
   monthly_payment_schedules: 'monthly_payment_schedules',
+  monthly_allocation_settings: 'monthly_allocation_settings',
+  monthly_allocation_approvals: 'monthly_allocation_approvals',
   notifications: 'notifications',
   qr_sessions: 'qr_sessions',
   order_items: 'order_items',
@@ -419,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "audit_logs" | "balance_transactions" | "cafe_staff" | "cafes" | "departments" | "employee_qr_codes" | "feedback" | "login_history" | "menu_items" | "monthly_allocations" | "monthly_payment_schedules" | "notifications" | "qr_sessions" | "order_items" | "orders" | "password_reset_tokens" | "refresh_tokens" | "roles" | "user_roles" | "users"
+    modelProps: "audit_logs" | "balance_transactions" | "cafe_staff" | "cafes" | "departments" | "employee_qr_codes" | "feedback" | "login_history" | "menu_items" | "monthly_allocations" | "monthly_payment_schedules" | "monthly_allocation_settings" | "monthly_allocation_approvals" | "notifications" | "qr_sessions" | "order_items" | "orders" | "password_reset_tokens" | "refresh_tokens" | "roles" | "user_roles" | "users"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1234,6 +1236,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.monthly_payment_schedulesCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.Monthly_payment_schedulesCountAggregateOutputType> | number
+        }
+      }
+    }
+    monthly_allocation_settings: {
+      payload: Prisma.$monthly_allocation_settingsPayload<ExtArgs>
+      fields: Prisma.monthly_allocation_settingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.monthly_allocation_settingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.monthly_allocation_settingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>
+        }
+        findFirst: {
+          args: Prisma.monthly_allocation_settingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.monthly_allocation_settingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>
+        }
+        findMany: {
+          args: Prisma.monthly_allocation_settingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>[]
+        }
+        create: {
+          args: Prisma.monthly_allocation_settingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>
+        }
+        createMany: {
+          args: Prisma.monthly_allocation_settingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.monthly_allocation_settingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>[]
+        }
+        delete: {
+          args: Prisma.monthly_allocation_settingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>
+        }
+        update: {
+          args: Prisma.monthly_allocation_settingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.monthly_allocation_settingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.monthly_allocation_settingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.monthly_allocation_settingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.monthly_allocation_settingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_settingsPayload>
+        }
+        aggregate: {
+          args: Prisma.Monthly_allocation_settingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMonthly_allocation_settings>
+        }
+        groupBy: {
+          args: Prisma.monthly_allocation_settingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Monthly_allocation_settingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.monthly_allocation_settingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Monthly_allocation_settingsCountAggregateOutputType> | number
+        }
+      }
+    }
+    monthly_allocation_approvals: {
+      payload: Prisma.$monthly_allocation_approvalsPayload<ExtArgs>
+      fields: Prisma.monthly_allocation_approvalsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.monthly_allocation_approvalsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.monthly_allocation_approvalsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>
+        }
+        findFirst: {
+          args: Prisma.monthly_allocation_approvalsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.monthly_allocation_approvalsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>
+        }
+        findMany: {
+          args: Prisma.monthly_allocation_approvalsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>[]
+        }
+        create: {
+          args: Prisma.monthly_allocation_approvalsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>
+        }
+        createMany: {
+          args: Prisma.monthly_allocation_approvalsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.monthly_allocation_approvalsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>[]
+        }
+        delete: {
+          args: Prisma.monthly_allocation_approvalsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>
+        }
+        update: {
+          args: Prisma.monthly_allocation_approvalsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>
+        }
+        deleteMany: {
+          args: Prisma.monthly_allocation_approvalsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.monthly_allocation_approvalsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.monthly_allocation_approvalsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>[]
+        }
+        upsert: {
+          args: Prisma.monthly_allocation_approvalsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$monthly_allocation_approvalsPayload>
+        }
+        aggregate: {
+          args: Prisma.Monthly_allocation_approvalsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMonthly_allocation_approvals>
+        }
+        groupBy: {
+          args: Prisma.monthly_allocation_approvalsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Monthly_allocation_approvalsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.monthly_allocation_approvalsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Monthly_allocation_approvalsCountAggregateOutputType> | number
         }
       }
     }
@@ -2081,6 +2231,33 @@ export const Monthly_payment_schedulesScalarFieldEnum = {
 export type Monthly_payment_schedulesScalarFieldEnum = (typeof Monthly_payment_schedulesScalarFieldEnum)[keyof typeof Monthly_payment_schedulesScalarFieldEnum]
 
 
+export const Monthly_allocation_settingsScalarFieldEnum = {
+  id: 'id',
+  enabled: 'enabled',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+} as const
+
+export type Monthly_allocation_settingsScalarFieldEnum = (typeof Monthly_allocation_settingsScalarFieldEnum)[keyof typeof Monthly_allocation_settingsScalarFieldEnum]
+
+
+export const Monthly_allocation_approvalsScalarFieldEnum = {
+  id: 'id',
+  month: 'month',
+  amount: 'amount',
+  employee_count: 'employee_count',
+  status: 'status',
+  allocated_count: 'allocated_count',
+  skipped_count: 'skipped_count',
+  submitted_by: 'submitted_by',
+  approved_by: 'approved_by',
+  created_at: 'created_at',
+  approved_at: 'approved_at'
+} as const
+
+export type Monthly_allocation_approvalsScalarFieldEnum = (typeof Monthly_allocation_approvalsScalarFieldEnum)[keyof typeof Monthly_allocation_approvalsScalarFieldEnum]
+
+
 export const NotificationsScalarFieldEnum = {
   id: 'id',
   user_id: 'user_id',
@@ -2503,6 +2680,8 @@ export type GlobalOmitConfig = {
   menu_items?: Prisma.menu_itemsOmit
   monthly_allocations?: Prisma.monthly_allocationsOmit
   monthly_payment_schedules?: Prisma.monthly_payment_schedulesOmit
+  monthly_allocation_settings?: Prisma.monthly_allocation_settingsOmit
+  monthly_allocation_approvals?: Prisma.monthly_allocation_approvalsOmit
   notifications?: Prisma.notificationsOmit
   qr_sessions?: Prisma.qr_sessionsOmit
   order_items?: Prisma.order_itemsOmit

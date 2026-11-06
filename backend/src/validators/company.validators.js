@@ -168,6 +168,17 @@ export const validateManagerPasswordChange = (body) => ({
   new_password: validatePassword(body.new_password, "new_password"),
 });
 
+export const validateAutomaticAllocationSetting = (body) => {
+  if (typeof body.enabled !== "boolean") {
+    throw new AppError("enabled must be true or false", 400);
+  }
+  return { enabled: body.enabled };
+};
+
+export const validateMonthlyAllocationApproval = (body) => ({
+  month: validateMonth(requireString(body.month, "month", 7)),
+});
+
 export const validateId = (params, fieldName = "id") => toPositiveInt(params.id, fieldName);
 
 export const validateCompanyReportQuery = (query) => ({
