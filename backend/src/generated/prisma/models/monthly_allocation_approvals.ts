@@ -288,6 +288,8 @@ export type monthly_allocation_approvalsWhereInput = {
   approved_by?: Prisma.IntNullableFilter<"monthly_allocation_approvals"> | number | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_allocation_approvals"> | Date | string | null
   approved_at?: Prisma.DateTimeNullableFilter<"monthly_allocation_approvals"> | Date | string | null
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.usersWhereInput> | null
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.usersWhereInput> | null
 }
 
 export type monthly_allocation_approvalsOrderByWithRelationInput = {
@@ -302,6 +304,8 @@ export type monthly_allocation_approvalsOrderByWithRelationInput = {
   approved_by?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
   approved_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.usersOrderByWithRelationInput
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.usersOrderByWithRelationInput
 }
 
 export type monthly_allocation_approvalsWhereUniqueInput = Prisma.AtLeast<{
@@ -319,6 +323,8 @@ export type monthly_allocation_approvalsWhereUniqueInput = Prisma.AtLeast<{
   approved_by?: Prisma.IntNullableFilter<"monthly_allocation_approvals"> | number | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_allocation_approvals"> | Date | string | null
   approved_at?: Prisma.DateTimeNullableFilter<"monthly_allocation_approvals"> | Date | string | null
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.usersWhereInput> | null
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.usersWhereInput> | null
 }, "id" | "month">
 
 export type monthly_allocation_approvalsOrderByWithAggregationInput = {
@@ -364,10 +370,10 @@ export type monthly_allocation_approvalsCreateInput = {
   status?: string
   allocated_count?: number
   skipped_count?: number
-  submitted_by?: number | null
-  approved_by?: number | null
   created_at?: Date | string | null
   approved_at?: Date | string | null
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocation_approvals_submittedInput
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocation_approvals_approvedInput
 }
 
 export type monthly_allocation_approvalsUncheckedCreateInput = {
@@ -391,10 +397,10 @@ export type monthly_allocation_approvalsUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
   skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
-  submitted_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  approved_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocation_approvals_submittedNestedInput
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocation_approvals_approvedNestedInput
 }
 
 export type monthly_allocation_approvalsUncheckedUpdateInput = {
@@ -432,8 +438,6 @@ export type monthly_allocation_approvalsUpdateManyMutationInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
   skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
-  submitted_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  approved_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -514,6 +518,321 @@ export type monthly_allocation_approvalsSumOrderByAggregateInput = {
   approved_by?: Prisma.SortOrder
 }
 
+export type Monthly_allocation_approvalsListRelationFilter = {
+  every?: Prisma.monthly_allocation_approvalsWhereInput
+  some?: Prisma.monthly_allocation_approvalsWhereInput
+  none?: Prisma.monthly_allocation_approvalsWhereInput
+}
+
+export type monthly_allocation_approvalsOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type monthly_allocation_approvalsCreateNestedManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInputEnvelope
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+}
+
+export type monthly_allocation_approvalsCreateNestedManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInputEnvelope
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+}
+
+export type monthly_allocation_approvalsUncheckedCreateNestedManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInputEnvelope
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+}
+
+export type monthly_allocation_approvalsUncheckedCreateNestedManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInputEnvelope
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+}
+
+export type monthly_allocation_approvalsUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersNestedInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  upsert?: Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInputEnvelope
+  set?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  disconnect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  delete?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  update?: Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  updateMany?: Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  deleteMany?: Prisma.monthly_allocation_approvalsScalarWhereInput | Prisma.monthly_allocation_approvalsScalarWhereInput[]
+}
+
+export type monthly_allocation_approvalsUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersNestedInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  upsert?: Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInputEnvelope
+  set?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  disconnect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  delete?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  update?: Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  updateMany?: Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  deleteMany?: Prisma.monthly_allocation_approvalsScalarWhereInput | Prisma.monthly_allocation_approvalsScalarWhereInput[]
+}
+
+export type monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersNestedInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  upsert?: Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInputEnvelope
+  set?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  disconnect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  delete?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  update?: Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  updateMany?: Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  deleteMany?: Prisma.monthly_allocation_approvalsScalarWhereInput | Prisma.monthly_allocation_approvalsScalarWhereInput[]
+}
+
+export type monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersNestedInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput> | Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[] | Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  connectOrCreate?: Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  upsert?: Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  createMany?: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInputEnvelope
+  set?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  disconnect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  delete?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  connect?: Prisma.monthly_allocation_approvalsWhereUniqueInput | Prisma.monthly_allocation_approvalsWhereUniqueInput[]
+  update?: Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  updateMany?: Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  deleteMany?: Prisma.monthly_allocation_approvalsScalarWhereInput | Prisma.monthly_allocation_approvalsScalarWhereInput[]
+}
+
+export type monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  month: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count: number
+  status?: string
+  allocated_count?: number
+  skipped_count?: number
+  created_at?: Date | string | null
+  approved_at?: Date | string | null
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocation_approvals_approvedInput
+}
+
+export type monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  id?: number
+  month: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count: number
+  status?: string
+  allocated_count?: number
+  skipped_count?: number
+  approved_by?: number | null
+  created_at?: Date | string | null
+  approved_at?: Date | string | null
+}
+
+export type monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsWhereUniqueInput
+  create: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput>
+}
+
+export type monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInputEnvelope = {
+  data: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInput | Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInput[]
+  skipDuplicates?: boolean
+}
+
+export type monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  month: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count: number
+  status?: string
+  allocated_count?: number
+  skipped_count?: number
+  created_at?: Date | string | null
+  approved_at?: Date | string | null
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocation_approvals_submittedInput
+}
+
+export type monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  id?: number
+  month: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count: number
+  status?: string
+  allocated_count?: number
+  skipped_count?: number
+  submitted_by?: number | null
+  created_at?: Date | string | null
+  approved_at?: Date | string | null
+}
+
+export type monthly_allocation_approvalsCreateOrConnectWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsWhereUniqueInput
+  create: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput>
+}
+
+export type monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInputEnvelope = {
+  data: Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInput | Prisma.monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInput[]
+  skipDuplicates?: boolean
+}
+
+export type monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsWhereUniqueInput
+  update: Prisma.XOR<Prisma.monthly_allocation_approvalsUpdateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedUpdateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput>
+  create: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput>
+}
+
+export type monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsWhereUniqueInput
+  data: Prisma.XOR<Prisma.monthly_allocation_approvalsUpdateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedUpdateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput>
+}
+
+export type monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsScalarWhereInput
+  data: Prisma.XOR<Prisma.monthly_allocation_approvalsUpdateManyMutationInput, Prisma.monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput>
+}
+
+export type monthly_allocation_approvalsScalarWhereInput = {
+  AND?: Prisma.monthly_allocation_approvalsScalarWhereInput | Prisma.monthly_allocation_approvalsScalarWhereInput[]
+  OR?: Prisma.monthly_allocation_approvalsScalarWhereInput[]
+  NOT?: Prisma.monthly_allocation_approvalsScalarWhereInput | Prisma.monthly_allocation_approvalsScalarWhereInput[]
+  id?: Prisma.IntFilter<"monthly_allocation_approvals"> | number
+  month?: Prisma.StringFilter<"monthly_allocation_approvals"> | string
+  amount?: Prisma.DecimalFilter<"monthly_allocation_approvals"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFilter<"monthly_allocation_approvals"> | number
+  status?: Prisma.StringFilter<"monthly_allocation_approvals"> | string
+  allocated_count?: Prisma.IntFilter<"monthly_allocation_approvals"> | number
+  skipped_count?: Prisma.IntFilter<"monthly_allocation_approvals"> | number
+  submitted_by?: Prisma.IntNullableFilter<"monthly_allocation_approvals"> | number | null
+  approved_by?: Prisma.IntNullableFilter<"monthly_allocation_approvals"> | number | null
+  created_at?: Prisma.DateTimeNullableFilter<"monthly_allocation_approvals"> | Date | string | null
+  approved_at?: Prisma.DateTimeNullableFilter<"monthly_allocation_approvals"> | Date | string | null
+}
+
+export type monthly_allocation_approvalsUpsertWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsWhereUniqueInput
+  update: Prisma.XOR<Prisma.monthly_allocation_approvalsUpdateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedUpdateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput>
+  create: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedCreateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput>
+}
+
+export type monthly_allocation_approvalsUpdateWithWhereUniqueWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsWhereUniqueInput
+  data: Prisma.XOR<Prisma.monthly_allocation_approvalsUpdateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput, Prisma.monthly_allocation_approvalsUncheckedUpdateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput>
+}
+
+export type monthly_allocation_approvalsUpdateManyWithWhereWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  where: Prisma.monthly_allocation_approvalsScalarWhereInput
+  data: Prisma.XOR<Prisma.monthly_allocation_approvalsUpdateManyMutationInput, Prisma.monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput>
+}
+
+export type monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  id?: number
+  month: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count: number
+  status?: string
+  allocated_count?: number
+  skipped_count?: number
+  approved_by?: number | null
+  created_at?: Date | string | null
+  approved_at?: Date | string | null
+}
+
+export type monthly_allocation_approvalsCreateManyUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  id?: number
+  month: string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count: number
+  status?: string
+  allocated_count?: number
+  skipped_count?: number
+  submitted_by?: number | null
+  created_at?: Date | string | null
+  approved_at?: Date | string | null
+}
+
+export type monthly_allocation_approvalsUpdateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  month?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
+  skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  users_monthly_allocation_approvals_approved_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocation_approvals_approvedNestedInput
+}
+
+export type monthly_allocation_approvalsUncheckedUpdateWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  month?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
+  skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
+  approved_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
+export type monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  month?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
+  skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
+  approved_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
+export type monthly_allocation_approvalsUpdateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  month?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
+  skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  users_monthly_allocation_approvals_submitted_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocation_approvals_submittedNestedInput
+}
+
+export type monthly_allocation_approvalsUncheckedUpdateWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  month?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
+  skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
+  submitted_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
+export type monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  month?: Prisma.StringFieldUpdateOperationsInput | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  employee_count?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  allocated_count?: Prisma.IntFieldUpdateOperationsInput | number
+  skipped_count?: Prisma.IntFieldUpdateOperationsInput | number
+  submitted_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  approved_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
 
 
 export type monthly_allocation_approvalsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -528,6 +847,8 @@ export type monthly_allocation_approvalsSelect<ExtArgs extends runtime.Types.Ext
   approved_by?: boolean
   created_at?: boolean
   approved_at?: boolean
+  users_monthly_allocation_approvals_submitted_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>
+  users_monthly_allocation_approvals_approved_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>
 }, ExtArgs["result"]["monthly_allocation_approvals"]>
 
 export type monthly_allocation_approvalsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -542,6 +863,8 @@ export type monthly_allocation_approvalsSelectCreateManyAndReturn<ExtArgs extend
   approved_by?: boolean
   created_at?: boolean
   approved_at?: boolean
+  users_monthly_allocation_approvals_submitted_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>
+  users_monthly_allocation_approvals_approved_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>
 }, ExtArgs["result"]["monthly_allocation_approvals"]>
 
 export type monthly_allocation_approvalsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -556,6 +879,8 @@ export type monthly_allocation_approvalsSelectUpdateManyAndReturn<ExtArgs extend
   approved_by?: boolean
   created_at?: boolean
   approved_at?: boolean
+  users_monthly_allocation_approvals_submitted_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>
+  users_monthly_allocation_approvals_approved_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>
 }, ExtArgs["result"]["monthly_allocation_approvals"]>
 
 export type monthly_allocation_approvalsSelectScalar = {
@@ -573,10 +898,25 @@ export type monthly_allocation_approvalsSelectScalar = {
 }
 
 export type monthly_allocation_approvalsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "month" | "amount" | "employee_count" | "status" | "allocated_count" | "skipped_count" | "submitted_by" | "approved_by" | "created_at" | "approved_at", ExtArgs["result"]["monthly_allocation_approvals"]>
+export type monthly_allocation_approvalsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  users_monthly_allocation_approvals_submitted_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>
+  users_monthly_allocation_approvals_approved_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>
+}
+export type monthly_allocation_approvalsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  users_monthly_allocation_approvals_submitted_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>
+  users_monthly_allocation_approvals_approved_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>
+}
+export type monthly_allocation_approvalsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  users_monthly_allocation_approvals_submitted_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>
+  users_monthly_allocation_approvals_approved_byTousers?: boolean | Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>
+}
 
 export type $monthly_allocation_approvalsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "monthly_allocation_approvals"
-  objects: {}
+  objects: {
+    users_monthly_allocation_approvals_submitted_byTousers: Prisma.$usersPayload<ExtArgs> | null
+    users_monthly_allocation_approvals_approved_byTousers: Prisma.$usersPayload<ExtArgs> | null
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     month: string
@@ -983,6 +1323,8 @@ readonly fields: monthly_allocation_approvalsFieldRefs;
  */
 export interface Prisma__monthly_allocation_approvalsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  users_monthly_allocation_approvals_submitted_byTousers<T extends Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs>>): Prisma.Prisma__usersClient<runtime.Types.Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  users_monthly_allocation_approvals_approved_byTousers<T extends Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs>>): Prisma.Prisma__usersClient<runtime.Types.Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1040,6 +1382,10 @@ export type monthly_allocation_approvalsFindUniqueArgs<ExtArgs extends runtime.T
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
+  /**
    * Filter, which monthly_allocation_approvals to fetch.
    */
   where: Prisma.monthly_allocation_approvalsWhereUniqueInput
@@ -1058,6 +1404,10 @@ export type monthly_allocation_approvalsFindUniqueOrThrowArgs<ExtArgs extends ru
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
+  /**
    * Filter, which monthly_allocation_approvals to fetch.
    */
   where: Prisma.monthly_allocation_approvalsWhereUniqueInput
@@ -1075,6 +1425,10 @@ export type monthly_allocation_approvalsFindFirstArgs<ExtArgs extends runtime.Ty
    * Omit specific fields from the monthly_allocation_approvals
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
   /**
    * Filter, which monthly_allocation_approvals to fetch.
    */
@@ -1124,6 +1478,10 @@ export type monthly_allocation_approvalsFindFirstOrThrowArgs<ExtArgs extends run
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
+  /**
    * Filter, which monthly_allocation_approvals to fetch.
    */
   where?: Prisma.monthly_allocation_approvalsWhereInput
@@ -1171,6 +1529,10 @@ export type monthly_allocation_approvalsFindManyArgs<ExtArgs extends runtime.Typ
    * Omit specific fields from the monthly_allocation_approvals
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
   /**
    * Filter, which monthly_allocation_approvals to fetch.
    */
@@ -1220,6 +1582,10 @@ export type monthly_allocation_approvalsCreateArgs<ExtArgs extends runtime.Types
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
+  /**
    * The data needed to create a monthly_allocation_approvals.
    */
   data: Prisma.XOR<Prisma.monthly_allocation_approvalsCreateInput, Prisma.monthly_allocation_approvalsUncheckedCreateInput>
@@ -1253,6 +1619,10 @@ export type monthly_allocation_approvalsCreateManyAndReturnArgs<ExtArgs extends 
    */
   data: Prisma.monthly_allocation_approvalsCreateManyInput | Prisma.monthly_allocation_approvalsCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1267,6 +1637,10 @@ export type monthly_allocation_approvalsUpdateArgs<ExtArgs extends runtime.Types
    * Omit specific fields from the monthly_allocation_approvals
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
   /**
    * The data needed to update a monthly_allocation_approvals.
    */
@@ -1319,6 +1693,10 @@ export type monthly_allocation_approvalsUpdateManyAndReturnArgs<ExtArgs extends 
    * Limit how many monthly_allocation_approvals to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1333,6 +1711,10 @@ export type monthly_allocation_approvalsUpsertArgs<ExtArgs extends runtime.Types
    * Omit specific fields from the monthly_allocation_approvals
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
   /**
    * The filter to search for the monthly_allocation_approvals to update in case it exists.
    */
@@ -1360,6 +1742,10 @@ export type monthly_allocation_approvalsDeleteArgs<ExtArgs extends runtime.Types
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
+  /**
    * Filter which monthly_allocation_approvals to delete.
    */
   where: Prisma.monthly_allocation_approvalsWhereUniqueInput
@@ -1380,6 +1766,44 @@ export type monthly_allocation_approvalsDeleteManyArgs<ExtArgs extends runtime.T
 }
 
 /**
+ * monthly_allocation_approvals.users_monthly_allocation_approvals_submitted_byTousers
+ */
+export type monthly_allocation_approvals$users_monthly_allocation_approvals_submitted_byTousersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the users
+   */
+  select?: Prisma.usersSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the users
+   */
+  omit?: Prisma.usersOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.usersInclude<ExtArgs> | null
+  where?: Prisma.usersWhereInput
+}
+
+/**
+ * monthly_allocation_approvals.users_monthly_allocation_approvals_approved_byTousers
+ */
+export type monthly_allocation_approvals$users_monthly_allocation_approvals_approved_byTousersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the users
+   */
+  select?: Prisma.usersSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the users
+   */
+  omit?: Prisma.usersOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.usersInclude<ExtArgs> | null
+  where?: Prisma.usersWhereInput
+}
+
+/**
  * monthly_allocation_approvals without action
  */
 export type monthly_allocation_approvalsDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1391,4 +1815,8 @@ export type monthly_allocation_approvalsDefaultArgs<ExtArgs extends runtime.Type
    * Omit specific fields from the monthly_allocation_approvals
    */
   omit?: Prisma.monthly_allocation_approvalsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.monthly_allocation_approvalsInclude<ExtArgs> | null
 }

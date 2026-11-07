@@ -193,8 +193,12 @@ model monthly_allocation_approvals {
   approved_by     Int?
   created_at      DateTime? @default(now()) @db.Timestamp(6)
   approved_at     DateTime? @db.Timestamp(6)
+  users_monthly_allocation_approvals_submitted_byTousers users? @relation("monthly_allocation_approvals_submitted_byTousers", fields: [submitted_by], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "monthly_allocation_approvals_submitted_by_fkey")
+  users_monthly_allocation_approvals_approved_byTousers  users? @relation("monthly_allocation_approvals_approved_byTousers", fields: [approved_by], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "monthly_allocation_approvals_approved_by_fkey")
 
   @@index([status, month])
+  @@index([submitted_by])
+  @@index([approved_by])
 }
 
 model notifications {
@@ -339,6 +343,8 @@ model users {
   login_history                                               login_history[]
   monthly_allocations_monthly_allocations_allocated_byTousers monthly_allocations[]   @relation("monthly_allocations_allocated_byTousers")
   monthly_allocations_monthly_allocations_user_idTousers      monthly_allocations[]   @relation("monthly_allocations_user_idTousers")
+  monthly_allocation_approvals_submitted                      monthly_allocation_approvals[] @relation("monthly_allocation_approvals_submitted_byTousers")
+  monthly_allocation_approvals_approved                       monthly_allocation_approvals[] @relation("monthly_allocation_approvals_approved_byTousers")
   notifications                                               notifications[]
   orders_orders_employee_idTousers                            orders[]                @relation("orders_employee_idTousers")
   orders_orders_waiter_idTousers                              orders[]                @relation("orders_waiter_idTousers")

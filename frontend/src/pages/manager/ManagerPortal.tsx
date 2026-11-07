@@ -42,6 +42,7 @@ import {
 } from '../../components/charts/DashboardCharts';
 import { exportToExcel, getFileNameFromContentDisposition, downloadBlobFile } from '../../utils/exportHelpers';
 import { formatETB } from '../../utils/format';
+import { ETHIOPIAN_MONTH_NAMES, getCurrentEthiopianMonth } from '../../utils/ethiopianDate';
 
 // ─── Data normalizers: convert backend snake_case → frontend camelCase ───────
 const normalizeEmployee = (e: any) => ({
@@ -141,7 +142,7 @@ export default function ManagerPortal() {
     setPortalLoading(true);
     setPortalError(null);
     try {
-      const currentMonth = new Date().toISOString().slice(0, 7);
+      const currentMonth = getCurrentEthiopianMonth();
       const [empsRes, cafesRes, deptsRes, logsRes, messagesRes, finRes, monthlyRes, usageRes] = await Promise.all([
         apiGet('/api/company-manager/employees?limit=500').catch(() => ({ data: { items: [] } })),
         apiGet('/api/company-manager/cafes').catch(() => ({ data: [] })),
@@ -2783,7 +2784,15 @@ function ManagerReportsPage({
 }) {
   const { t } = useTranslation();
   const { apiDownload, apiGet, setGlobalLoading } = useApp();
-  const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [selectedMonthNumber, setSelectedMonthNumber] = useState(() => {
+    const [, month] = getCurrentEthiopianMonth().split('-');
+    return Number(month);
+  });
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const [year] = getCurrentEthiopianMonth().split('-');
+    return Number(year);
+  });
+  const selectedMonth = `${selectedYear}-${String(selectedMonthNumber).padStart(2, '0')}`;
   const [selectedDept, setSelectedDept] = useState('');
   const [selectedCafe, setSelectedCafe] = useState('');
   const [usageReport, setUsageReport] = useState<any>({ departments: [], employees: [] });
@@ -2836,7 +2845,7 @@ function ManagerReportsPage({
 
   // Exporters
   const exportFinancialReport = async (format: 'xlsx' | 'pdf' | 'csv') => {
-    const month = selectedMonth || new Date().toISOString().slice(0, 7);
+    const month = selectedMonth;
     try {
       setGlobalLoading(true);
       const { blob, contentDisposition } = await apiDownload(
@@ -2891,14 +2900,33 @@ function ManagerReportsPage({
       {/* Filter Bar */}
       <div className="flex flex-col md:flex-row gap-4 items-end bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-xs">
         <div className="space-y-1.5 w-full md:w-auto">
-          <label className="font-bold text-slate-700">Month Picker</label>
-          <input
-            id="report-month-filter"
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold w-full"
-          />
+          <label className="font-bold text-slate-700">Ethiopian Month</label>
+          <div className="flex gap-2">
+            <select
+              id="report-month-filter"
+              aria-label="Ethiopian month"
+              value={selectedMonthNumber}
+              onChange={(e) => setSelectedMonthNumber(Number(e.target.value))}
+              className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
+            >
+              {ETHIOPIAN_MONTH_NAMES.map((month, index) => (
+                <option key={month} value={index + 1}>{month}</option>
+              ))}
+            </select>
+            <input
+              id="report-year-filter"
+              aria-label="Ethiopian year"
+              type="number"
+              min="1"
+              max="9999"
+              value={selectedYear}
+              onChange={(e) => {
+                const year = Number(e.target.value);
+                if (Number.isInteger(year) && year >= 1 && year <= 9999) setSelectedYear(year);
+              }}
+              className="w-24 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
+            />
+          </div>
         </div>
         <div className="space-y-1.5 w-full md:w-auto">
           <label className="font-bold text-slate-700">Department</label>

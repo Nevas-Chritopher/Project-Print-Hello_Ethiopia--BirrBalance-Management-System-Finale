@@ -123,7 +123,7 @@ Migration `20260703120000_production_order_qr_ledger` adds:
 - Backfill that converts old negative adjustments to positive debit entries.
 - Additional notification types for order status, refunds, and feedback.
 
-Migration `20261106000000_automatic_monthly_allocation_approval` adds the persisted optional monthly-allocation setting and manager approval queue. Apply migrations before starting the updated backend:
+Migration `20261106000000_automatic_monthly_allocation_approval` adds the persisted optional monthly-allocation setting and manager approval queue. Migration `20261106010000_repair_monthly_allocation_tables` safely ensures those tables and their user references exist for databases where the earlier migration was not applied or the tables are missing. Both migrations are additive and preserve existing records. Apply migrations before starting the updated backend:
 
 ```bash
 npm run prisma:migrate

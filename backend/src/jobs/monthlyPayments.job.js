@@ -49,7 +49,20 @@ export const processMonthlyPayments = async () => {
     });
   }
 
-  await prepareAutomaticMonthlyAllocationApproval();
+  try {
+    await prepareAutomaticMonthlyAllocationApproval();
+  } catch (error) {
+    const missingAllocationSettingsTable = error?.code === "P2021"
+      && [error?.meta?.table, error?.meta?.modelName, error?.message]
+        .some((value) => String(value ?? "").includes("monthly_allocation_settings"));
+    if (!missingAllocationSettingsTable) {
+      throw error;
+    }
+    console.error(
+      "Automatic monthly allocation was skipped because its database table is missing. Run `npm run prisma:migrate` and restart the backend.",
+      error,
+    );
+  }
 };
 
 export const startMonthlyPaymentsJob = () => {
