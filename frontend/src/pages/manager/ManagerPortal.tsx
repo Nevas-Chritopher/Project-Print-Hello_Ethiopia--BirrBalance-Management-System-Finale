@@ -1287,7 +1287,16 @@ function ManagerEmployeesPage({
         throw new Error('Unable to prepare every employee QR code. Please try again.');
       }
 
-      setPrintAllQrs([...uniqueQrCodes.values()]);
+      setPrintAllQrs([...uniqueQrCodes.values()].sort((first, second) => {
+        const firstDepartment = first.department.trim();
+        const secondDepartment = second.department.trim();
+        if (!firstDepartment || !secondDepartment) {
+          if (!firstDepartment && secondDepartment) return 1;
+          if (firstDepartment && !secondDepartment) return -1;
+        }
+        return firstDepartment.localeCompare(secondDepartment, undefined, { sensitivity: 'base' })
+          || first.fullname.localeCompare(second.fullname, undefined, { sensitivity: 'base' });
+      }));
     } catch (e: any) {
       setFormError(e.message || 'Unable to generate employee QR codes.');
     } finally {
