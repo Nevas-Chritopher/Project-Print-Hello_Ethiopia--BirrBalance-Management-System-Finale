@@ -394,6 +394,7 @@ export const ModelName = {
   login_history: 'login_history',
   menu_items: 'menu_items',
   monthly_allocations: 'monthly_allocations',
+  expired_balance_restorations: 'expired_balance_restorations',
   monthly_payment_schedules: 'monthly_payment_schedules',
   monthly_allocation_settings: 'monthly_allocation_settings',
   monthly_allocation_approvals: 'monthly_allocation_approvals',
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "audit_logs" | "balance_transactions" | "cafe_staff" | "cafes" | "departments" | "employee_qr_codes" | "feedback" | "login_history" | "menu_items" | "monthly_allocations" | "monthly_payment_schedules" | "monthly_allocation_settings" | "monthly_allocation_approvals" | "notifications" | "qr_sessions" | "order_items" | "orders" | "password_reset_tokens" | "refresh_tokens" | "roles" | "user_roles" | "users"
+    modelProps: "audit_logs" | "balance_transactions" | "cafe_staff" | "cafes" | "departments" | "employee_qr_codes" | "feedback" | "login_history" | "menu_items" | "monthly_allocations" | "expired_balance_restorations" | "monthly_payment_schedules" | "monthly_allocation_settings" | "monthly_allocation_approvals" | "notifications" | "qr_sessions" | "order_items" | "orders" | "password_reset_tokens" | "refresh_tokens" | "roles" | "user_roles" | "users"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1162,6 +1163,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.monthly_allocationsCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.Monthly_allocationsCountAggregateOutputType> | number
+        }
+      }
+    }
+    expired_balance_restorations: {
+      payload: Prisma.$expired_balance_restorationsPayload<ExtArgs>
+      fields: Prisma.expired_balance_restorationsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.expired_balance_restorationsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.expired_balance_restorationsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>
+        }
+        findFirst: {
+          args: Prisma.expired_balance_restorationsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.expired_balance_restorationsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>
+        }
+        findMany: {
+          args: Prisma.expired_balance_restorationsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>[]
+        }
+        create: {
+          args: Prisma.expired_balance_restorationsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>
+        }
+        createMany: {
+          args: Prisma.expired_balance_restorationsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.expired_balance_restorationsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>[]
+        }
+        delete: {
+          args: Prisma.expired_balance_restorationsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>
+        }
+        update: {
+          args: Prisma.expired_balance_restorationsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>
+        }
+        deleteMany: {
+          args: Prisma.expired_balance_restorationsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.expired_balance_restorationsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.expired_balance_restorationsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>[]
+        }
+        upsert: {
+          args: Prisma.expired_balance_restorationsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$expired_balance_restorationsPayload>
+        }
+        aggregate: {
+          args: Prisma.Expired_balance_restorationsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExpired_balance_restorations>
+        }
+        groupBy: {
+          args: Prisma.expired_balance_restorationsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Expired_balance_restorationsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.expired_balance_restorationsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Expired_balance_restorationsCountAggregateOutputType> | number
         }
       }
     }
@@ -2114,7 +2189,8 @@ export const Balance_transactionsScalarFieldEnum = {
   direction: 'direction',
   transaction_type: 'transaction_type',
   reference_note: 'reference_note',
-  created_at: 'created_at'
+  created_at: 'created_at',
+  restoration_id: 'restoration_id'
 } as const
 
 export type Balance_transactionsScalarFieldEnum = (typeof Balance_transactionsScalarFieldEnum)[keyof typeof Balance_transactionsScalarFieldEnum]
@@ -2206,10 +2282,32 @@ export const Monthly_allocationsScalarFieldEnum = {
   amount: 'amount',
   allocated_by: 'allocated_by',
   created_at: 'created_at',
-  updated_at: 'updated_at'
+  updated_at: 'updated_at',
+  cycle_start_at: 'cycle_start_at',
+  cycle_end_at: 'cycle_end_at',
+  cycle_label: 'cycle_label'
 } as const
 
 export type Monthly_allocationsScalarFieldEnum = (typeof Monthly_allocationsScalarFieldEnum)[keyof typeof Monthly_allocationsScalarFieldEnum]
+
+
+export const Expired_balance_restorationsScalarFieldEnum = {
+  id: 'id',
+  allocation_id: 'allocation_id',
+  employee_id: 'employee_id',
+  department_id: 'department_id',
+  manager_id: 'manager_id',
+  original_expiration_transaction_id: 'original_expiration_transaction_id',
+  reexpiration_transaction_id: 'reexpiration_transaction_id',
+  original_expired_amount: 'original_expired_amount',
+  restored_amount: 'restored_amount',
+  restored_at: 'restored_at',
+  expires_at: 'expires_at',
+  status: 'status',
+  created_at: 'created_at'
+} as const
+
+export type Expired_balance_restorationsScalarFieldEnum = (typeof Expired_balance_restorationsScalarFieldEnum)[keyof typeof Expired_balance_restorationsScalarFieldEnum]
 
 
 export const Monthly_payment_schedulesScalarFieldEnum = {
@@ -2679,6 +2777,7 @@ export type GlobalOmitConfig = {
   login_history?: Prisma.login_historyOmit
   menu_items?: Prisma.menu_itemsOmit
   monthly_allocations?: Prisma.monthly_allocationsOmit
+  expired_balance_restorations?: Prisma.expired_balance_restorationsOmit
   monthly_payment_schedules?: Prisma.monthly_payment_schedulesOmit
   monthly_allocation_settings?: Prisma.monthly_allocation_settingsOmit
   monthly_allocation_approvals?: Prisma.monthly_allocation_approvalsOmit

@@ -95,6 +95,11 @@ export type menu_items = Prisma.menu_itemsModel
  */
 export type monthly_allocations = Prisma.monthly_allocationsModel
 /**
+ * Model expired_balance_restorations
+ *
+ */
+export type expired_balance_restorations = Prisma.expired_balance_restorationsModel
+/**
  * Model monthly_payment_schedules
  * 
  */

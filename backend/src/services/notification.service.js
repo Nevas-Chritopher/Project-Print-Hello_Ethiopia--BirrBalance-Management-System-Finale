@@ -2,6 +2,7 @@ import prisma from "../config/db.js";
 import { writeAuditLog } from "./audit.service.js";
 import { AppError } from "../utils/AppError.js";
 import { getCurrentMonthRange } from "../utils/date.js";
+import { getSpendableAllocations } from "./balance.service.js";
 
 const LOW_BALANCE_PERCENT = 0.2;
 
@@ -221,42 +222,20 @@ export const getCurrentMonthBalance = async (userId, tx = prisma) => {
     },
   });
 
-  if (!allocation) {
-    return {
-      allocated: 0,
-      used: 0,
-      remaining: 0,
-      monthStart: start,
-      monthEnd: end,
-    };
-  }
-
-  const spent = await tx.balance_transactions.aggregate({
-    where: {
-      user_id: userId,
-      created_at: { gte: startAt, lt: endAt },
-      direction: "debit",
-    },
-    _sum: { amount: true },
-  });
-
-  const credits = await tx.balance_transactions.aggregate({
-    where: {
-      user_id: userId,
-      created_at: { gte: startAt, lt: endAt },
-      direction: "credit",
-    },
-    _sum: { amount: true },
-  });
-
-  const allocated = Number(allocation.amount);
-  const creditAmount = Number(credits._sum.amount ?? allocation.amount);
+  const [spent, spendableSources] = await Promise.all([
+    tx.balance_transactions.aggregate({
+      where: { user_id: userId, created_at: { gte: startAt, lt: endAt }, direction: "debit" },
+      _sum: { amount: true },
+    }),
+    getSpendableAllocations(userId, tx),
+  ]);
+  const allocated = allocation ? Number(allocation.amount) : 0;
   const debitAmount = Number(spent._sum.amount ?? 0);
 
   return {
     allocated,
     used: debitAmount,
-    remaining: Math.max(creditAmount - debitAmount, 0),
+    remaining: Number(spendableSources.reduce((sum, source) => sum + source.remaining, 0).toFixed(2)),
     monthStart: start,
     monthEnd: end,
   };

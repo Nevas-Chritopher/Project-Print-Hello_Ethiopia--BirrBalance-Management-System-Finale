@@ -49,6 +49,9 @@ export type Monthly_allocationsMinAggregateOutputType = {
   allocated_by: number | null
   created_at: Date | null
   updated_at: Date | null
+  cycle_start_at: Date | null
+  cycle_end_at: Date | null
+  cycle_label: string | null
 }
 
 export type Monthly_allocationsMaxAggregateOutputType = {
@@ -59,6 +62,9 @@ export type Monthly_allocationsMaxAggregateOutputType = {
   allocated_by: number | null
   created_at: Date | null
   updated_at: Date | null
+  cycle_start_at: Date | null
+  cycle_end_at: Date | null
+  cycle_label: string | null
 }
 
 export type Monthly_allocationsCountAggregateOutputType = {
@@ -69,6 +75,9 @@ export type Monthly_allocationsCountAggregateOutputType = {
   allocated_by: number
   created_at: number
   updated_at: number
+  cycle_start_at: number
+  cycle_end_at: number
+  cycle_label: number
   _all: number
 }
 
@@ -95,6 +104,9 @@ export type Monthly_allocationsMinAggregateInputType = {
   allocated_by?: true
   created_at?: true
   updated_at?: true
+  cycle_start_at?: true
+  cycle_end_at?: true
+  cycle_label?: true
 }
 
 export type Monthly_allocationsMaxAggregateInputType = {
@@ -105,6 +117,9 @@ export type Monthly_allocationsMaxAggregateInputType = {
   allocated_by?: true
   created_at?: true
   updated_at?: true
+  cycle_start_at?: true
+  cycle_end_at?: true
+  cycle_label?: true
 }
 
 export type Monthly_allocationsCountAggregateInputType = {
@@ -115,6 +130,9 @@ export type Monthly_allocationsCountAggregateInputType = {
   allocated_by?: true
   created_at?: true
   updated_at?: true
+  cycle_start_at?: true
+  cycle_end_at?: true
+  cycle_label?: true
   _all?: true
 }
 
@@ -212,6 +230,9 @@ export type Monthly_allocationsGroupByOutputType = {
   allocated_by: number | null
   created_at: Date | null
   updated_at: Date | null
+  cycle_start_at: Date | null
+  cycle_end_at: Date | null
+  cycle_label: string | null
   _count: Monthly_allocationsCountAggregateOutputType | null
   _avg: Monthly_allocationsAvgAggregateOutputType | null
   _sum: Monthly_allocationsSumAggregateOutputType | null
@@ -245,7 +266,11 @@ export type monthly_allocationsWhereInput = {
   allocated_by?: Prisma.IntNullableFilter<"monthly_allocations"> | number | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_start_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_end_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_label?: Prisma.StringNullableFilter<"monthly_allocations"> | string | null
   balance_transactions?: Prisma.Balance_transactionsListRelationFilter
+  expired_balance_restorations?: Prisma.Expired_balance_restorationsListRelationFilter
   users_monthly_allocations_allocated_byTousers?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.usersWhereInput> | null
   users_monthly_allocations_user_idTousers?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.usersWhereInput>
 }
@@ -258,7 +283,11 @@ export type monthly_allocationsOrderByWithRelationInput = {
   allocated_by?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
   updated_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  cycle_start_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  cycle_end_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  cycle_label?: Prisma.SortOrderInput | Prisma.SortOrder
   balance_transactions?: Prisma.balance_transactionsOrderByRelationAggregateInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsOrderByRelationAggregateInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersOrderByWithRelationInput
   users_monthly_allocations_user_idTousers?: Prisma.usersOrderByWithRelationInput
 }
@@ -275,7 +304,11 @@ export type monthly_allocationsWhereUniqueInput = Prisma.AtLeast<{
   allocated_by?: Prisma.IntNullableFilter<"monthly_allocations"> | number | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_start_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_end_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_label?: Prisma.StringNullableFilter<"monthly_allocations"> | string | null
   balance_transactions?: Prisma.Balance_transactionsListRelationFilter
+  expired_balance_restorations?: Prisma.Expired_balance_restorationsListRelationFilter
   users_monthly_allocations_allocated_byTousers?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.usersWhereInput> | null
   users_monthly_allocations_user_idTousers?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.usersWhereInput>
 }, "id" | "user_id_allocation_month">
@@ -288,6 +321,9 @@ export type monthly_allocationsOrderByWithAggregationInput = {
   allocated_by?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
   updated_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  cycle_start_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  cycle_end_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  cycle_label?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.monthly_allocationsCountOrderByAggregateInput
   _avg?: Prisma.monthly_allocationsAvgOrderByAggregateInput
   _max?: Prisma.monthly_allocationsMaxOrderByAggregateInput
@@ -306,6 +342,9 @@ export type monthly_allocationsScalarWhereWithAggregatesInput = {
   allocated_by?: Prisma.IntNullableWithAggregatesFilter<"monthly_allocations"> | number | null
   created_at?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_allocations"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_allocations"> | Date | string | null
+  cycle_start_at?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_allocations"> | Date | string | null
+  cycle_end_at?: Prisma.DateTimeNullableWithAggregatesFilter<"monthly_allocations"> | Date | string | null
+  cycle_label?: Prisma.StringNullableWithAggregatesFilter<"monthly_allocations"> | string | null
 }
 
 export type monthly_allocationsCreateInput = {
@@ -313,7 +352,11 @@ export type monthly_allocationsCreateInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
   balance_transactions?: Prisma.balance_transactionsCreateNestedManyWithoutMonthly_allocationsInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedManyWithoutMonthly_allocationsInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput
   users_monthly_allocations_user_idTousers: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_user_idTousersInput
 }
@@ -326,7 +369,11 @@ export type monthly_allocationsUncheckedCreateInput = {
   allocated_by?: number | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
   balance_transactions?: Prisma.balance_transactionsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
 }
 
 export type monthly_allocationsUpdateInput = {
@@ -334,7 +381,11 @@ export type monthly_allocationsUpdateInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   balance_transactions?: Prisma.balance_transactionsUpdateManyWithoutMonthly_allocationsNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateManyWithoutMonthly_allocationsNestedInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersNestedInput
   users_monthly_allocations_user_idTousers?: Prisma.usersUpdateOneRequiredWithoutMonthly_allocations_monthly_allocations_user_idTousersNestedInput
 }
@@ -347,7 +398,11 @@ export type monthly_allocationsUncheckedUpdateInput = {
   allocated_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   balance_transactions?: Prisma.balance_transactionsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
 }
 
 export type monthly_allocationsCreateManyInput = {
@@ -358,6 +413,9 @@ export type monthly_allocationsCreateManyInput = {
   allocated_by?: number | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
 }
 
 export type monthly_allocationsUpdateManyMutationInput = {
@@ -365,6 +423,9 @@ export type monthly_allocationsUpdateManyMutationInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type monthly_allocationsUncheckedUpdateManyInput = {
@@ -375,6 +436,9 @@ export type monthly_allocationsUncheckedUpdateManyInput = {
   allocated_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type Monthly_allocationsNullableScalarRelationFilter = {
@@ -395,6 +459,9 @@ export type monthly_allocationsCountOrderByAggregateInput = {
   allocated_by?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  cycle_start_at?: Prisma.SortOrder
+  cycle_end_at?: Prisma.SortOrder
+  cycle_label?: Prisma.SortOrder
 }
 
 export type monthly_allocationsAvgOrderByAggregateInput = {
@@ -412,6 +479,9 @@ export type monthly_allocationsMaxOrderByAggregateInput = {
   allocated_by?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  cycle_start_at?: Prisma.SortOrder
+  cycle_end_at?: Prisma.SortOrder
+  cycle_label?: Prisma.SortOrder
 }
 
 export type monthly_allocationsMinOrderByAggregateInput = {
@@ -422,6 +492,9 @@ export type monthly_allocationsMinOrderByAggregateInput = {
   allocated_by?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+  cycle_start_at?: Prisma.SortOrder
+  cycle_end_at?: Prisma.SortOrder
+  cycle_label?: Prisma.SortOrder
 }
 
 export type monthly_allocationsSumOrderByAggregateInput = {
@@ -429,6 +502,11 @@ export type monthly_allocationsSumOrderByAggregateInput = {
   user_id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   allocated_by?: Prisma.SortOrder
+}
+
+export type Monthly_allocationsScalarRelationFilter = {
+  is?: Prisma.monthly_allocationsWhereInput
+  isNot?: Prisma.monthly_allocationsWhereInput
 }
 
 export type Monthly_allocationsListRelationFilter = {
@@ -459,6 +537,20 @@ export type monthly_allocationsUpdateOneWithoutBalance_transactionsNestedInput =
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type monthly_allocationsCreateNestedOneWithoutExpired_balance_restorationsInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocationsCreateWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUncheckedCreateWithoutExpired_balance_restorationsInput>
+  connectOrCreate?: Prisma.monthly_allocationsCreateOrConnectWithoutExpired_balance_restorationsInput
+  connect?: Prisma.monthly_allocationsWhereUniqueInput
+}
+
+export type monthly_allocationsUpdateOneRequiredWithoutExpired_balance_restorationsNestedInput = {
+  create?: Prisma.XOR<Prisma.monthly_allocationsCreateWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUncheckedCreateWithoutExpired_balance_restorationsInput>
+  connectOrCreate?: Prisma.monthly_allocationsCreateOrConnectWithoutExpired_balance_restorationsInput
+  upsert?: Prisma.monthly_allocationsUpsertWithoutExpired_balance_restorationsInput
+  connect?: Prisma.monthly_allocationsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.monthly_allocationsUpdateToOneWithWhereWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUpdateWithoutExpired_balance_restorationsInput>, Prisma.monthly_allocationsUncheckedUpdateWithoutExpired_balance_restorationsInput>
 }
 
 export type monthly_allocationsCreateNestedManyWithoutUsers_monthly_allocations_allocated_byTousersInput = {
@@ -550,6 +642,10 @@ export type monthly_allocationsCreateWithoutBalance_transactionsInput = {
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedManyWithoutMonthly_allocationsInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput
   users_monthly_allocations_user_idTousers: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_user_idTousersInput
 }
@@ -562,6 +658,10 @@ export type monthly_allocationsUncheckedCreateWithoutBalance_transactionsInput =
   allocated_by?: number | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
 }
 
 export type monthly_allocationsCreateOrConnectWithoutBalance_transactionsInput = {
@@ -585,6 +685,10 @@ export type monthly_allocationsUpdateWithoutBalance_transactionsInput = {
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateManyWithoutMonthly_allocationsNestedInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersNestedInput
   users_monthly_allocations_user_idTousers?: Prisma.usersUpdateOneRequiredWithoutMonthly_allocations_monthly_allocations_user_idTousersNestedInput
 }
@@ -597,6 +701,80 @@ export type monthly_allocationsUncheckedUpdateWithoutBalance_transactionsInput =
   allocated_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
+}
+
+export type monthly_allocationsCreateWithoutExpired_balance_restorationsInput = {
+  allocation_month: Date | string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  created_at?: Date | string | null
+  updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
+  balance_transactions?: Prisma.balance_transactionsCreateNestedManyWithoutMonthly_allocationsInput
+  users_monthly_allocations_allocated_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput
+  users_monthly_allocations_user_idTousers: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_user_idTousersInput
+}
+
+export type monthly_allocationsUncheckedCreateWithoutExpired_balance_restorationsInput = {
+  id?: number
+  user_id: number
+  allocation_month: Date | string
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocated_by?: number | null
+  created_at?: Date | string | null
+  updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
+  balance_transactions?: Prisma.balance_transactionsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
+}
+
+export type monthly_allocationsCreateOrConnectWithoutExpired_balance_restorationsInput = {
+  where: Prisma.monthly_allocationsWhereUniqueInput
+  create: Prisma.XOR<Prisma.monthly_allocationsCreateWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUncheckedCreateWithoutExpired_balance_restorationsInput>
+}
+
+export type monthly_allocationsUpsertWithoutExpired_balance_restorationsInput = {
+  update: Prisma.XOR<Prisma.monthly_allocationsUpdateWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUncheckedUpdateWithoutExpired_balance_restorationsInput>
+  create: Prisma.XOR<Prisma.monthly_allocationsCreateWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUncheckedCreateWithoutExpired_balance_restorationsInput>
+  where?: Prisma.monthly_allocationsWhereInput
+}
+
+export type monthly_allocationsUpdateToOneWithWhereWithoutExpired_balance_restorationsInput = {
+  where?: Prisma.monthly_allocationsWhereInput
+  data: Prisma.XOR<Prisma.monthly_allocationsUpdateWithoutExpired_balance_restorationsInput, Prisma.monthly_allocationsUncheckedUpdateWithoutExpired_balance_restorationsInput>
+}
+
+export type monthly_allocationsUpdateWithoutExpired_balance_restorationsInput = {
+  allocation_month?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance_transactions?: Prisma.balance_transactionsUpdateManyWithoutMonthly_allocationsNestedInput
+  users_monthly_allocations_allocated_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersNestedInput
+  users_monthly_allocations_user_idTousers?: Prisma.usersUpdateOneRequiredWithoutMonthly_allocations_monthly_allocations_user_idTousersNestedInput
+}
+
+export type monthly_allocationsUncheckedUpdateWithoutExpired_balance_restorationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  allocation_month?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  allocated_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  balance_transactions?: Prisma.balance_transactionsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
 }
 
 export type monthly_allocationsCreateWithoutUsers_monthly_allocations_allocated_byTousersInput = {
@@ -604,7 +782,11 @@ export type monthly_allocationsCreateWithoutUsers_monthly_allocations_allocated_
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
   balance_transactions?: Prisma.balance_transactionsCreateNestedManyWithoutMonthly_allocationsInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedManyWithoutMonthly_allocationsInput
   users_monthly_allocations_user_idTousers: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_user_idTousersInput
 }
 
@@ -615,7 +797,11 @@ export type monthly_allocationsUncheckedCreateWithoutUsers_monthly_allocations_a
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
   balance_transactions?: Prisma.balance_transactionsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
 }
 
 export type monthly_allocationsCreateOrConnectWithoutUsers_monthly_allocations_allocated_byTousersInput = {
@@ -633,7 +819,11 @@ export type monthly_allocationsCreateWithoutUsers_monthly_allocations_user_idTou
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
   balance_transactions?: Prisma.balance_transactionsCreateNestedManyWithoutMonthly_allocationsInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedManyWithoutMonthly_allocationsInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersCreateNestedOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput
 }
 
@@ -644,7 +834,11 @@ export type monthly_allocationsUncheckedCreateWithoutUsers_monthly_allocations_u
   allocated_by?: number | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
   balance_transactions?: Prisma.balance_transactionsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutMonthly_allocationsInput
 }
 
 export type monthly_allocationsCreateOrConnectWithoutUsers_monthly_allocations_user_idTousersInput = {
@@ -684,6 +878,9 @@ export type monthly_allocationsScalarWhereInput = {
   allocated_by?: Prisma.IntNullableFilter<"monthly_allocations"> | number | null
   created_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
   updated_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_start_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_end_at?: Prisma.DateTimeNullableFilter<"monthly_allocations"> | Date | string | null
+  cycle_label?: Prisma.StringNullableFilter<"monthly_allocations"> | string | null
 }
 
 export type monthly_allocationsUpsertWithWhereUniqueWithoutUsers_monthly_allocations_user_idTousersInput = {
@@ -709,6 +906,9 @@ export type monthly_allocationsCreateManyUsers_monthly_allocations_allocated_byT
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
 }
 
 export type monthly_allocationsCreateManyUsers_monthly_allocations_user_idTousersInput = {
@@ -718,6 +918,9 @@ export type monthly_allocationsCreateManyUsers_monthly_allocations_user_idTouser
   allocated_by?: number | null
   created_at?: Date | string | null
   updated_at?: Date | string | null
+  cycle_start_at?: Date | string | null
+  cycle_end_at?: Date | string | null
+  cycle_label?: string | null
 }
 
 export type monthly_allocationsUpdateWithoutUsers_monthly_allocations_allocated_byTousersInput = {
@@ -725,7 +928,11 @@ export type monthly_allocationsUpdateWithoutUsers_monthly_allocations_allocated_
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   balance_transactions?: Prisma.balance_transactionsUpdateManyWithoutMonthly_allocationsNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateManyWithoutMonthly_allocationsNestedInput
   users_monthly_allocations_user_idTousers?: Prisma.usersUpdateOneRequiredWithoutMonthly_allocations_monthly_allocations_user_idTousersNestedInput
 }
 
@@ -736,7 +943,11 @@ export type monthly_allocationsUncheckedUpdateWithoutUsers_monthly_allocations_a
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   balance_transactions?: Prisma.balance_transactionsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
 }
 
 export type monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocations_allocated_byTousersInput = {
@@ -746,6 +957,9 @@ export type monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocatio
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type monthly_allocationsUpdateWithoutUsers_monthly_allocations_user_idTousersInput = {
@@ -753,7 +967,11 @@ export type monthly_allocationsUpdateWithoutUsers_monthly_allocations_user_idTou
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   balance_transactions?: Prisma.balance_transactionsUpdateManyWithoutMonthly_allocationsNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateManyWithoutMonthly_allocationsNestedInput
   users_monthly_allocations_allocated_byTousers?: Prisma.usersUpdateOneWithoutMonthly_allocations_monthly_allocations_allocated_byTousersNestedInput
 }
 
@@ -764,7 +982,11 @@ export type monthly_allocationsUncheckedUpdateWithoutUsers_monthly_allocations_u
   allocated_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   balance_transactions?: Prisma.balance_transactionsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutMonthly_allocationsNestedInput
 }
 
 export type monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocations_user_idTousersInput = {
@@ -774,6 +996,9 @@ export type monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocatio
   allocated_by?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_start_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_end_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cycle_label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -783,10 +1008,12 @@ export type monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocatio
 
 export type Monthly_allocationsCountOutputType = {
   balance_transactions: number
+  expired_balance_restorations: number
 }
 
 export type Monthly_allocationsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   balance_transactions?: boolean | Monthly_allocationsCountOutputTypeCountBalance_transactionsArgs
+  expired_balance_restorations?: boolean | Monthly_allocationsCountOutputTypeCountExpired_balance_restorationsArgs
 }
 
 /**
@@ -806,6 +1033,13 @@ export type Monthly_allocationsCountOutputTypeCountBalance_transactionsArgs<ExtA
   where?: Prisma.balance_transactionsWhereInput
 }
 
+/**
+ * Monthly_allocationsCountOutputType without action
+ */
+export type Monthly_allocationsCountOutputTypeCountExpired_balance_restorationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.expired_balance_restorationsWhereInput
+}
+
 
 export type monthly_allocationsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -815,7 +1049,11 @@ export type monthly_allocationsSelect<ExtArgs extends runtime.Types.Extensions.I
   allocated_by?: boolean
   created_at?: boolean
   updated_at?: boolean
+  cycle_start_at?: boolean
+  cycle_end_at?: boolean
+  cycle_label?: boolean
   balance_transactions?: boolean | Prisma.monthly_allocations$balance_transactionsArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.monthly_allocations$expired_balance_restorationsArgs<ExtArgs>
   users_monthly_allocations_allocated_byTousers?: boolean | Prisma.monthly_allocations$users_monthly_allocations_allocated_byTousersArgs<ExtArgs>
   users_monthly_allocations_user_idTousers?: boolean | Prisma.usersDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.Monthly_allocationsCountOutputTypeDefaultArgs<ExtArgs>
@@ -829,6 +1067,9 @@ export type monthly_allocationsSelectCreateManyAndReturn<ExtArgs extends runtime
   allocated_by?: boolean
   created_at?: boolean
   updated_at?: boolean
+  cycle_start_at?: boolean
+  cycle_end_at?: boolean
+  cycle_label?: boolean
   users_monthly_allocations_allocated_byTousers?: boolean | Prisma.monthly_allocations$users_monthly_allocations_allocated_byTousersArgs<ExtArgs>
   users_monthly_allocations_user_idTousers?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monthly_allocations"]>
@@ -841,6 +1082,9 @@ export type monthly_allocationsSelectUpdateManyAndReturn<ExtArgs extends runtime
   allocated_by?: boolean
   created_at?: boolean
   updated_at?: boolean
+  cycle_start_at?: boolean
+  cycle_end_at?: boolean
+  cycle_label?: boolean
   users_monthly_allocations_allocated_byTousers?: boolean | Prisma.monthly_allocations$users_monthly_allocations_allocated_byTousersArgs<ExtArgs>
   users_monthly_allocations_user_idTousers?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["monthly_allocations"]>
@@ -853,11 +1097,15 @@ export type monthly_allocationsSelectScalar = {
   allocated_by?: boolean
   created_at?: boolean
   updated_at?: boolean
+  cycle_start_at?: boolean
+  cycle_end_at?: boolean
+  cycle_label?: boolean
 }
 
-export type monthly_allocationsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "allocation_month" | "amount" | "allocated_by" | "created_at" | "updated_at", ExtArgs["result"]["monthly_allocations"]>
+export type monthly_allocationsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "allocation_month" | "amount" | "allocated_by" | "created_at" | "updated_at" | "cycle_start_at" | "cycle_end_at" | "cycle_label", ExtArgs["result"]["monthly_allocations"]>
 export type monthly_allocationsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   balance_transactions?: boolean | Prisma.monthly_allocations$balance_transactionsArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.monthly_allocations$expired_balance_restorationsArgs<ExtArgs>
   users_monthly_allocations_allocated_byTousers?: boolean | Prisma.monthly_allocations$users_monthly_allocations_allocated_byTousersArgs<ExtArgs>
   users_monthly_allocations_user_idTousers?: boolean | Prisma.usersDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.Monthly_allocationsCountOutputTypeDefaultArgs<ExtArgs>
@@ -875,6 +1123,7 @@ export type $monthly_allocationsPayload<ExtArgs extends runtime.Types.Extensions
   name: "monthly_allocations"
   objects: {
     balance_transactions: Prisma.$balance_transactionsPayload<ExtArgs>[]
+    expired_balance_restorations: Prisma.$expired_balance_restorationsPayload<ExtArgs>[]
     users_monthly_allocations_allocated_byTousers: Prisma.$usersPayload<ExtArgs> | null
     users_monthly_allocations_user_idTousers: Prisma.$usersPayload<ExtArgs>
   }
@@ -886,6 +1135,9 @@ export type $monthly_allocationsPayload<ExtArgs extends runtime.Types.Extensions
     allocated_by: number | null
     created_at: Date | null
     updated_at: Date | null
+    cycle_start_at: Date | null
+    cycle_end_at: Date | null
+    cycle_label: string | null
   }, ExtArgs["result"]["monthly_allocations"]>
   composites: {}
 }
@@ -1281,6 +1533,7 @@ readonly fields: monthly_allocationsFieldRefs;
 export interface Prisma__monthly_allocationsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   balance_transactions<T extends Prisma.monthly_allocations$balance_transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.monthly_allocations$balance_transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$balance_transactionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  expired_balance_restorations<T extends Prisma.monthly_allocations$expired_balance_restorationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.monthly_allocations$expired_balance_restorationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$expired_balance_restorationsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   users_monthly_allocations_allocated_byTousers<T extends Prisma.monthly_allocations$users_monthly_allocations_allocated_byTousersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.monthly_allocations$users_monthly_allocations_allocated_byTousersArgs<ExtArgs>>): Prisma.Prisma__usersClient<runtime.Types.Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   users_monthly_allocations_user_idTousers<T extends Prisma.usersDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usersDefaultArgs<ExtArgs>>): Prisma.Prisma__usersClient<runtime.Types.Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
@@ -1319,6 +1572,9 @@ export interface monthly_allocationsFieldRefs {
   readonly allocated_by: Prisma.FieldRef<"monthly_allocations", 'Int'>
   readonly created_at: Prisma.FieldRef<"monthly_allocations", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"monthly_allocations", 'DateTime'>
+  readonly cycle_start_at: Prisma.FieldRef<"monthly_allocations", 'DateTime'>
+  readonly cycle_end_at: Prisma.FieldRef<"monthly_allocations", 'DateTime'>
+  readonly cycle_label: Prisma.FieldRef<"monthly_allocations", 'String'>
 }
     
 
@@ -1741,6 +1997,30 @@ export type monthly_allocations$balance_transactionsArgs<ExtArgs extends runtime
   take?: number
   skip?: number
   distinct?: Prisma.Balance_transactionsScalarFieldEnum | Prisma.Balance_transactionsScalarFieldEnum[]
+}
+
+/**
+ * monthly_allocations.expired_balance_restorations
+ */
+export type monthly_allocations$expired_balance_restorationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the expired_balance_restorations
+   */
+  select?: Prisma.expired_balance_restorationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the expired_balance_restorations
+   */
+  omit?: Prisma.expired_balance_restorationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.expired_balance_restorationsInclude<ExtArgs> | null
+  where?: Prisma.expired_balance_restorationsWhereInput
+  orderBy?: Prisma.expired_balance_restorationsOrderByWithRelationInput | Prisma.expired_balance_restorationsOrderByWithRelationInput[]
+  cursor?: Prisma.expired_balance_restorationsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Expired_balance_restorationsScalarFieldEnum | Prisma.Expired_balance_restorationsScalarFieldEnum[]
 }
 
 /**

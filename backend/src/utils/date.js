@@ -211,6 +211,55 @@ export const getEthiopianMonthRange = (month) => {
 export const getMonthRange = (month) => getEthiopianMonthRange(month);
 export const getCurrentMonthRange = () => getEthiopianMonthRange();
 
+// A cycle is one Ethiopian calendar month beginning on the selected day.  The
+// date-only fields are deliberately paired with Addis-local timestamp bounds
+// so ledger entries never drift by a day when UTC is used by the database.
+export const getEthiopianCycleRange = (ethiopianStartDate) => {
+  const normalized = normalizeEthiopianDate(ethiopianStartDate);
+  if (
+    !Number.isInteger(normalized.year)
+    || normalized.year < 1
+    || !Number.isInteger(normalized.month)
+    || normalized.month < 1
+    || normalized.month > 13
+    || !Number.isInteger(normalized.day)
+    || normalized.day < 1
+    || normalized.day > 30
+  ) {
+    throw new AppError("Invalid Ethiopian cycle start date", 400);
+  }
+
+  let startKenat;
+  try {
+    startKenat = new Kenat(`${normalized.year}/${normalized.month}/${normalized.day}`);
+  } catch (error) {
+    if (error?.name === "InvalidEthiopianDateError") {
+      throw new AppError("Invalid Ethiopian cycle start date", 400);
+    }
+    throw error;
+  }
+  const parsedStart = startKenat.getEthiopian();
+  if (
+    Number(parsedStart.year) !== normalized.year
+    || Number(parsedStart.month) !== normalized.month
+    || Number(parsedStart.day) !== normalized.day
+  ) {
+    throw new AppError("Invalid Ethiopian cycle start date", 400);
+  }
+  const startGregorian = startKenat.getGregorian();
+  const endGregorian = startKenat.addMonths(1).getGregorian();
+  const start = new Date(Date.UTC(startGregorian.year, startGregorian.month - 1, startGregorian.day));
+  const end = new Date(Date.UTC(endGregorian.year, endGregorian.month - 1, endGregorian.day));
+
+  return {
+    ethiopian_start: normalized,
+    start,
+    end,
+    startAt: toAddisLocalUtcBoundary(startGregorian.year, startGregorian.month, startGregorian.day),
+    endAt: toAddisLocalUtcBoundary(endGregorian.year, endGregorian.month, endGregorian.day),
+  };
+};
+
 const asKenatDate = (dateLike) => {
   if (dateLike instanceof Kenat) return dateLike;
 

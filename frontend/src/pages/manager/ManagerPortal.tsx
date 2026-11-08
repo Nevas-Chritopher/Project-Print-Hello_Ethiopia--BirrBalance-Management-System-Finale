@@ -2302,6 +2302,8 @@ function ManagerBalancePage({
   const [targetId, setTargetId] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
+  const [cycleStartDay, setCycleStartDay] = useState('');
+  const [cycleLabel, setCycleLabel] = useState('');
   const [allowancePreview, setAllowancePreview] = useState<any>(null);
   const [automaticAllocationEnabled, setAutomaticAllocationEnabled] = useState(false);
   const [approvalRequests, setApprovalRequests] = useState<any[]>([]);
@@ -2309,6 +2311,10 @@ function ManagerBalancePage({
   const [approvalBusy, setApprovalBusy] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [successAllocMsg, setSuccessAllocMsg] = useState('');
+  const [restorationDepartment, setRestorationDepartment] = useState('');
+  const [restorationPassword, setRestorationPassword] = useState('');
+  const [restorationDays, setRestorationDays] = useState('5');
+  const [restorationBusy, setRestorationBusy] = useState(false);
 
   const loadAutomaticAllocation = async () => {
     const response = await apiGet('/api/company-manager/balances/automatic-allocation');
@@ -2378,6 +2384,12 @@ function ManagerBalancePage({
  const handleAllocate = async () => {
   if (!amount || !targetId || !selectedMonth) return;
   try {
+    const cycleDetails = {
+      ...(cycleLabel.trim() ? { cycle_label: cycleLabel.trim() } : {}),
+      ...(cycleStartDay ? {
+        ethiopian_cycle_start: `${selectedMonth.replace('-', '/')}/${Number(cycleStartDay)}`,
+      } : {}),
+    };
     let successCount = 0;
     let failCount = 0;
 
@@ -2386,6 +2398,7 @@ function ManagerBalancePage({
         user_id: Number(targetId),
         amount: Number(amount),
         month: selectedMonth,
+        ...cycleDetails,
       });
       successCount = 1;
     } else {
@@ -2394,6 +2407,7 @@ function ManagerBalancePage({
         month: selectedMonth,
         applies_to_all: targetId === 'all',
         department_id: targetId === 'all' ? null : Number(targetId),
+        ...cycleDetails,
       });
       successCount = result?.data?.allocated ?? result?.allocated ?? getAffectedCount();
       failCount = result?.data?.skipped ?? result?.skipped ?? 0;
@@ -2408,6 +2422,8 @@ function ManagerBalancePage({
     setShowWarningModal(false);
     setAmount('');
     setTargetId('');
+    setCycleStartDay('');
+    setCycleLabel('');
     setSearchEmp('');
     onReload();
     window.dispatchEvent(new Event('esrom-balance-updated'));
@@ -2418,6 +2434,31 @@ function ManagerBalancePage({
     alert(e.message || 'Error allocating balance');
   }
 };
+
+  const restoreExpiredBalances = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setRestorationBusy(true);
+    setCalendarError('');
+    try {
+      const response = await apiPost('/api/company-manager/balances/restore-expired', {
+        department_id: Number(restorationDepartment),
+        manager_password: restorationPassword,
+        additional_days: Number(restorationDays),
+      });
+      const result = response?.data ?? response ?? {};
+      setSuccessAllocMsg(
+        `Returned ${formatETB(Number(result.total_restored ?? 0))} to ${result.restored_count ?? 0} employee(s); restored funds expire ${new Date(result.expires_at).toLocaleString()}.`,
+      );
+      setRestorationPassword('');
+      await onReload();
+      window.dispatchEvent(new Event('esrom-balance-updated'));
+    } catch (error: any) {
+      setCalendarError(error.message || 'Could not return expired money.');
+    } finally {
+      setRestorationPassword('');
+      setRestorationBusy(false);
+    }
+  };
 
   const moveSelectedMonth = (offset: number) => {
     if (!selectedMonth) return;
@@ -2597,6 +2638,39 @@ function ManagerBalancePage({
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-bold"
               />
             </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="alloc-cycle-start-day" className="font-bold text-slate-700">Custom Ethiopian Cycle Start (optional)</label>
+                <select
+                  id="alloc-cycle-start-day"
+                  value={cycleStartDay}
+                  onChange={(event) => setCycleStartDay(event.target.value)}
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
+                >
+                  <option value="">Use the first day of the selected month</option>
+                  {calendarDays.map((day: any) => (
+                    <option key={day.day} value={day.day}>
+                      {day.day} {ethMonthNames[(monthParts[1] || 1) - 1]} {monthParts[0] || ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="alloc-cycle-label" className="font-bold text-slate-700">Cycle Label (optional)</label>
+                <input
+                  id="alloc-cycle-label"
+                  type="text"
+                  maxLength={150}
+                  value={cycleLabel}
+                  onChange={(event) => setCycleLabel(event.target.value)}
+                  placeholder="e.g. Tir Allocation Cycle"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-500">
+              A custom cycle runs from the selected Ethiopian date to the same date in the following Ethiopian month. Leave the date blank for the existing monthly cycle.
+            </p>
              <section className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4" aria-label="Ethiopian working-day calendar">
                <div className="flex items-center justify-between gap-3">
                  <div className="flex items-center gap-2">
@@ -2731,6 +2805,60 @@ function ManagerBalancePage({
           </div>
         </div>
       </div>
+
+      <section className="rounded-3xl border border-amber-200 bg-white p-6 shadow-sm space-y-4" aria-labelledby="return-expired-money-heading">
+        <div>
+          <h2 id="return-expired-money-heading" className="text-sm font-black text-primary">Return Expired Money</h2>
+          <p className="mt-1 text-xs text-slate-500">Return unused amounts from expired allocation cycles to employees in a department. The restored balance remains linked to its original month and expires again after the selected duration.</p>
+        </div>
+        <form onSubmit={restoreExpiredBalances} className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="restore-expired-department" className="text-xs font-bold text-slate-700">Department</label>
+            <select
+              id="restore-expired-department"
+              required
+              value={restorationDepartment}
+              onChange={(event) => setRestorationDepartment(event.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold"
+            >
+              <option value="">Select department</option>
+              {departmentsList.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="restore-expired-days" className="text-xs font-bold text-slate-700">Additional days (1–365)</label>
+            <input
+              id="restore-expired-days"
+              type="number"
+              min="1"
+              max="365"
+              required
+              value={restorationDays}
+              onChange={(event) => setRestorationDays(event.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold"
+            />
+          </div>
+          <div className="space-y-1.5 md:col-span-2">
+            <label htmlFor="restore-expired-password" className="text-xs font-bold text-slate-700">Manager Password</label>
+            <input
+              id="restore-expired-password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={restorationPassword}
+              onChange={(event) => setRestorationPassword(event.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={restorationBusy || !restorationDepartment || !restorationPassword || !restorationDays}
+            className="rounded-xl bg-primary px-4 py-3 text-xs font-bold text-white disabled:opacity-50 md:col-span-2"
+          >
+            {restorationBusy ? 'Returning expired money…' : 'Return Expired Money'}
+          </button>
+        </form>
+      </section>
 
       {/* Warning confirmation Modal */}
       {showWarningModal && (
@@ -2993,13 +3121,62 @@ function ManagerReportsPage({
         </div>
         {!selectedDept ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-xs">
-              <thead><tr className="bg-slate-50 text-slate-500"><th className="p-4">Department</th><th className="p-4 text-center">Number of Employees</th><th className="p-4 text-right">Total Money Given</th><th className="p-4 text-right">Expired Money</th><th className="p-4 text-right">Total Used Money</th></tr></thead>
-              <tbody>{departmentRows.map((row: any) => <tr key={row.department_id ?? row.department} onClick={() => row.department_id && setSelectedDept(String(row.department_id))} className="border-t cursor-pointer hover:bg-slate-50"><td className="p-4 font-bold">{row.department}</td><td className="p-4 text-center">{row.employee_count}</td><td className="p-4 text-right font-semibold">{formatETB(row.total_money_given)}</td><td className="p-4 text-right text-amber-700 font-semibold">{formatETB(row.expired_money)}</td><td className="p-4 text-right text-secondary font-bold">{formatETB(row.total_used)}</td></tr>)}</tbody>
+            <table className="w-full min-w-[1500px] text-left text-xs">
+              <thead><tr className="bg-slate-50 text-slate-500">
+                <th className="p-4">Department</th>
+                <th className="p-4 text-center">Employees</th>
+                <th className="p-4 text-right">Originally Allocated</th>
+                <th className="p-4 text-right">Net Adjustments</th>
+                <th className="p-4 text-right">Initially Used</th>
+                <th className="p-4 text-right">Returned / Restored</th>
+                <th className="p-4 text-right">Used After Restoration</th>
+                <th className="p-4 text-right">Initially Expired</th>
+                <th className="p-4 text-right">Re-expired</th>
+                <th className="p-4 text-right">Final Balance</th>
+              </tr></thead>
+              <tbody>{departmentRows.map((row: any) => <tr key={row.department_id ?? row.department} onClick={() => row.department_id && setSelectedDept(String(row.department_id))} className="border-t cursor-pointer hover:bg-slate-50">
+                <td className="p-4 font-bold">{row.department}</td>
+                <td className="p-4 text-center">{row.employee_count}</td>
+                <td className="p-4 text-right font-semibold">{formatETB(row.total_money_given)}</td>
+                <td className="p-4 text-right">{formatETB(row.net_adjustments)}</td>
+                <td className="p-4 text-right">{formatETB(row.initially_used)}</td>
+                <td className="p-4 text-right text-green-700">{formatETB(row.returned_restored)}</td>
+                <td className="p-4 text-right">{formatETB(row.used_after_restoration)}</td>
+                <td className="p-4 text-right">{formatETB(row.initially_expired)}</td>
+                <td className="p-4 text-right text-amber-700">{formatETB(row.reexpired)}</td>
+                <td className="p-4 text-right font-bold">{formatETB(row.final_balance)}</td>
+              </tr>)}</tbody>
             </table>
           </div>
         ) : (
-          <table className="w-full text-left text-xs"><thead><tr className="bg-slate-50 text-slate-500"><th className="p-4">Employee</th><th className="p-4 text-right">Total Used</th><th className="p-4 text-right">Expired</th><th className="p-4">Daily / Meal Usage</th></tr></thead><tbody>{usageReport.employees.map((row: any) => <tr key={row.employee_id} className="border-t align-top"><td className="p-4 font-bold">{row.employee_name}<div className="text-slate-400">{row.employee_id}</div></td><td className="p-4 text-right">{formatETB(row.total_used)}</td><td className="p-4 text-right">{formatETB(row.expired_money)}</td><td className="p-4 text-slate-600">{row.daily_meal_usage}</td></tr>)}</tbody></table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1700px] text-left text-xs">
+              <thead><tr className="bg-slate-50 text-slate-500">
+                <th className="p-4">Employee / Cycle</th>
+                <th className="p-4 text-right">Originally Allocated</th>
+                <th className="p-4 text-right">Net Adjustments</th>
+                <th className="p-4 text-right">Initially Used</th>
+                <th className="p-4 text-right">Initially Expired</th>
+                <th className="p-4 text-right">Returned / Restored</th>
+                <th className="p-4 text-right">Used After Restoration</th>
+                <th className="p-4 text-right">Re-expired</th>
+                <th className="p-4 text-right">Final Balance</th>
+                <th className="p-4">Daily / Meal Usage</th>
+              </tr></thead>
+              <tbody>{usageReport.employees.map((row: any) => <tr key={row.employee_id} className="border-t align-top">
+                <td className="p-4 font-bold">{row.employee_name}<div className="text-slate-400">{row.employee_id}</div><div className="mt-1 text-[10px] font-medium text-slate-500">{row.cycle_label}<br />{row.cycle_start_date} – {row.cycle_end_date}</div></td>
+                <td className="p-4 text-right">{formatETB(row.original_allocated)}</td>
+                <td className="p-4 text-right">{formatETB(row.net_adjustments)}</td>
+                <td className="p-4 text-right">{formatETB(row.initially_used)}</td>
+                <td className="p-4 text-right">{formatETB(row.initially_expired)}</td>
+                <td className="p-4 text-right text-green-700">{formatETB(row.returned_restored)}</td>
+                <td className="p-4 text-right">{formatETB(row.used_after_restoration)}</td>
+                <td className="p-4 text-right text-amber-700">{formatETB(row.reexpired)}</td>
+                <td className="p-4 text-right font-bold">{formatETB(row.final_balance)}</td>
+                <td className="max-w-md p-4 text-slate-600">{row.daily_meal_usage}</td>
+              </tr>)}</tbody>
+            </table>
+          </div>
         )}
       </div>
 

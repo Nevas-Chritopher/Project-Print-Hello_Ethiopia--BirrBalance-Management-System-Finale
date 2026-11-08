@@ -9,6 +9,7 @@ import {
   changeOwnPassword,
   allocateBalance,
   allocateGroupBalance,
+  restoreExpiredBalances,
   approveMonthlyAllocation,
   automaticMonthlyAllocationStatus,
   activatePaymentSchedule,
@@ -67,6 +68,7 @@ router.delete("/departments/:id", removeDepartment);
 
 router.post("/balances/allocations", allocateBalance);
 router.post("/balances/group-allocations", allocateGroupBalance);
+router.post("/balances/restore-expired", restoreExpiredBalances);
 router.get("/balances/allowance-preview", monthlyAllowancePreview);
 router.get("/balances/automatic-allocation", automaticMonthlyAllocationStatus);
 router.patch("/balances/automatic-allocation", setAutomaticMonthlyAllocation);

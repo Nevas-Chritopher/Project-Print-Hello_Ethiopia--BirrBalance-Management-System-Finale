@@ -34,13 +34,18 @@ model balance_transactions {
   transaction_type    transaction_type
   reference_note      String?
   created_at          DateTime?            @default(now()) @db.Timestamp(6)
+  restoration_id      Int?
   monthly_allocations monthly_allocations? @relation(fields: [allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  expired_balance_restorations_original_expiration expired_balance_restorations? @relation("restoration_original_expiration")
+  expired_balance_restorations_reexpiration        expired_balance_restorations? @relation("restoration_reexpiration")
+  expired_balance_restorations                     expired_balance_restorations? @relation("restoration_transactions", fields: [restoration_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
   users               users                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([user_id], map: "idx_transactions_user")
   @@index([user_id, created_at], map: "idx_balance_transactions_user_created_at")
   @@index([user_id, direction, created_at], map: "idx_balance_transactions_user_direction_created_at")
   @@index([allocation_id], map: "idx_transactions_allocation")
+  @@index([restoration_id], map: "idx_balance_transactions_restoration")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -75,6 +80,7 @@ model departments {
   created_at DateTime? @default(now()) @db.Timestamp(6)
   users      users[]
   monthly_payment_schedules monthly_payment_schedules[]
+  expired_balance_restorations expired_balance_restorations[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -143,7 +149,11 @@ model monthly_allocations {
   allocated_by                                  Int?
   created_at                                    DateTime?              @default(now()) @db.Timestamp(6)
   updated_at                                    DateTime?              @default(now()) @db.Timestamp(6)
+  cycle_start_at                                DateTime?              @db.Date
+  cycle_end_at                                  DateTime?              @db.Date
+  cycle_label                                   String?                @db.VarChar(150)
   balance_transactions                          balance_transactions[]
+  expired_balance_restorations                  expired_balance_restorations[]
   users_monthly_allocations_allocated_byTousers users?                 @relation("monthly_allocations_allocated_byTousers", fields: [allocated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_monthly_allocations_user_idTousers      users                  @relation("monthly_allocations_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
@@ -151,6 +161,34 @@ model monthly_allocations {
   @@index([user_id], map: "idx_allocations_user")
   @@index([allocation_month], map: "idx_allocations_month")
   @@index([allocated_by, created_at], map: "idx_allocations_allocated_by_created_at")
+  @@index([cycle_start_at, cycle_end_at], map: "idx_allocations_cycle_dates")
+}
+
+model expired_balance_restorations {
+  id                                 Int                   @id @default(autoincrement())
+  allocation_id                      Int
+  employee_id                        Int
+  department_id                      Int?
+  manager_id                         Int
+  original_expiration_transaction_id Int                   @unique
+  reexpiration_transaction_id        Int?                  @unique
+  original_expired_amount            Decimal               @db.Decimal(10, 2)
+  restored_amount                    Decimal               @db.Decimal(10, 2)
+  restored_at                        DateTime              @default(now()) @db.Timestamp(6)
+  expires_at                         DateTime              @db.Timestamp(6)
+  status                             String                @default("active") @db.VarChar(20)
+  created_at                         DateTime              @default(now()) @db.Timestamp(6)
+  monthly_allocations                monthly_allocations   @relation(fields: [allocation_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  employees                          users                 @relation("restoration_employee", fields: [employee_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  managers                           users                 @relation("restoration_manager", fields: [manager_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  departments                        departments?          @relation(fields: [department_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  original_expiration                balance_transactions  @relation("restoration_original_expiration", fields: [original_expiration_transaction_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  reexpiration                       balance_transactions? @relation("restoration_reexpiration", fields: [reexpiration_transaction_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  transactions                       balance_transactions[] @relation("restoration_transactions")
+
+  @@index([department_id, status], map: "idx_restorations_department_status")
+  @@index([expires_at, status], map: "idx_restorations_expiry_status")
+  @@index([allocation_id], map: "idx_restorations_allocation")
 }
 
 model monthly_payment_schedules {
@@ -354,6 +392,8 @@ model users {
   qr_sessions_qr_sessions_waiter_idTousers                    qr_sessions[]          @relation("qr_sessions_waiter_idTousers")
   user_roles                                                  user_roles[]
   departments                                                 departments?            @relation(fields: [department_id], references: [id], onUpdate: NoAction)
+  expired_balance_restorations_employee                        expired_balance_restorations[] @relation("restoration_employee")
+  expired_balance_restorations_manager                         expired_balance_restorations[] @relation("restoration_manager")
 
   @@index([department_id], map: "idx_users_department")
   @@index([is_active], map: "idx_users_active")
@@ -380,6 +420,7 @@ enum transaction_type {
   refund
   adjustment
   expiration
+  restoration
 }
 
 enum transaction_direction {

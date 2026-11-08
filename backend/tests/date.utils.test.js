@@ -6,10 +6,16 @@ import {
   gregorianToEthiopian,
   getEthiopianMonthCalendar,
   getEthiopianMonthRange,
+  getEthiopianCycleRange,
   isOfficialHoliday,
   isWorkingDay,
 } from "../src/utils/date.js";
 import { validateMonth } from "../src/validators/common.validators.js";
+import {
+  validateAllocationCreate,
+  validateExpiredBalanceRestoration,
+  validateGroupAllocation,
+} from "../src/validators/company.validators.js";
 
 test("Gregorian-to-Ethiopian conversion matches the verified Ethiopian date mapping", () => {
   assert.deepEqual(gregorianToEthiopian(new Date(Date.UTC(2026, 10, 6))), { year: 2019, month: 2, day: 27 });
@@ -21,6 +27,54 @@ test("Ethiopian month boundary conversion keeps the month window consistent for 
   assert.equal(range.month, "2019-02");
   assert.equal(range.startAt.toISOString(), "2026-10-10T21:00:00.000Z");
   assert.equal(range.endAt.toISOString(), "2026-11-09T21:00:00.000Z");
+});
+
+test("custom Ethiopian allocation cycles preserve their requested start date and end on the same day next month", () => {
+  const cycle = getEthiopianCycleRange("2019/04/04");
+  assert.deepEqual(cycle.ethiopian_start, { year: 2019, month: 4, day: 4 });
+  assert.deepEqual(gregorianToEthiopian(cycle.start), { year: 2019, month: 4, day: 4 });
+  assert.deepEqual(gregorianToEthiopian(cycle.end), { year: 2019, month: 5, day: 4 });
+  assert.equal(cycle.startAt.toISOString(), "2026-12-12T21:00:00.000Z");
+  assert.equal(cycle.endAt.toISOString(), "2027-01-11T21:00:00.000Z");
+  assert.throws(() => getEthiopianCycleRange("2019/13/30"), { statusCode: 400 });
+});
+
+test("allocation validation accepts a cycle date in its reporting month and rejects a different month", () => {
+  assert.equal(validateAllocationCreate({
+    user_id: 1,
+    amount: 100,
+    month: "2019-04",
+    ethiopian_cycle_start: "2019/04/04",
+    cycle_label: "Tir Allocation Cycle",
+  }).cycle_label, "Tir Allocation Cycle");
+  assert.throws(() => validateGroupAllocation({
+    amount: 100,
+    month: "2019-04",
+    department_id: 1,
+    ethiopian_cycle_start: "2019/05/04",
+  }), { statusCode: 400 });
+});
+
+test("expired balance restoration validation bounds days and requires authorization fields", () => {
+  assert.deepEqual(validateExpiredBalanceRestoration({
+    department_id: 2,
+    manager_password: "manager-secret",
+    additional_days: 5,
+  }), {
+    department_id: 2,
+    manager_password: "manager-secret",
+    additional_days: 5,
+  });
+  assert.throws(() => validateExpiredBalanceRestoration({
+    department_id: 2,
+    manager_password: "manager-secret",
+    additional_days: 366,
+  }), { statusCode: 400 });
+  assert.throws(() => validateExpiredBalanceRestoration({
+    department_id: 2,
+    manager_password: "",
+    additional_days: 5,
+  }), { statusCode: 400 });
 });
 
 test("Ethiopian month calendar marks weekends and confirmed holidays as restricted", () => {

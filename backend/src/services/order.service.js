@@ -1,8 +1,7 @@
 import prisma from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
-import { getMonthRange } from "../utils/date.js";
 import { writeAuditLog } from "./audit.service.js";
-import { getEmployeeCurrentMonthSummary } from "./balance.service.js";
+import { getSpendableAllocations } from "./balance.service.js";
 import {
   createNotification,
   notifyOrderConfirmed,
@@ -131,23 +130,13 @@ export const createOrderWithBalanceDeduction = async ({
             subtotal: manualTotal,
           }],
         };
-    const { start } = getMonthRange();
-
-    const allocation = await tx.monthly_allocations.findUnique({
-      where: {
-        user_id_allocation_month: {
-          user_id: employeeId,
-          allocation_month: start,
-        },
-      },
-    });
-
-    if (!allocation) {
-      throw new AppError("Employee has no allocation for the current month", 409);
+    const balanceSources = await getSpendableAllocations(employeeId, tx);
+    if (!balanceSources.length) {
+      throw new AppError("Employee has no active allocation cycle", 409);
     }
 
-    const balance = await getEmployeeCurrentMonthSummary(employeeId, tx);
-    if (balance.remaining < totalAmount) {
+    const balance = Number(balanceSources.reduce((sum, source) => sum + source.remaining, 0).toFixed(2));
+    if (balance < totalAmount) {
       throw new AppError("Insufficient balance", 409);
     }
 
@@ -165,16 +154,24 @@ export const createOrderWithBalanceDeduction = async ({
       include: { order_items: true },
     });
 
-    await tx.balance_transactions.create({
-      data: {
-        user_id: employeeId,
-        allocation_id: allocation.id,
-        amount: totalAmount,
-        direction: "debit",
-        transaction_type: "order",
-        reference_note: `Order ${order.order_uuid}`,
-      },
-    });
+    let remainingOrderCents = Math.round(totalAmount * 100);
+    for (const source of balanceSources) {
+      if (remainingOrderCents <= 0) break;
+      const sourceCents = Math.round(source.remaining * 100);
+      const amountCents = Math.min(sourceCents, remainingOrderCents);
+      await tx.balance_transactions.create({
+        data: {
+          user_id: employeeId,
+          allocation_id: source.allocation.id,
+          restoration_id: source.restoration_id,
+          amount: amountCents / 100,
+          direction: "debit",
+          transaction_type: "order",
+          reference_note: `Order ${order.order_uuid}`,
+        },
+      });
+      remainingOrderCents -= amountCents;
+    }
 
     await notifyOrderConfirmed(employeeId, order.id, totalAmount, actor, ipAddress, tx);
     await triggerLowBalanceIfNeeded(employeeId, actor, ipAddress, tx);
@@ -191,7 +188,7 @@ export const createOrderWithBalanceDeduction = async ({
       tx,
     );
 
-    const remainingBalance = Number((balance.remaining - totalAmount).toFixed(2));
+    const remainingBalance = Number((balance - totalAmount).toFixed(2));
 
     return {
       order,
@@ -254,7 +251,7 @@ const createBalanceRestoration = async ({ tx, order, transactionType, note }) =>
     throw new AppError("Order balance has already been restored", 409);
   }
 
-  const debit = await tx.balance_transactions.findFirst({
+  const debits = await tx.balance_transactions.findMany({
     where: {
       user_id: order.employee_id,
       transaction_type: "order",
@@ -264,20 +261,31 @@ const createBalanceRestoration = async ({ tx, order, transactionType, note }) =>
     orderBy: { created_at: "asc" },
   });
 
-  if (!debit?.allocation_id) {
+  if (!debits.length || debits.some((debit) => !debit.allocation_id)) {
     throw new AppError("Original order balance transaction was not found", 409);
   }
 
-  return tx.balance_transactions.create({
-    data: {
-      user_id: order.employee_id,
-      allocation_id: debit.allocation_id,
-      amount: order.total_amount,
-      direction: "credit",
-      transaction_type: transactionType,
-      reference_note: `${note} - Order ${order.order_uuid}`,
-    },
-  });
+  const debitedAmount = Number(debits.reduce((sum, debit) => sum + Number(debit.amount), 0).toFixed(2));
+  if (Math.abs(debitedAmount - Number(order.total_amount)) > 0.001) {
+    throw new AppError("Original order balance transactions do not match the order total", 409);
+  }
+
+  const refunds = [];
+  for (const debit of debits) {
+    refunds.push(await tx.balance_transactions.create({
+      data: {
+        user_id: order.employee_id,
+        allocation_id: debit.allocation_id,
+        restoration_id: debit.restoration_id,
+        amount: debit.amount,
+        direction: "credit",
+        transaction_type: transactionType,
+        reference_note: `${note} - Order ${order.order_uuid}`,
+      },
+    }));
+  }
+
+  return refunds.length === 1 ? refunds[0] : refunds;
 };
 
 const notifyOrderStatus = (tx, order, status, actor, ipAddress) => {

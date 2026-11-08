@@ -36,6 +36,7 @@ import {
   updateAutomaticMonthlyAllocationSetting,
   issuePrintableEmployeeQr,
   issueAllPrintableEmployeeQrs,
+  restoreExpiredBalancesForDepartment,
 } from "../services/company.service.js";
 import {
   validateAllocationCreate,
@@ -59,6 +60,7 @@ import {
   validateId,
   validatePasswordReset,
   validateManagerPasswordChange,
+  validateExpiredBalanceRestoration,
 } from "../validators/company.validators.js";
 
 export const addCafe = asyncHandler(async (req, res) => {
@@ -169,6 +171,11 @@ export const allocateBalance = asyncHandler(async (req, res) => {
 export const allocateGroupBalance = asyncHandler(async (req, res) => {
   const result = await assignGroupMonthlyBalance(req.user, validateGroupAllocation(req.body), req.ip);
   return successResponse(res, result, "Group balance allocated successfully", 201);
+});
+
+export const restoreExpiredBalances = asyncHandler(async (req, res) => {
+  const result = await restoreExpiredBalancesForDepartment(req.user, validateExpiredBalanceRestoration(req.body), req.ip);
+  return successResponse(res, result, `Restored expired balances for ${result.restored_count} employee(s)`);
 });
 
 export const monthlyAllowancePreview = asyncHandler(async (req, res) => {

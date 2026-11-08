@@ -31,6 +31,7 @@ export type Balance_transactionsAvgAggregateOutputType = {
   user_id: number | null
   allocation_id: number | null
   amount: runtime.Decimal | null
+  restoration_id: number | null
 }
 
 export type Balance_transactionsSumAggregateOutputType = {
@@ -38,6 +39,7 @@ export type Balance_transactionsSumAggregateOutputType = {
   user_id: number | null
   allocation_id: number | null
   amount: runtime.Decimal | null
+  restoration_id: number | null
 }
 
 export type Balance_transactionsMinAggregateOutputType = {
@@ -49,6 +51,7 @@ export type Balance_transactionsMinAggregateOutputType = {
   transaction_type: $Enums.transaction_type | null
   reference_note: string | null
   created_at: Date | null
+  restoration_id: number | null
 }
 
 export type Balance_transactionsMaxAggregateOutputType = {
@@ -60,6 +63,7 @@ export type Balance_transactionsMaxAggregateOutputType = {
   transaction_type: $Enums.transaction_type | null
   reference_note: string | null
   created_at: Date | null
+  restoration_id: number | null
 }
 
 export type Balance_transactionsCountAggregateOutputType = {
@@ -71,6 +75,7 @@ export type Balance_transactionsCountAggregateOutputType = {
   transaction_type: number
   reference_note: number
   created_at: number
+  restoration_id: number
   _all: number
 }
 
@@ -80,6 +85,7 @@ export type Balance_transactionsAvgAggregateInputType = {
   user_id?: true
   allocation_id?: true
   amount?: true
+  restoration_id?: true
 }
 
 export type Balance_transactionsSumAggregateInputType = {
@@ -87,6 +93,7 @@ export type Balance_transactionsSumAggregateInputType = {
   user_id?: true
   allocation_id?: true
   amount?: true
+  restoration_id?: true
 }
 
 export type Balance_transactionsMinAggregateInputType = {
@@ -98,6 +105,7 @@ export type Balance_transactionsMinAggregateInputType = {
   transaction_type?: true
   reference_note?: true
   created_at?: true
+  restoration_id?: true
 }
 
 export type Balance_transactionsMaxAggregateInputType = {
@@ -109,6 +117,7 @@ export type Balance_transactionsMaxAggregateInputType = {
   transaction_type?: true
   reference_note?: true
   created_at?: true
+  restoration_id?: true
 }
 
 export type Balance_transactionsCountAggregateInputType = {
@@ -120,6 +129,7 @@ export type Balance_transactionsCountAggregateInputType = {
   transaction_type?: true
   reference_note?: true
   created_at?: true
+  restoration_id?: true
   _all?: true
 }
 
@@ -218,6 +228,7 @@ export type Balance_transactionsGroupByOutputType = {
   transaction_type: $Enums.transaction_type
   reference_note: string | null
   created_at: Date | null
+  restoration_id: number | null
   _count: Balance_transactionsCountAggregateOutputType | null
   _avg: Balance_transactionsAvgAggregateOutputType | null
   _sum: Balance_transactionsSumAggregateOutputType | null
@@ -252,7 +263,11 @@ export type balance_transactionsWhereInput = {
   transaction_type?: Prisma.Enumtransaction_typeFilter<"balance_transactions"> | $Enums.transaction_type
   reference_note?: Prisma.StringNullableFilter<"balance_transactions"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"balance_transactions"> | Date | string | null
+  restoration_id?: Prisma.IntNullableFilter<"balance_transactions"> | number | null
   monthly_allocations?: Prisma.XOR<Prisma.Monthly_allocationsNullableScalarRelationFilter, Prisma.monthly_allocationsWhereInput> | null
+  expired_balance_restorations_original_expiration?: Prisma.XOR<Prisma.Expired_balance_restorationsNullableScalarRelationFilter, Prisma.expired_balance_restorationsWhereInput> | null
+  expired_balance_restorations_reexpiration?: Prisma.XOR<Prisma.Expired_balance_restorationsNullableScalarRelationFilter, Prisma.expired_balance_restorationsWhereInput> | null
+  expired_balance_restorations?: Prisma.XOR<Prisma.Expired_balance_restorationsNullableScalarRelationFilter, Prisma.expired_balance_restorationsWhereInput> | null
   users?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.usersWhereInput>
 }
 
@@ -265,7 +280,11 @@ export type balance_transactionsOrderByWithRelationInput = {
   transaction_type?: Prisma.SortOrder
   reference_note?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  restoration_id?: Prisma.SortOrderInput | Prisma.SortOrder
   monthly_allocations?: Prisma.monthly_allocationsOrderByWithRelationInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsOrderByWithRelationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsOrderByWithRelationInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsOrderByWithRelationInput
   users?: Prisma.usersOrderByWithRelationInput
 }
 
@@ -281,7 +300,11 @@ export type balance_transactionsWhereUniqueInput = Prisma.AtLeast<{
   transaction_type?: Prisma.Enumtransaction_typeFilter<"balance_transactions"> | $Enums.transaction_type
   reference_note?: Prisma.StringNullableFilter<"balance_transactions"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"balance_transactions"> | Date | string | null
+  restoration_id?: Prisma.IntNullableFilter<"balance_transactions"> | number | null
   monthly_allocations?: Prisma.XOR<Prisma.Monthly_allocationsNullableScalarRelationFilter, Prisma.monthly_allocationsWhereInput> | null
+  expired_balance_restorations_original_expiration?: Prisma.XOR<Prisma.Expired_balance_restorationsNullableScalarRelationFilter, Prisma.expired_balance_restorationsWhereInput> | null
+  expired_balance_restorations_reexpiration?: Prisma.XOR<Prisma.Expired_balance_restorationsNullableScalarRelationFilter, Prisma.expired_balance_restorationsWhereInput> | null
+  expired_balance_restorations?: Prisma.XOR<Prisma.Expired_balance_restorationsNullableScalarRelationFilter, Prisma.expired_balance_restorationsWhereInput> | null
   users?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.usersWhereInput>
 }, "id">
 
@@ -294,6 +317,7 @@ export type balance_transactionsOrderByWithAggregationInput = {
   transaction_type?: Prisma.SortOrder
   reference_note?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  restoration_id?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.balance_transactionsCountOrderByAggregateInput
   _avg?: Prisma.balance_transactionsAvgOrderByAggregateInput
   _max?: Prisma.balance_transactionsMaxOrderByAggregateInput
@@ -313,6 +337,7 @@ export type balance_transactionsScalarWhereWithAggregatesInput = {
   transaction_type?: Prisma.Enumtransaction_typeWithAggregatesFilter<"balance_transactions"> | $Enums.transaction_type
   reference_note?: Prisma.StringNullableWithAggregatesFilter<"balance_transactions"> | string | null
   created_at?: Prisma.DateTimeNullableWithAggregatesFilter<"balance_transactions"> | Date | string | null
+  restoration_id?: Prisma.IntNullableWithAggregatesFilter<"balance_transactions"> | number | null
 }
 
 export type balance_transactionsCreateInput = {
@@ -322,6 +347,9 @@ export type balance_transactionsCreateInput = {
   reference_note?: string | null
   created_at?: Date | string | null
   monthly_allocations?: Prisma.monthly_allocationsCreateNestedOneWithoutBalance_transactionsInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutReexpirationInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedOneWithoutTransactionsInput
   users: Prisma.usersCreateNestedOneWithoutBalance_transactionsInput
 }
 
@@ -334,6 +362,9 @@ export type balance_transactionsUncheckedCreateInput = {
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  restoration_id?: number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutReexpirationInput
 }
 
 export type balance_transactionsUpdateInput = {
@@ -343,6 +374,9 @@ export type balance_transactionsUpdateInput = {
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   monthly_allocations?: Prisma.monthly_allocationsUpdateOneWithoutBalance_transactionsNestedInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUpdateOneWithoutReexpirationNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateOneWithoutTransactionsNestedInput
   users?: Prisma.usersUpdateOneRequiredWithoutBalance_transactionsNestedInput
 }
 
@@ -355,6 +389,9 @@ export type balance_transactionsUncheckedUpdateInput = {
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutReexpirationNestedInput
 }
 
 export type balance_transactionsCreateManyInput = {
@@ -366,6 +403,7 @@ export type balance_transactionsCreateManyInput = {
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  restoration_id?: number | null
 }
 
 export type balance_transactionsUpdateManyMutationInput = {
@@ -385,6 +423,7 @@ export type balance_transactionsUncheckedUpdateManyInput = {
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type balance_transactionsCountOrderByAggregateInput = {
@@ -396,6 +435,7 @@ export type balance_transactionsCountOrderByAggregateInput = {
   transaction_type?: Prisma.SortOrder
   reference_note?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  restoration_id?: Prisma.SortOrder
 }
 
 export type balance_transactionsAvgOrderByAggregateInput = {
@@ -403,6 +443,7 @@ export type balance_transactionsAvgOrderByAggregateInput = {
   user_id?: Prisma.SortOrder
   allocation_id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  restoration_id?: Prisma.SortOrder
 }
 
 export type balance_transactionsMaxOrderByAggregateInput = {
@@ -414,6 +455,7 @@ export type balance_transactionsMaxOrderByAggregateInput = {
   transaction_type?: Prisma.SortOrder
   reference_note?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  restoration_id?: Prisma.SortOrder
 }
 
 export type balance_transactionsMinOrderByAggregateInput = {
@@ -425,6 +467,7 @@ export type balance_transactionsMinOrderByAggregateInput = {
   transaction_type?: Prisma.SortOrder
   reference_note?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  restoration_id?: Prisma.SortOrder
 }
 
 export type balance_transactionsSumOrderByAggregateInput = {
@@ -432,6 +475,7 @@ export type balance_transactionsSumOrderByAggregateInput = {
   user_id?: Prisma.SortOrder
   allocation_id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  restoration_id?: Prisma.SortOrder
 }
 
 export type Balance_transactionsListRelationFilter = {
@@ -442,6 +486,16 @@ export type Balance_transactionsListRelationFilter = {
 
 export type balance_transactionsOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type Balance_transactionsScalarRelationFilter = {
+  is?: Prisma.balance_transactionsWhereInput
+  isNot?: Prisma.balance_transactionsWhereInput
+}
+
+export type Balance_transactionsNullableScalarRelationFilter = {
+  is?: Prisma.balance_transactionsWhereInput | null
+  isNot?: Prisma.balance_transactionsWhereInput | null
 }
 
 export type DecimalFieldUpdateOperationsInput = {
@@ -502,6 +556,78 @@ export type balance_transactionsUncheckedUpdateManyWithoutMonthly_allocationsNes
   deleteMany?: Prisma.balance_transactionsScalarWhereInput | Prisma.balance_transactionsScalarWhereInput[]
 }
 
+export type balance_transactionsCreateNestedOneWithoutExpired_balance_restorations_original_expirationInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_original_expirationInput>
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorations_original_expirationInput
+  connect?: Prisma.balance_transactionsWhereUniqueInput
+}
+
+export type balance_transactionsCreateNestedOneWithoutExpired_balance_restorations_reexpirationInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_reexpirationInput>
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorations_reexpirationInput
+  connect?: Prisma.balance_transactionsWhereUniqueInput
+}
+
+export type balance_transactionsCreateNestedManyWithoutExpired_balance_restorationsInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput> | Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput[] | Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput[]
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput[]
+  createMany?: Prisma.balance_transactionsCreateManyExpired_balance_restorationsInputEnvelope
+  connect?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+}
+
+export type balance_transactionsUncheckedCreateNestedManyWithoutExpired_balance_restorationsInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput> | Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput[] | Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput[]
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput[]
+  createMany?: Prisma.balance_transactionsCreateManyExpired_balance_restorationsInputEnvelope
+  connect?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+}
+
+export type balance_transactionsUpdateOneRequiredWithoutExpired_balance_restorations_original_expirationNestedInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_original_expirationInput>
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorations_original_expirationInput
+  upsert?: Prisma.balance_transactionsUpsertWithoutExpired_balance_restorations_original_expirationInput
+  connect?: Prisma.balance_transactionsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.balance_transactionsUpdateToOneWithWhereWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUpdateWithoutExpired_balance_restorations_original_expirationInput>, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_original_expirationInput>
+}
+
+export type balance_transactionsUpdateOneWithoutExpired_balance_restorations_reexpirationNestedInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_reexpirationInput>
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorations_reexpirationInput
+  upsert?: Prisma.balance_transactionsUpsertWithoutExpired_balance_restorations_reexpirationInput
+  disconnect?: Prisma.balance_transactionsWhereInput | boolean
+  delete?: Prisma.balance_transactionsWhereInput | boolean
+  connect?: Prisma.balance_transactionsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.balance_transactionsUpdateToOneWithWhereWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUpdateWithoutExpired_balance_restorations_reexpirationInput>, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_reexpirationInput>
+}
+
+export type balance_transactionsUpdateManyWithoutExpired_balance_restorationsNestedInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput> | Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput[] | Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput[]
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput[]
+  upsert?: Prisma.balance_transactionsUpsertWithWhereUniqueWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsUpsertWithWhereUniqueWithoutExpired_balance_restorationsInput[]
+  createMany?: Prisma.balance_transactionsCreateManyExpired_balance_restorationsInputEnvelope
+  set?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  disconnect?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  delete?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  connect?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  update?: Prisma.balance_transactionsUpdateWithWhereUniqueWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsUpdateWithWhereUniqueWithoutExpired_balance_restorationsInput[]
+  updateMany?: Prisma.balance_transactionsUpdateManyWithWhereWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsUpdateManyWithWhereWithoutExpired_balance_restorationsInput[]
+  deleteMany?: Prisma.balance_transactionsScalarWhereInput | Prisma.balance_transactionsScalarWhereInput[]
+}
+
+export type balance_transactionsUncheckedUpdateManyWithoutExpired_balance_restorationsNestedInput = {
+  create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput> | Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput[] | Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput[]
+  connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput[]
+  upsert?: Prisma.balance_transactionsUpsertWithWhereUniqueWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsUpsertWithWhereUniqueWithoutExpired_balance_restorationsInput[]
+  createMany?: Prisma.balance_transactionsCreateManyExpired_balance_restorationsInputEnvelope
+  set?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  disconnect?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  delete?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  connect?: Prisma.balance_transactionsWhereUniqueInput | Prisma.balance_transactionsWhereUniqueInput[]
+  update?: Prisma.balance_transactionsUpdateWithWhereUniqueWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsUpdateWithWhereUniqueWithoutExpired_balance_restorationsInput[]
+  updateMany?: Prisma.balance_transactionsUpdateManyWithWhereWithoutExpired_balance_restorationsInput | Prisma.balance_transactionsUpdateManyWithWhereWithoutExpired_balance_restorationsInput[]
+  deleteMany?: Prisma.balance_transactionsScalarWhereInput | Prisma.balance_transactionsScalarWhereInput[]
+}
+
 export type balance_transactionsCreateNestedManyWithoutUsersInput = {
   create?: Prisma.XOR<Prisma.balance_transactionsCreateWithoutUsersInput, Prisma.balance_transactionsUncheckedCreateWithoutUsersInput> | Prisma.balance_transactionsCreateWithoutUsersInput[] | Prisma.balance_transactionsUncheckedCreateWithoutUsersInput[]
   connectOrCreate?: Prisma.balance_transactionsCreateOrConnectWithoutUsersInput | Prisma.balance_transactionsCreateOrConnectWithoutUsersInput[]
@@ -550,6 +676,9 @@ export type balance_transactionsCreateWithoutMonthly_allocationsInput = {
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutReexpirationInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedOneWithoutTransactionsInput
   users: Prisma.usersCreateNestedOneWithoutBalance_transactionsInput
 }
 
@@ -561,6 +690,9 @@ export type balance_transactionsUncheckedCreateWithoutMonthly_allocationsInput =
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  restoration_id?: number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutReexpirationInput
 }
 
 export type balance_transactionsCreateOrConnectWithoutMonthly_allocationsInput = {
@@ -601,6 +733,190 @@ export type balance_transactionsScalarWhereInput = {
   transaction_type?: Prisma.Enumtransaction_typeFilter<"balance_transactions"> | $Enums.transaction_type
   reference_note?: Prisma.StringNullableFilter<"balance_transactions"> | string | null
   created_at?: Prisma.DateTimeNullableFilter<"balance_transactions"> | Date | string | null
+  restoration_id?: Prisma.IntNullableFilter<"balance_transactions"> | number | null
+}
+
+export type balance_transactionsCreateWithoutExpired_balance_restorations_original_expirationInput = {
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+  monthly_allocations?: Prisma.monthly_allocationsCreateNestedOneWithoutBalance_transactionsInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutReexpirationInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedOneWithoutTransactionsInput
+  users: Prisma.usersCreateNestedOneWithoutBalance_transactionsInput
+}
+
+export type balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_original_expirationInput = {
+  id?: number
+  user_id: number
+  allocation_id?: number | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+  restoration_id?: number | null
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutReexpirationInput
+}
+
+export type balance_transactionsCreateOrConnectWithoutExpired_balance_restorations_original_expirationInput = {
+  where: Prisma.balance_transactionsWhereUniqueInput
+  create: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_original_expirationInput>
+}
+
+export type balance_transactionsCreateWithoutExpired_balance_restorations_reexpirationInput = {
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+  monthly_allocations?: Prisma.monthly_allocationsCreateNestedOneWithoutBalance_transactionsInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedOneWithoutTransactionsInput
+  users: Prisma.usersCreateNestedOneWithoutBalance_transactionsInput
+}
+
+export type balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_reexpirationInput = {
+  id?: number
+  user_id: number
+  allocation_id?: number | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+  restoration_id?: number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutOriginal_expirationInput
+}
+
+export type balance_transactionsCreateOrConnectWithoutExpired_balance_restorations_reexpirationInput = {
+  where: Prisma.balance_transactionsWhereUniqueInput
+  create: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_reexpirationInput>
+}
+
+export type balance_transactionsCreateWithoutExpired_balance_restorationsInput = {
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+  monthly_allocations?: Prisma.monthly_allocationsCreateNestedOneWithoutBalance_transactionsInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutReexpirationInput
+  users: Prisma.usersCreateNestedOneWithoutBalance_transactionsInput
+}
+
+export type balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput = {
+  id?: number
+  user_id: number
+  allocation_id?: number | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutReexpirationInput
+}
+
+export type balance_transactionsCreateOrConnectWithoutExpired_balance_restorationsInput = {
+  where: Prisma.balance_transactionsWhereUniqueInput
+  create: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput>
+}
+
+export type balance_transactionsCreateManyExpired_balance_restorationsInputEnvelope = {
+  data: Prisma.balance_transactionsCreateManyExpired_balance_restorationsInput | Prisma.balance_transactionsCreateManyExpired_balance_restorationsInput[]
+  skipDuplicates?: boolean
+}
+
+export type balance_transactionsUpsertWithoutExpired_balance_restorations_original_expirationInput = {
+  update: Prisma.XOR<Prisma.balance_transactionsUpdateWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_original_expirationInput>
+  create: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_original_expirationInput>
+  where?: Prisma.balance_transactionsWhereInput
+}
+
+export type balance_transactionsUpdateToOneWithWhereWithoutExpired_balance_restorations_original_expirationInput = {
+  where?: Prisma.balance_transactionsWhereInput
+  data: Prisma.XOR<Prisma.balance_transactionsUpdateWithoutExpired_balance_restorations_original_expirationInput, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_original_expirationInput>
+}
+
+export type balance_transactionsUpdateWithoutExpired_balance_restorations_original_expirationInput = {
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  monthly_allocations?: Prisma.monthly_allocationsUpdateOneWithoutBalance_transactionsNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUpdateOneWithoutReexpirationNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateOneWithoutTransactionsNestedInput
+  users?: Prisma.usersUpdateOneRequiredWithoutBalance_transactionsNestedInput
+}
+
+export type balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_original_expirationInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  allocation_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutReexpirationNestedInput
+}
+
+export type balance_transactionsUpsertWithoutExpired_balance_restorations_reexpirationInput = {
+  update: Prisma.XOR<Prisma.balance_transactionsUpdateWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_reexpirationInput>
+  create: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorations_reexpirationInput>
+  where?: Prisma.balance_transactionsWhereInput
+}
+
+export type balance_transactionsUpdateToOneWithWhereWithoutExpired_balance_restorations_reexpirationInput = {
+  where?: Prisma.balance_transactionsWhereInput
+  data: Prisma.XOR<Prisma.balance_transactionsUpdateWithoutExpired_balance_restorations_reexpirationInput, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_reexpirationInput>
+}
+
+export type balance_transactionsUpdateWithoutExpired_balance_restorations_reexpirationInput = {
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  monthly_allocations?: Prisma.monthly_allocationsUpdateOneWithoutBalance_transactionsNestedInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateOneWithoutTransactionsNestedInput
+  users?: Prisma.usersUpdateOneRequiredWithoutBalance_transactionsNestedInput
+}
+
+export type balance_transactionsUncheckedUpdateWithoutExpired_balance_restorations_reexpirationInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  allocation_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutOriginal_expirationNestedInput
+}
+
+export type balance_transactionsUpsertWithWhereUniqueWithoutExpired_balance_restorationsInput = {
+  where: Prisma.balance_transactionsWhereUniqueInput
+  update: Prisma.XOR<Prisma.balance_transactionsUpdateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorationsInput>
+  create: Prisma.XOR<Prisma.balance_transactionsCreateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedCreateWithoutExpired_balance_restorationsInput>
+}
+
+export type balance_transactionsUpdateWithWhereUniqueWithoutExpired_balance_restorationsInput = {
+  where: Prisma.balance_transactionsWhereUniqueInput
+  data: Prisma.XOR<Prisma.balance_transactionsUpdateWithoutExpired_balance_restorationsInput, Prisma.balance_transactionsUncheckedUpdateWithoutExpired_balance_restorationsInput>
+}
+
+export type balance_transactionsUpdateManyWithWhereWithoutExpired_balance_restorationsInput = {
+  where: Prisma.balance_transactionsScalarWhereInput
+  data: Prisma.XOR<Prisma.balance_transactionsUpdateManyMutationInput, Prisma.balance_transactionsUncheckedUpdateManyWithoutExpired_balance_restorationsInput>
 }
 
 export type balance_transactionsCreateWithoutUsersInput = {
@@ -610,6 +926,9 @@ export type balance_transactionsCreateWithoutUsersInput = {
   reference_note?: string | null
   created_at?: Date | string | null
   monthly_allocations?: Prisma.monthly_allocationsCreateNestedOneWithoutBalance_transactionsInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsCreateNestedOneWithoutReexpirationInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsCreateNestedOneWithoutTransactionsInput
 }
 
 export type balance_transactionsUncheckedCreateWithoutUsersInput = {
@@ -620,6 +939,9 @@ export type balance_transactionsUncheckedCreateWithoutUsersInput = {
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  restoration_id?: number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutOriginal_expirationInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedCreateNestedOneWithoutReexpirationInput
 }
 
 export type balance_transactionsCreateOrConnectWithoutUsersInput = {
@@ -656,6 +978,7 @@ export type balance_transactionsCreateManyMonthly_allocationsInput = {
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  restoration_id?: number | null
 }
 
 export type balance_transactionsUpdateWithoutMonthly_allocationsInput = {
@@ -664,6 +987,9 @@ export type balance_transactionsUpdateWithoutMonthly_allocationsInput = {
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUpdateOneWithoutReexpirationNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateOneWithoutTransactionsNestedInput
   users?: Prisma.usersUpdateOneRequiredWithoutBalance_transactionsNestedInput
 }
 
@@ -675,11 +1001,62 @@ export type balance_transactionsUncheckedUpdateWithoutMonthly_allocationsInput =
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutReexpirationNestedInput
 }
 
 export type balance_transactionsUncheckedUpdateManyWithoutMonthly_allocationsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type balance_transactionsCreateManyExpired_balance_restorationsInput = {
+  id?: number
+  user_id: number
+  allocation_id?: number | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: $Enums.transaction_direction
+  transaction_type: $Enums.transaction_type
+  reference_note?: string | null
+  created_at?: Date | string | null
+}
+
+export type balance_transactionsUpdateWithoutExpired_balance_restorationsInput = {
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  monthly_allocations?: Prisma.monthly_allocationsUpdateOneWithoutBalance_transactionsNestedInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUpdateOneWithoutReexpirationNestedInput
+  users?: Prisma.usersUpdateOneRequiredWithoutBalance_transactionsNestedInput
+}
+
+export type balance_transactionsUncheckedUpdateWithoutExpired_balance_restorationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  allocation_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
+  transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
+  reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutReexpirationNestedInput
+}
+
+export type balance_transactionsUncheckedUpdateManyWithoutExpired_balance_restorationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  allocation_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.Enumtransaction_directionFieldUpdateOperationsInput | $Enums.transaction_direction
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
@@ -695,6 +1072,7 @@ export type balance_transactionsCreateManyUsersInput = {
   transaction_type: $Enums.transaction_type
   reference_note?: string | null
   created_at?: Date | string | null
+  restoration_id?: number | null
 }
 
 export type balance_transactionsUpdateWithoutUsersInput = {
@@ -704,6 +1082,9 @@ export type balance_transactionsUpdateWithoutUsersInput = {
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   monthly_allocations?: Prisma.monthly_allocationsUpdateOneWithoutBalance_transactionsNestedInput
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUpdateOneWithoutReexpirationNestedInput
+  expired_balance_restorations?: Prisma.expired_balance_restorationsUpdateOneWithoutTransactionsNestedInput
 }
 
 export type balance_transactionsUncheckedUpdateWithoutUsersInput = {
@@ -714,6 +1095,9 @@ export type balance_transactionsUncheckedUpdateWithoutUsersInput = {
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expired_balance_restorations_original_expiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutOriginal_expirationNestedInput
+  expired_balance_restorations_reexpiration?: Prisma.expired_balance_restorationsUncheckedUpdateOneWithoutReexpirationNestedInput
 }
 
 export type balance_transactionsUncheckedUpdateManyWithoutUsersInput = {
@@ -724,6 +1108,7 @@ export type balance_transactionsUncheckedUpdateManyWithoutUsersInput = {
   transaction_type?: Prisma.Enumtransaction_typeFieldUpdateOperationsInput | $Enums.transaction_type
   reference_note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  restoration_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -737,7 +1122,11 @@ export type balance_transactionsSelect<ExtArgs extends runtime.Types.Extensions.
   transaction_type?: boolean
   reference_note?: boolean
   created_at?: boolean
+  restoration_id?: boolean
   monthly_allocations?: boolean | Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>
+  expired_balance_restorations_original_expiration?: boolean | Prisma.balance_transactions$expired_balance_restorations_original_expirationArgs<ExtArgs>
+  expired_balance_restorations_reexpiration?: boolean | Prisma.balance_transactions$expired_balance_restorations_reexpirationArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>
   users?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["balance_transactions"]>
 
@@ -750,7 +1139,9 @@ export type balance_transactionsSelectCreateManyAndReturn<ExtArgs extends runtim
   transaction_type?: boolean
   reference_note?: boolean
   created_at?: boolean
+  restoration_id?: boolean
   monthly_allocations?: boolean | Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>
   users?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["balance_transactions"]>
 
@@ -763,7 +1154,9 @@ export type balance_transactionsSelectUpdateManyAndReturn<ExtArgs extends runtim
   transaction_type?: boolean
   reference_note?: boolean
   created_at?: boolean
+  restoration_id?: boolean
   monthly_allocations?: boolean | Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>
   users?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["balance_transactions"]>
 
@@ -776,19 +1169,25 @@ export type balance_transactionsSelectScalar = {
   transaction_type?: boolean
   reference_note?: boolean
   created_at?: boolean
+  restoration_id?: boolean
 }
 
-export type balance_transactionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "allocation_id" | "amount" | "direction" | "transaction_type" | "reference_note" | "created_at", ExtArgs["result"]["balance_transactions"]>
+export type balance_transactionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "allocation_id" | "amount" | "direction" | "transaction_type" | "reference_note" | "created_at" | "restoration_id", ExtArgs["result"]["balance_transactions"]>
 export type balance_transactionsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   monthly_allocations?: boolean | Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>
+  expired_balance_restorations_original_expiration?: boolean | Prisma.balance_transactions$expired_balance_restorations_original_expirationArgs<ExtArgs>
+  expired_balance_restorations_reexpiration?: boolean | Prisma.balance_transactions$expired_balance_restorations_reexpirationArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>
   users?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }
 export type balance_transactionsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   monthly_allocations?: boolean | Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>
   users?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }
 export type balance_transactionsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   monthly_allocations?: boolean | Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>
+  expired_balance_restorations?: boolean | Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>
   users?: boolean | Prisma.usersDefaultArgs<ExtArgs>
 }
 
@@ -796,6 +1195,9 @@ export type $balance_transactionsPayload<ExtArgs extends runtime.Types.Extension
   name: "balance_transactions"
   objects: {
     monthly_allocations: Prisma.$monthly_allocationsPayload<ExtArgs> | null
+    expired_balance_restorations_original_expiration: Prisma.$expired_balance_restorationsPayload<ExtArgs> | null
+    expired_balance_restorations_reexpiration: Prisma.$expired_balance_restorationsPayload<ExtArgs> | null
+    expired_balance_restorations: Prisma.$expired_balance_restorationsPayload<ExtArgs> | null
     users: Prisma.$usersPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -807,6 +1209,7 @@ export type $balance_transactionsPayload<ExtArgs extends runtime.Types.Extension
     transaction_type: $Enums.transaction_type
     reference_note: string | null
     created_at: Date | null
+    restoration_id: number | null
   }, ExtArgs["result"]["balance_transactions"]>
   composites: {}
 }
@@ -1202,6 +1605,9 @@ readonly fields: balance_transactionsFieldRefs;
 export interface Prisma__balance_transactionsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   monthly_allocations<T extends Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.balance_transactions$monthly_allocationsArgs<ExtArgs>>): Prisma.Prisma__monthly_allocationsClient<runtime.Types.Result.GetResult<Prisma.$monthly_allocationsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  expired_balance_restorations_original_expiration<T extends Prisma.balance_transactions$expired_balance_restorations_original_expirationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.balance_transactions$expired_balance_restorations_original_expirationArgs<ExtArgs>>): Prisma.Prisma__expired_balance_restorationsClient<runtime.Types.Result.GetResult<Prisma.$expired_balance_restorationsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  expired_balance_restorations_reexpiration<T extends Prisma.balance_transactions$expired_balance_restorations_reexpirationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.balance_transactions$expired_balance_restorations_reexpirationArgs<ExtArgs>>): Prisma.Prisma__expired_balance_restorationsClient<runtime.Types.Result.GetResult<Prisma.$expired_balance_restorationsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  expired_balance_restorations<T extends Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.balance_transactions$expired_balance_restorationsArgs<ExtArgs>>): Prisma.Prisma__expired_balance_restorationsClient<runtime.Types.Result.GetResult<Prisma.$expired_balance_restorationsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   users<T extends Prisma.usersDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usersDefaultArgs<ExtArgs>>): Prisma.Prisma__usersClient<runtime.Types.Result.GetResult<Prisma.$usersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1240,6 +1646,7 @@ export interface balance_transactionsFieldRefs {
   readonly transaction_type: Prisma.FieldRef<"balance_transactions", 'transaction_type'>
   readonly reference_note: Prisma.FieldRef<"balance_transactions", 'String'>
   readonly created_at: Prisma.FieldRef<"balance_transactions", 'DateTime'>
+  readonly restoration_id: Prisma.FieldRef<"balance_transactions", 'Int'>
 }
     
 
@@ -1657,6 +2064,63 @@ export type balance_transactions$monthly_allocationsArgs<ExtArgs extends runtime
    */
   include?: Prisma.monthly_allocationsInclude<ExtArgs> | null
   where?: Prisma.monthly_allocationsWhereInput
+}
+
+/**
+ * balance_transactions.expired_balance_restorations_original_expiration
+ */
+export type balance_transactions$expired_balance_restorations_original_expirationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the expired_balance_restorations
+   */
+  select?: Prisma.expired_balance_restorationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the expired_balance_restorations
+   */
+  omit?: Prisma.expired_balance_restorationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.expired_balance_restorationsInclude<ExtArgs> | null
+  where?: Prisma.expired_balance_restorationsWhereInput
+}
+
+/**
+ * balance_transactions.expired_balance_restorations_reexpiration
+ */
+export type balance_transactions$expired_balance_restorations_reexpirationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the expired_balance_restorations
+   */
+  select?: Prisma.expired_balance_restorationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the expired_balance_restorations
+   */
+  omit?: Prisma.expired_balance_restorationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.expired_balance_restorationsInclude<ExtArgs> | null
+  where?: Prisma.expired_balance_restorationsWhereInput
+}
+
+/**
+ * balance_transactions.expired_balance_restorations
+ */
+export type balance_transactions$expired_balance_restorationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the expired_balance_restorations
+   */
+  select?: Prisma.expired_balance_restorationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the expired_balance_restorations
+   */
+  omit?: Prisma.expired_balance_restorationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.expired_balance_restorationsInclude<ExtArgs> | null
+  where?: Prisma.expired_balance_restorationsWhereInput
 }
 
 /**

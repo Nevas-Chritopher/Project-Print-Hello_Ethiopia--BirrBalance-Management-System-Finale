@@ -279,6 +279,8 @@ export type usersWhereInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.Qr_sessionsListRelationFilter
   user_roles?: Prisma.User_rolesListRelationFilter
   departments?: Prisma.XOR<Prisma.DepartmentsNullableScalarRelationFilter, Prisma.departmentsWhereInput> | null
+  expired_balance_restorations_employee?: Prisma.Expired_balance_restorationsListRelationFilter
+  expired_balance_restorations_manager?: Prisma.Expired_balance_restorationsListRelationFilter
 }
 
 export type usersOrderByWithRelationInput = {
@@ -311,6 +313,8 @@ export type usersOrderByWithRelationInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsOrderByRelationAggregateInput
   user_roles?: Prisma.user_rolesOrderByRelationAggregateInput
   departments?: Prisma.departmentsOrderByWithRelationInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsOrderByRelationAggregateInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsOrderByRelationAggregateInput
 }
 
 export type usersWhereUniqueInput = Prisma.AtLeast<{
@@ -346,6 +350,8 @@ export type usersWhereUniqueInput = Prisma.AtLeast<{
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.Qr_sessionsListRelationFilter
   user_roles?: Prisma.User_rolesListRelationFilter
   departments?: Prisma.XOR<Prisma.DepartmentsNullableScalarRelationFilter, Prisma.departmentsWhereInput> | null
+  expired_balance_restorations_employee?: Prisma.Expired_balance_restorationsListRelationFilter
+  expired_balance_restorations_manager?: Prisma.Expired_balance_restorationsListRelationFilter
 }, "id" | "employee_external_id" | "email" | "phone_number">
 
 export type usersOrderByWithAggregationInput = {
@@ -410,6 +416,8 @@ export type usersCreateInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateInput = {
@@ -441,6 +449,8 @@ export type usersUncheckedCreateInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersUpdateInput = {
@@ -471,6 +481,8 @@ export type usersUpdateInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateInput = {
@@ -502,6 +514,8 @@ export type usersUncheckedUpdateInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateManyInput = {
@@ -770,6 +784,34 @@ export type usersUpdateOneRequiredWithoutMonthly_allocations_monthly_allocations
   update?: Prisma.XOR<Prisma.XOR<Prisma.usersUpdateToOneWithWhereWithoutMonthly_allocations_monthly_allocations_user_idTousersInput, Prisma.usersUpdateWithoutMonthly_allocations_monthly_allocations_user_idTousersInput>, Prisma.usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_user_idTousersInput>
 }
 
+export type usersCreateNestedOneWithoutExpired_balance_restorations_employeeInput = {
+  create?: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_employeeInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_employeeInput>
+  connectOrCreate?: Prisma.usersCreateOrConnectWithoutExpired_balance_restorations_employeeInput
+  connect?: Prisma.usersWhereUniqueInput
+}
+
+export type usersCreateNestedOneWithoutExpired_balance_restorations_managerInput = {
+  create?: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_managerInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_managerInput>
+  connectOrCreate?: Prisma.usersCreateOrConnectWithoutExpired_balance_restorations_managerInput
+  connect?: Prisma.usersWhereUniqueInput
+}
+
+export type usersUpdateOneRequiredWithoutExpired_balance_restorations_employeeNestedInput = {
+  create?: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_employeeInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_employeeInput>
+  connectOrCreate?: Prisma.usersCreateOrConnectWithoutExpired_balance_restorations_employeeInput
+  upsert?: Prisma.usersUpsertWithoutExpired_balance_restorations_employeeInput
+  connect?: Prisma.usersWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.usersUpdateToOneWithWhereWithoutExpired_balance_restorations_employeeInput, Prisma.usersUpdateWithoutExpired_balance_restorations_employeeInput>, Prisma.usersUncheckedUpdateWithoutExpired_balance_restorations_employeeInput>
+}
+
+export type usersUpdateOneRequiredWithoutExpired_balance_restorations_managerNestedInput = {
+  create?: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_managerInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_managerInput>
+  connectOrCreate?: Prisma.usersCreateOrConnectWithoutExpired_balance_restorations_managerInput
+  upsert?: Prisma.usersUpsertWithoutExpired_balance_restorations_managerInput
+  connect?: Prisma.usersWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.usersUpdateToOneWithWhereWithoutExpired_balance_restorations_managerInput, Prisma.usersUpdateWithoutExpired_balance_restorations_managerInput>, Prisma.usersUncheckedUpdateWithoutExpired_balance_restorations_managerInput>
+}
+
 export type usersCreateNestedOneWithoutMonthly_allocation_approvals_submittedInput = {
   create?: Prisma.XOR<Prisma.usersCreateWithoutMonthly_allocation_approvals_submittedInput, Prisma.usersUncheckedCreateWithoutMonthly_allocation_approvals_submittedInput>
   connectOrCreate?: Prisma.usersCreateOrConnectWithoutMonthly_allocation_approvals_submittedInput
@@ -943,6 +985,8 @@ export type usersCreateWithoutAudit_logsInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutAudit_logsInput = {
@@ -973,6 +1017,8 @@ export type usersUncheckedCreateWithoutAudit_logsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutAudit_logsInput = {
@@ -1018,6 +1064,8 @@ export type usersUpdateWithoutAudit_logsInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutAudit_logsInput = {
@@ -1048,6 +1096,8 @@ export type usersUncheckedUpdateWithoutAudit_logsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutBalance_transactionsInput = {
@@ -1077,6 +1127,8 @@ export type usersCreateWithoutBalance_transactionsInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutBalance_transactionsInput = {
@@ -1107,6 +1159,8 @@ export type usersUncheckedCreateWithoutBalance_transactionsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutBalance_transactionsInput = {
@@ -1152,6 +1206,8 @@ export type usersUpdateWithoutBalance_transactionsInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutBalance_transactionsInput = {
@@ -1182,6 +1238,8 @@ export type usersUncheckedUpdateWithoutBalance_transactionsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutCafe_staffInput = {
@@ -1211,6 +1269,8 @@ export type usersCreateWithoutCafe_staffInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutCafe_staffInput = {
@@ -1241,6 +1301,8 @@ export type usersUncheckedCreateWithoutCafe_staffInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutCafe_staffInput = {
@@ -1286,6 +1348,8 @@ export type usersUpdateWithoutCafe_staffInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutCafe_staffInput = {
@@ -1316,6 +1380,8 @@ export type usersUncheckedUpdateWithoutCafe_staffInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutDepartmentsInput = {
@@ -1345,6 +1411,8 @@ export type usersCreateWithoutDepartmentsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutDepartmentsInput = {
@@ -1375,6 +1443,8 @@ export type usersUncheckedCreateWithoutDepartmentsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutDepartmentsInput = {
@@ -1446,6 +1516,8 @@ export type usersCreateWithoutEmployee_qr_codesInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutEmployee_qr_codesInput = {
@@ -1476,6 +1548,8 @@ export type usersUncheckedCreateWithoutEmployee_qr_codesInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutEmployee_qr_codesInput = {
@@ -1521,6 +1595,8 @@ export type usersUpdateWithoutEmployee_qr_codesInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutEmployee_qr_codesInput = {
@@ -1551,6 +1627,8 @@ export type usersUncheckedUpdateWithoutEmployee_qr_codesInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutFeedbackInput = {
@@ -1580,6 +1658,8 @@ export type usersCreateWithoutFeedbackInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutFeedbackInput = {
@@ -1610,6 +1690,8 @@ export type usersUncheckedCreateWithoutFeedbackInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutFeedbackInput = {
@@ -1655,6 +1737,8 @@ export type usersUpdateWithoutFeedbackInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutFeedbackInput = {
@@ -1685,6 +1769,8 @@ export type usersUncheckedUpdateWithoutFeedbackInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutLogin_historyInput = {
@@ -1714,6 +1800,8 @@ export type usersCreateWithoutLogin_historyInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutLogin_historyInput = {
@@ -1744,6 +1832,8 @@ export type usersUncheckedCreateWithoutLogin_historyInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutLogin_historyInput = {
@@ -1789,6 +1879,8 @@ export type usersUpdateWithoutLogin_historyInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutLogin_historyInput = {
@@ -1819,6 +1911,8 @@ export type usersUncheckedUpdateWithoutLogin_historyInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput = {
@@ -1848,6 +1942,8 @@ export type usersCreateWithoutMonthly_allocations_monthly_allocations_allocated_
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput = {
@@ -1878,6 +1974,8 @@ export type usersUncheckedCreateWithoutMonthly_allocations_monthly_allocations_a
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput = {
@@ -1912,6 +2010,8 @@ export type usersCreateWithoutMonthly_allocations_monthly_allocations_user_idTou
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutMonthly_allocations_monthly_allocations_user_idTousersInput = {
@@ -1942,6 +2042,8 @@ export type usersUncheckedCreateWithoutMonthly_allocations_monthly_allocations_u
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutMonthly_allocations_monthly_allocations_user_idTousersInput = {
@@ -1987,6 +2089,8 @@ export type usersUpdateWithoutMonthly_allocations_monthly_allocations_allocated_
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_allocated_byTousersInput = {
@@ -2017,6 +2121,8 @@ export type usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_a
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUpsertWithoutMonthly_allocations_monthly_allocations_user_idTousersInput = {
@@ -2057,6 +2163,8 @@ export type usersUpdateWithoutMonthly_allocations_monthly_allocations_user_idTou
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_user_idTousersInput = {
@@ -2087,6 +2195,292 @@ export type usersUncheckedUpdateWithoutMonthly_allocations_monthly_allocations_u
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
+}
+
+export type usersCreateWithoutExpired_balance_restorations_employeeInput = {
+  employee_external_id?: string | null
+  fullname: string
+  email?: string | null
+  phone_number?: string | null
+  password_hash: string
+  is_active?: boolean | null
+  created_at?: Date | string | null
+  updated_at?: Date | string | null
+  audit_logs?: Prisma.audit_logsCreateNestedManyWithoutUsersInput
+  balance_transactions?: Prisma.balance_transactionsCreateNestedManyWithoutUsersInput
+  cafe_staff?: Prisma.cafe_staffCreateNestedOneWithoutUsersInput
+  employee_qr_codes?: Prisma.employee_qr_codesCreateNestedOneWithoutUsersInput
+  feedback?: Prisma.feedbackCreateNestedManyWithoutUsersInput
+  login_history?: Prisma.login_historyCreateNestedManyWithoutUsersInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsCreateNestedManyWithoutUsers_monthly_allocations_allocated_byTousersInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsCreateNestedManyWithoutUsers_monthly_allocations_user_idTousersInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsCreateNestedManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsCreateNestedManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput
+  notifications?: Prisma.notificationsCreateNestedManyWithoutUsersInput
+  orders_orders_employee_idTousers?: Prisma.ordersCreateNestedManyWithoutUsers_orders_employee_idTousersInput
+  orders_orders_waiter_idTousers?: Prisma.ordersCreateNestedManyWithoutUsers_orders_waiter_idTousersInput
+  password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
+  refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutEmployeeInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
+  user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
+  departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
+}
+
+export type usersUncheckedCreateWithoutExpired_balance_restorations_employeeInput = {
+  id?: number
+  employee_external_id?: string | null
+  fullname: string
+  email?: string | null
+  phone_number?: string | null
+  password_hash: string
+  department_id?: number | null
+  is_active?: boolean | null
+  created_at?: Date | string | null
+  updated_at?: Date | string | null
+  audit_logs?: Prisma.audit_logsUncheckedCreateNestedManyWithoutUsersInput
+  balance_transactions?: Prisma.balance_transactionsUncheckedCreateNestedManyWithoutUsersInput
+  cafe_staff?: Prisma.cafe_staffUncheckedCreateNestedOneWithoutUsersInput
+  employee_qr_codes?: Prisma.employee_qr_codesUncheckedCreateNestedOneWithoutUsersInput
+  feedback?: Prisma.feedbackUncheckedCreateNestedManyWithoutUsersInput
+  login_history?: Prisma.login_historyUncheckedCreateNestedManyWithoutUsersInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsUncheckedCreateNestedManyWithoutUsers_monthly_allocations_allocated_byTousersInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsUncheckedCreateNestedManyWithoutUsers_monthly_allocations_user_idTousersInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsUncheckedCreateNestedManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsUncheckedCreateNestedManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput
+  notifications?: Prisma.notificationsUncheckedCreateNestedManyWithoutUsersInput
+  orders_orders_employee_idTousers?: Prisma.ordersUncheckedCreateNestedManyWithoutUsers_orders_employee_idTousersInput
+  orders_orders_waiter_idTousers?: Prisma.ordersUncheckedCreateNestedManyWithoutUsers_orders_waiter_idTousersInput
+  password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
+  refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
+  user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
+}
+
+export type usersCreateOrConnectWithoutExpired_balance_restorations_employeeInput = {
+  where: Prisma.usersWhereUniqueInput
+  create: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_employeeInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_employeeInput>
+}
+
+export type usersCreateWithoutExpired_balance_restorations_managerInput = {
+  employee_external_id?: string | null
+  fullname: string
+  email?: string | null
+  phone_number?: string | null
+  password_hash: string
+  is_active?: boolean | null
+  created_at?: Date | string | null
+  updated_at?: Date | string | null
+  audit_logs?: Prisma.audit_logsCreateNestedManyWithoutUsersInput
+  balance_transactions?: Prisma.balance_transactionsCreateNestedManyWithoutUsersInput
+  cafe_staff?: Prisma.cafe_staffCreateNestedOneWithoutUsersInput
+  employee_qr_codes?: Prisma.employee_qr_codesCreateNestedOneWithoutUsersInput
+  feedback?: Prisma.feedbackCreateNestedManyWithoutUsersInput
+  login_history?: Prisma.login_historyCreateNestedManyWithoutUsersInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsCreateNestedManyWithoutUsers_monthly_allocations_allocated_byTousersInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsCreateNestedManyWithoutUsers_monthly_allocations_user_idTousersInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsCreateNestedManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsCreateNestedManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput
+  notifications?: Prisma.notificationsCreateNestedManyWithoutUsersInput
+  orders_orders_employee_idTousers?: Prisma.ordersCreateNestedManyWithoutUsers_orders_employee_idTousersInput
+  orders_orders_waiter_idTousers?: Prisma.ordersCreateNestedManyWithoutUsers_orders_waiter_idTousersInput
+  password_reset_tokens?: Prisma.password_reset_tokensCreateNestedManyWithoutUsersInput
+  refresh_tokens?: Prisma.refresh_tokensCreateNestedManyWithoutUsersInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutEmployeeInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
+  user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
+  departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+}
+
+export type usersUncheckedCreateWithoutExpired_balance_restorations_managerInput = {
+  id?: number
+  employee_external_id?: string | null
+  fullname: string
+  email?: string | null
+  phone_number?: string | null
+  password_hash: string
+  department_id?: number | null
+  is_active?: boolean | null
+  created_at?: Date | string | null
+  updated_at?: Date | string | null
+  audit_logs?: Prisma.audit_logsUncheckedCreateNestedManyWithoutUsersInput
+  balance_transactions?: Prisma.balance_transactionsUncheckedCreateNestedManyWithoutUsersInput
+  cafe_staff?: Prisma.cafe_staffUncheckedCreateNestedOneWithoutUsersInput
+  employee_qr_codes?: Prisma.employee_qr_codesUncheckedCreateNestedOneWithoutUsersInput
+  feedback?: Prisma.feedbackUncheckedCreateNestedManyWithoutUsersInput
+  login_history?: Prisma.login_historyUncheckedCreateNestedManyWithoutUsersInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsUncheckedCreateNestedManyWithoutUsers_monthly_allocations_allocated_byTousersInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsUncheckedCreateNestedManyWithoutUsers_monthly_allocations_user_idTousersInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsUncheckedCreateNestedManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsUncheckedCreateNestedManyWithoutUsers_monthly_allocation_approvals_approved_byTousersInput
+  notifications?: Prisma.notificationsUncheckedCreateNestedManyWithoutUsersInput
+  orders_orders_employee_idTousers?: Prisma.ordersUncheckedCreateNestedManyWithoutUsers_orders_employee_idTousersInput
+  orders_orders_waiter_idTousers?: Prisma.ordersUncheckedCreateNestedManyWithoutUsers_orders_waiter_idTousersInput
+  password_reset_tokens?: Prisma.password_reset_tokensUncheckedCreateNestedManyWithoutUsersInput
+  refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
+  user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+}
+
+export type usersCreateOrConnectWithoutExpired_balance_restorations_managerInput = {
+  where: Prisma.usersWhereUniqueInput
+  create: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_managerInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_managerInput>
+}
+
+export type usersUpsertWithoutExpired_balance_restorations_employeeInput = {
+  update: Prisma.XOR<Prisma.usersUpdateWithoutExpired_balance_restorations_employeeInput, Prisma.usersUncheckedUpdateWithoutExpired_balance_restorations_employeeInput>
+  create: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_employeeInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_employeeInput>
+  where?: Prisma.usersWhereInput
+}
+
+export type usersUpdateToOneWithWhereWithoutExpired_balance_restorations_employeeInput = {
+  where?: Prisma.usersWhereInput
+  data: Prisma.XOR<Prisma.usersUpdateWithoutExpired_balance_restorations_employeeInput, Prisma.usersUncheckedUpdateWithoutExpired_balance_restorations_employeeInput>
+}
+
+export type usersUpdateWithoutExpired_balance_restorations_employeeInput = {
+  employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fullname?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  audit_logs?: Prisma.audit_logsUpdateManyWithoutUsersNestedInput
+  balance_transactions?: Prisma.balance_transactionsUpdateManyWithoutUsersNestedInput
+  cafe_staff?: Prisma.cafe_staffUpdateOneWithoutUsersNestedInput
+  employee_qr_codes?: Prisma.employee_qr_codesUpdateOneWithoutUsersNestedInput
+  feedback?: Prisma.feedbackUpdateManyWithoutUsersNestedInput
+  login_history?: Prisma.login_historyUpdateManyWithoutUsersNestedInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsUpdateManyWithoutUsers_monthly_allocations_allocated_byTousersNestedInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsUpdateManyWithoutUsers_monthly_allocations_user_idTousersNestedInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersNestedInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersNestedInput
+  notifications?: Prisma.notificationsUpdateManyWithoutUsersNestedInput
+  orders_orders_employee_idTousers?: Prisma.ordersUpdateManyWithoutUsers_orders_employee_idTousersNestedInput
+  orders_orders_waiter_idTousers?: Prisma.ordersUpdateManyWithoutUsers_orders_waiter_idTousersNestedInput
+  password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
+  refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUpdateManyWithoutEmployeeNestedInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
+  user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
+  departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
+}
+
+export type usersUncheckedUpdateWithoutExpired_balance_restorations_employeeInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fullname?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  audit_logs?: Prisma.audit_logsUncheckedUpdateManyWithoutUsersNestedInput
+  balance_transactions?: Prisma.balance_transactionsUncheckedUpdateManyWithoutUsersNestedInput
+  cafe_staff?: Prisma.cafe_staffUncheckedUpdateOneWithoutUsersNestedInput
+  employee_qr_codes?: Prisma.employee_qr_codesUncheckedUpdateOneWithoutUsersNestedInput
+  feedback?: Prisma.feedbackUncheckedUpdateManyWithoutUsersNestedInput
+  login_history?: Prisma.login_historyUncheckedUpdateManyWithoutUsersNestedInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocations_allocated_byTousersNestedInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocations_user_idTousersNestedInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersNestedInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersNestedInput
+  notifications?: Prisma.notificationsUncheckedUpdateManyWithoutUsersNestedInput
+  orders_orders_employee_idTousers?: Prisma.ordersUncheckedUpdateManyWithoutUsers_orders_employee_idTousersNestedInput
+  orders_orders_waiter_idTousers?: Prisma.ordersUncheckedUpdateManyWithoutUsers_orders_waiter_idTousersNestedInput
+  password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
+  refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
+  user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
+}
+
+export type usersUpsertWithoutExpired_balance_restorations_managerInput = {
+  update: Prisma.XOR<Prisma.usersUpdateWithoutExpired_balance_restorations_managerInput, Prisma.usersUncheckedUpdateWithoutExpired_balance_restorations_managerInput>
+  create: Prisma.XOR<Prisma.usersCreateWithoutExpired_balance_restorations_managerInput, Prisma.usersUncheckedCreateWithoutExpired_balance_restorations_managerInput>
+  where?: Prisma.usersWhereInput
+}
+
+export type usersUpdateToOneWithWhereWithoutExpired_balance_restorations_managerInput = {
+  where?: Prisma.usersWhereInput
+  data: Prisma.XOR<Prisma.usersUpdateWithoutExpired_balance_restorations_managerInput, Prisma.usersUncheckedUpdateWithoutExpired_balance_restorations_managerInput>
+}
+
+export type usersUpdateWithoutExpired_balance_restorations_managerInput = {
+  employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fullname?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  audit_logs?: Prisma.audit_logsUpdateManyWithoutUsersNestedInput
+  balance_transactions?: Prisma.balance_transactionsUpdateManyWithoutUsersNestedInput
+  cafe_staff?: Prisma.cafe_staffUpdateOneWithoutUsersNestedInput
+  employee_qr_codes?: Prisma.employee_qr_codesUpdateOneWithoutUsersNestedInput
+  feedback?: Prisma.feedbackUpdateManyWithoutUsersNestedInput
+  login_history?: Prisma.login_historyUpdateManyWithoutUsersNestedInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsUpdateManyWithoutUsers_monthly_allocations_allocated_byTousersNestedInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsUpdateManyWithoutUsers_monthly_allocations_user_idTousersNestedInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersNestedInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersNestedInput
+  notifications?: Prisma.notificationsUpdateManyWithoutUsersNestedInput
+  orders_orders_employee_idTousers?: Prisma.ordersUpdateManyWithoutUsers_orders_employee_idTousersNestedInput
+  orders_orders_waiter_idTousers?: Prisma.ordersUpdateManyWithoutUsers_orders_waiter_idTousersNestedInput
+  password_reset_tokens?: Prisma.password_reset_tokensUpdateManyWithoutUsersNestedInput
+  refresh_tokens?: Prisma.refresh_tokensUpdateManyWithoutUsersNestedInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUpdateManyWithoutEmployeeNestedInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
+  user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
+  departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+}
+
+export type usersUncheckedUpdateWithoutExpired_balance_restorations_managerInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  employee_external_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fullname?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone_number?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password_hash?: Prisma.StringFieldUpdateOperationsInput | string
+  department_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  is_active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  created_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updated_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  audit_logs?: Prisma.audit_logsUncheckedUpdateManyWithoutUsersNestedInput
+  balance_transactions?: Prisma.balance_transactionsUncheckedUpdateManyWithoutUsersNestedInput
+  cafe_staff?: Prisma.cafe_staffUncheckedUpdateOneWithoutUsersNestedInput
+  employee_qr_codes?: Prisma.employee_qr_codesUncheckedUpdateOneWithoutUsersNestedInput
+  feedback?: Prisma.feedbackUncheckedUpdateManyWithoutUsersNestedInput
+  login_history?: Prisma.login_historyUncheckedUpdateManyWithoutUsersNestedInput
+  monthly_allocations_monthly_allocations_allocated_byTousers?: Prisma.monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocations_allocated_byTousersNestedInput
+  monthly_allocations_monthly_allocations_user_idTousers?: Prisma.monthly_allocationsUncheckedUpdateManyWithoutUsers_monthly_allocations_user_idTousersNestedInput
+  monthly_allocation_approvals_submitted?: Prisma.monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_submitted_byTousersNestedInput
+  monthly_allocation_approvals_approved?: Prisma.monthly_allocation_approvalsUncheckedUpdateManyWithoutUsers_monthly_allocation_approvals_approved_byTousersNestedInput
+  notifications?: Prisma.notificationsUncheckedUpdateManyWithoutUsersNestedInput
+  orders_orders_employee_idTousers?: Prisma.ordersUncheckedUpdateManyWithoutUsers_orders_employee_idTousersNestedInput
+  orders_orders_waiter_idTousers?: Prisma.ordersUncheckedUpdateManyWithoutUsers_orders_waiter_idTousersNestedInput
+  password_reset_tokens?: Prisma.password_reset_tokensUncheckedUpdateManyWithoutUsersNestedInput
+  refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
+  qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
+  qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
+  user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
 }
 
 export type usersCreateWithoutMonthly_allocation_approvals_submittedInput = {
@@ -2116,6 +2510,8 @@ export type usersCreateWithoutMonthly_allocation_approvals_submittedInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutMonthly_allocation_approvals_submittedInput = {
@@ -2146,6 +2542,8 @@ export type usersUncheckedCreateWithoutMonthly_allocation_approvals_submittedInp
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutMonthly_allocation_approvals_submittedInput = {
@@ -2180,6 +2578,8 @@ export type usersCreateWithoutMonthly_allocation_approvals_approvedInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutMonthly_allocation_approvals_approvedInput = {
@@ -2210,6 +2610,8 @@ export type usersUncheckedCreateWithoutMonthly_allocation_approvals_approvedInpu
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutMonthly_allocation_approvals_approvedInput = {
@@ -2255,6 +2657,8 @@ export type usersUpdateWithoutMonthly_allocation_approvals_submittedInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutMonthly_allocation_approvals_submittedInput = {
@@ -2285,6 +2689,8 @@ export type usersUncheckedUpdateWithoutMonthly_allocation_approvals_submittedInp
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUpsertWithoutMonthly_allocation_approvals_approvedInput = {
@@ -2325,6 +2731,8 @@ export type usersUpdateWithoutMonthly_allocation_approvals_approvedInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutMonthly_allocation_approvals_approvedInput = {
@@ -2355,6 +2763,8 @@ export type usersUncheckedUpdateWithoutMonthly_allocation_approvals_approvedInpu
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutNotificationsInput = {
@@ -2384,6 +2794,8 @@ export type usersCreateWithoutNotificationsInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutNotificationsInput = {
@@ -2414,6 +2826,8 @@ export type usersUncheckedCreateWithoutNotificationsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutNotificationsInput = {
@@ -2459,6 +2873,8 @@ export type usersUpdateWithoutNotificationsInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutNotificationsInput = {
@@ -2489,6 +2905,8 @@ export type usersUncheckedUpdateWithoutNotificationsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutQr_sessions_qr_sessions_employee_idTousersInput = {
@@ -2518,6 +2936,8 @@ export type usersCreateWithoutQr_sessions_qr_sessions_employee_idTousersInput = 
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutQr_sessions_qr_sessions_employee_idTousersInput = {
@@ -2548,6 +2968,8 @@ export type usersUncheckedCreateWithoutQr_sessions_qr_sessions_employee_idTouser
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutQr_sessions_qr_sessions_employee_idTousersInput = {
@@ -2582,6 +3004,8 @@ export type usersCreateWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutEmployeeInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
@@ -2612,6 +3036,8 @@ export type usersUncheckedCreateWithoutQr_sessions_qr_sessions_waiter_idTousersI
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
@@ -2657,6 +3083,8 @@ export type usersUpdateWithoutQr_sessions_qr_sessions_employee_idTousersInput = 
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutQr_sessions_qr_sessions_employee_idTousersInput = {
@@ -2687,6 +3115,8 @@ export type usersUncheckedUpdateWithoutQr_sessions_qr_sessions_employee_idTouser
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUpsertWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
@@ -2727,6 +3157,8 @@ export type usersUpdateWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUpdateManyWithoutEmployeeNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutQr_sessions_qr_sessions_waiter_idTousersInput = {
@@ -2757,6 +3189,8 @@ export type usersUncheckedUpdateWithoutQr_sessions_qr_sessions_waiter_idTousersI
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutOrders_orders_employee_idTousersInput = {
@@ -2786,6 +3220,8 @@ export type usersCreateWithoutOrders_orders_employee_idTousersInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutOrders_orders_employee_idTousersInput = {
@@ -2816,6 +3252,8 @@ export type usersUncheckedCreateWithoutOrders_orders_employee_idTousersInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutOrders_orders_employee_idTousersInput = {
@@ -2850,6 +3288,8 @@ export type usersCreateWithoutOrders_orders_waiter_idTousersInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutOrders_orders_waiter_idTousersInput = {
@@ -2880,6 +3320,8 @@ export type usersUncheckedCreateWithoutOrders_orders_waiter_idTousersInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutOrders_orders_waiter_idTousersInput = {
@@ -2925,6 +3367,8 @@ export type usersUpdateWithoutOrders_orders_employee_idTousersInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutOrders_orders_employee_idTousersInput = {
@@ -2955,6 +3399,8 @@ export type usersUncheckedUpdateWithoutOrders_orders_employee_idTousersInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUpsertWithoutOrders_orders_waiter_idTousersInput = {
@@ -2995,6 +3441,8 @@ export type usersUpdateWithoutOrders_orders_waiter_idTousersInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutOrders_orders_waiter_idTousersInput = {
@@ -3025,6 +3473,8 @@ export type usersUncheckedUpdateWithoutOrders_orders_waiter_idTousersInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutPassword_reset_tokensInput = {
@@ -3054,6 +3504,8 @@ export type usersCreateWithoutPassword_reset_tokensInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutPassword_reset_tokensInput = {
@@ -3084,6 +3536,8 @@ export type usersUncheckedCreateWithoutPassword_reset_tokensInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutPassword_reset_tokensInput = {
@@ -3129,6 +3583,8 @@ export type usersUpdateWithoutPassword_reset_tokensInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutPassword_reset_tokensInput = {
@@ -3159,6 +3615,8 @@ export type usersUncheckedUpdateWithoutPassword_reset_tokensInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutRefresh_tokensInput = {
@@ -3188,6 +3646,8 @@ export type usersCreateWithoutRefresh_tokensInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesCreateNestedManyWithoutUsersInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutRefresh_tokensInput = {
@@ -3218,6 +3678,8 @@ export type usersUncheckedCreateWithoutRefresh_tokensInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
   user_roles?: Prisma.user_rolesUncheckedCreateNestedManyWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutRefresh_tokensInput = {
@@ -3263,6 +3725,8 @@ export type usersUpdateWithoutRefresh_tokensInput = {
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutRefresh_tokensInput = {
@@ -3293,6 +3757,8 @@ export type usersUncheckedUpdateWithoutRefresh_tokensInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateWithoutUser_rolesInput = {
@@ -3322,6 +3788,8 @@ export type usersCreateWithoutUser_rolesInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsCreateNestedManyWithoutWaiterInput
   departments?: Prisma.departmentsCreateNestedOneWithoutUsersInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsCreateNestedManyWithoutManagersInput
 }
 
 export type usersUncheckedCreateWithoutUser_rolesInput = {
@@ -3352,6 +3820,8 @@ export type usersUncheckedCreateWithoutUser_rolesInput = {
   refresh_tokens?: Prisma.refresh_tokensUncheckedCreateNestedManyWithoutUsersInput
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutEmployeeInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedCreateNestedManyWithoutWaiterInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutEmployeesInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedCreateNestedManyWithoutManagersInput
 }
 
 export type usersCreateOrConnectWithoutUser_rolesInput = {
@@ -3397,6 +3867,8 @@ export type usersUpdateWithoutUser_rolesInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   departments?: Prisma.departmentsUpdateOneWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutUser_rolesInput = {
@@ -3427,6 +3899,8 @@ export type usersUncheckedUpdateWithoutUser_rolesInput = {
   refresh_tokens?: Prisma.refresh_tokensUncheckedUpdateManyWithoutUsersNestedInput
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersCreateManyDepartmentsInput = {
@@ -3468,6 +3942,8 @@ export type usersUpdateWithoutDepartmentsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateWithoutDepartmentsInput = {
@@ -3498,6 +3974,8 @@ export type usersUncheckedUpdateWithoutDepartmentsInput = {
   qr_sessions_qr_sessions_employee_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutEmployeeNestedInput
   qr_sessions_qr_sessions_waiter_idTousers?: Prisma.qr_sessionsUncheckedUpdateManyWithoutWaiterNestedInput
   user_roles?: Prisma.user_rolesUncheckedUpdateManyWithoutUsersNestedInput
+  expired_balance_restorations_employee?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutEmployeesNestedInput
+  expired_balance_restorations_manager?: Prisma.expired_balance_restorationsUncheckedUpdateManyWithoutManagersNestedInput
 }
 
 export type usersUncheckedUpdateManyWithoutDepartmentsInput = {
@@ -3534,6 +4012,8 @@ export type UsersCountOutputType = {
   qr_sessions_qr_sessions_employee_idTousers: number
   qr_sessions_qr_sessions_waiter_idTousers: number
   user_roles: number
+  expired_balance_restorations_employee: number
+  expired_balance_restorations_manager: number
 }
 
 export type UsersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3553,6 +4033,8 @@ export type UsersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   qr_sessions_qr_sessions_employee_idTousers?: boolean | UsersCountOutputTypeCountQr_sessions_qr_sessions_employee_idTousersArgs
   qr_sessions_qr_sessions_waiter_idTousers?: boolean | UsersCountOutputTypeCountQr_sessions_qr_sessions_waiter_idTousersArgs
   user_roles?: boolean | UsersCountOutputTypeCountUser_rolesArgs
+  expired_balance_restorations_employee?: boolean | UsersCountOutputTypeCountExpired_balance_restorations_employeeArgs
+  expired_balance_restorations_manager?: boolean | UsersCountOutputTypeCountExpired_balance_restorations_managerArgs
 }
 
 /**
@@ -3677,6 +4159,20 @@ export type UsersCountOutputTypeCountUser_rolesArgs<ExtArgs extends runtime.Type
   where?: Prisma.user_rolesWhereInput
 }
 
+/**
+ * UsersCountOutputType without action
+ */
+export type UsersCountOutputTypeCountExpired_balance_restorations_employeeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.expired_balance_restorationsWhereInput
+}
+
+/**
+ * UsersCountOutputType without action
+ */
+export type UsersCountOutputTypeCountExpired_balance_restorations_managerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.expired_balance_restorationsWhereInput
+}
+
 
 export type usersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3708,6 +4204,8 @@ export type usersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   qr_sessions_qr_sessions_waiter_idTousers?: boolean | Prisma.users$qr_sessions_qr_sessions_waiter_idTousersArgs<ExtArgs>
   user_roles?: boolean | Prisma.users$user_rolesArgs<ExtArgs>
   departments?: boolean | Prisma.users$departmentsArgs<ExtArgs>
+  expired_balance_restorations_employee?: boolean | Prisma.users$expired_balance_restorations_employeeArgs<ExtArgs>
+  expired_balance_restorations_manager?: boolean | Prisma.users$expired_balance_restorations_managerArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["users"]>
 
@@ -3773,6 +4271,8 @@ export type usersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   qr_sessions_qr_sessions_waiter_idTousers?: boolean | Prisma.users$qr_sessions_qr_sessions_waiter_idTousersArgs<ExtArgs>
   user_roles?: boolean | Prisma.users$user_rolesArgs<ExtArgs>
   departments?: boolean | Prisma.users$departmentsArgs<ExtArgs>
+  expired_balance_restorations_employee?: boolean | Prisma.users$expired_balance_restorations_employeeArgs<ExtArgs>
+  expired_balance_restorations_manager?: boolean | Prisma.users$expired_balance_restorations_managerArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type usersIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3804,6 +4304,8 @@ export type $usersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     qr_sessions_qr_sessions_waiter_idTousers: Prisma.$qr_sessionsPayload<ExtArgs>[]
     user_roles: Prisma.$user_rolesPayload<ExtArgs>[]
     departments: Prisma.$departmentsPayload<ExtArgs> | null
+    expired_balance_restorations_employee: Prisma.$expired_balance_restorationsPayload<ExtArgs>[]
+    expired_balance_restorations_manager: Prisma.$expired_balance_restorationsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -4229,6 +4731,8 @@ export interface Prisma__usersClient<T, Null = never, ExtArgs extends runtime.Ty
   qr_sessions_qr_sessions_waiter_idTousers<T extends Prisma.users$qr_sessions_qr_sessions_waiter_idTousersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.users$qr_sessions_qr_sessions_waiter_idTousersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$qr_sessionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   user_roles<T extends Prisma.users$user_rolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.users$user_rolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$user_rolesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   departments<T extends Prisma.users$departmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.users$departmentsArgs<ExtArgs>>): Prisma.Prisma__departmentsClient<runtime.Types.Result.GetResult<Prisma.$departmentsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  expired_balance_restorations_employee<T extends Prisma.users$expired_balance_restorations_employeeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.users$expired_balance_restorations_employeeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$expired_balance_restorationsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  expired_balance_restorations_manager<T extends Prisma.users$expired_balance_restorations_managerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.users$expired_balance_restorations_managerArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$expired_balance_restorationsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5107,6 +5611,54 @@ export type users$departmentsArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   include?: Prisma.departmentsInclude<ExtArgs> | null
   where?: Prisma.departmentsWhereInput
+}
+
+/**
+ * users.expired_balance_restorations_employee
+ */
+export type users$expired_balance_restorations_employeeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the expired_balance_restorations
+   */
+  select?: Prisma.expired_balance_restorationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the expired_balance_restorations
+   */
+  omit?: Prisma.expired_balance_restorationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.expired_balance_restorationsInclude<ExtArgs> | null
+  where?: Prisma.expired_balance_restorationsWhereInput
+  orderBy?: Prisma.expired_balance_restorationsOrderByWithRelationInput | Prisma.expired_balance_restorationsOrderByWithRelationInput[]
+  cursor?: Prisma.expired_balance_restorationsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Expired_balance_restorationsScalarFieldEnum | Prisma.Expired_balance_restorationsScalarFieldEnum[]
+}
+
+/**
+ * users.expired_balance_restorations_manager
+ */
+export type users$expired_balance_restorations_managerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the expired_balance_restorations
+   */
+  select?: Prisma.expired_balance_restorationsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the expired_balance_restorations
+   */
+  omit?: Prisma.expired_balance_restorationsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.expired_balance_restorationsInclude<ExtArgs> | null
+  where?: Prisma.expired_balance_restorationsWhereInput
+  orderBy?: Prisma.expired_balance_restorationsOrderByWithRelationInput | Prisma.expired_balance_restorationsOrderByWithRelationInput[]
+  cursor?: Prisma.expired_balance_restorationsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Expired_balance_restorationsScalarFieldEnum | Prisma.Expired_balance_restorationsScalarFieldEnum[]
 }
 
 /**

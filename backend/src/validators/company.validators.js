@@ -12,6 +12,7 @@ import {
   validatePhone,
   validateOptionalPhone,
 } from "./common.validators.js";
+import { getEthiopianCycleRange, validateEthiopianMonth } from "../utils/date.js";
 
 const ALLOWED_ROLES = ["employee", "waiter", "cafe_manager", "company_manager"];
 
@@ -106,26 +107,54 @@ export const validateCafeManagerCreate = (body) => ({
   cafe_id: toPositiveInt(body.cafe_id, "cafe_id"),
 });
 
-export const validateAllocationCreate = (body) => ({
-  user_id: toPositiveInt(body.user_id, "user_id"),
-  amount: toPositiveMoney(body.amount, "amount"),
-  month: validateMonth(body.month),
-});
+const validateCycle = (body, month) => {
+  const cycleLabel = optionalString(body.cycle_label, "cycle_label", 150);
+  if (!body.ethiopian_cycle_start) return { cycle_label: cycleLabel, cycle: null };
+  const cycle = getEthiopianCycleRange(requireString(body.ethiopian_cycle_start, "ethiopian_cycle_start", 10));
+  const requestedMonth = validateEthiopianMonth(month);
+  if (cycle.ethiopian_start.year !== requestedMonth.year || cycle.ethiopian_start.month !== requestedMonth.month) {
+    throw new AppError("ethiopian_cycle_start must be in the selected allocation month", 400);
+  }
+  return { cycle_label: cycleLabel, cycle };
+};
+
+export const validateAllocationCreate = (body) => {
+  const month = validateMonth(body.month);
+  return {
+    user_id: toPositiveInt(body.user_id, "user_id"),
+    amount: toPositiveMoney(body.amount, "amount"),
+    month,
+    ...validateCycle(body, month),
+  };
+};
 
 export const validateGroupAllocation = (body) => {
   const departmentId = body.department_id ? toPositiveInt(body.department_id, "department_id") : null;
   const appliesToAll = body.applies_to_all === true;
   if (!appliesToAll && !departmentId) throw new AppError("Select a department or all employees", 400);
+  const month = validateMonth(body.month);
   return {
     amount: toPositiveMoney(body.amount, "amount"),
-    month: validateMonth(body.month),
+    month,
     department_id: departmentId,
     applies_to_all: appliesToAll,
+    ...validateCycle(body, month),
   };
 };
 
 export const validateAllocationUpdate = (body) => ({
   amount: toPositiveMoney(body.amount, "amount"),
+  ...(body.cycle_label !== undefined ? { cycle_label: optionalString(body.cycle_label, "cycle_label", 150) } : {}),
+});
+
+export const validateExpiredBalanceRestoration = (body) => ({
+  department_id: toPositiveInt(body.department_id, "department_id"),
+  manager_password: requireString(body.manager_password, "manager_password", 100),
+  additional_days: (() => {
+    const days = toPositiveInt(body.additional_days, "additional_days");
+    if (days > 365) throw new AppError("additional_days cannot exceed 365", 400);
+    return days;
+  })(),
 });
 
 export const validateMonthlyPaymentSchedule = (body) => {

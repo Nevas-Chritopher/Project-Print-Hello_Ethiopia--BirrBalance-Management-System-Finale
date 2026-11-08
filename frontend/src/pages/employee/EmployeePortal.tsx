@@ -1486,6 +1486,9 @@ interface Transaction {
   cafe: string;
   amount: number;
   balanceAfter: number;
+  cycleLabel?: string | null;
+  cycleStartDate?: string | null;
+  cycleEndDate?: string | null;
   orderDetails?: {
     items: { name: string; quantity: number; price: number }[];
     waiterName: string;
@@ -1525,6 +1528,9 @@ function EmployeeTransactionsPage({
       cafe: entry.cafe || '—',
       amount: Number(entry.amount || 0),
       balanceAfter: Number(entry.balanceAfter || 0),
+      cycleLabel: entry.cycleLabel,
+      cycleStartDate: entry.cycleStartDate,
+      cycleEndDate: entry.cycleEndDate,
       orderDetails: entry.orderDetails,
     }));
 
@@ -1973,6 +1979,11 @@ function EmployeeTransactionsPage({
                         </td>
                         <td className="py-4 px-4 font-semibold text-slate-700 dark:text-slate-300">
                           {t.description}
+                          {(t.cycleLabel || t.cycleStartDate || t.cycleEndDate) && (
+                            <div className="mt-1 text-[10px] font-medium text-slate-500">
+                              {t.cycleLabel || 'Allocation cycle'}: {t.cycleStartDate} – {t.cycleEndDate}
+                            </div>
+                          )}
                         </td>
                         <td className="py-4 px-4 font-mono font-bold">
                           {isOrder ? (

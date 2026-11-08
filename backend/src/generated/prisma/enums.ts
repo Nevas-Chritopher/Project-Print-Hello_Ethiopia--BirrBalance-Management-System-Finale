@@ -35,7 +35,8 @@ export const transaction_type = {
   order: 'order',
   refund: 'refund',
   adjustment: 'adjustment',
-  expiration: 'expiration'
+  expiration: 'expiration',
+  restoration: 'restoration'
 } as const
 
 export type transaction_type = (typeof transaction_type)[keyof typeof transaction_type]

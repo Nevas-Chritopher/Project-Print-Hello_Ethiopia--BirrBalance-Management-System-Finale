@@ -61,6 +61,7 @@ export const ModelName = {
   login_history: 'login_history',
   menu_items: 'menu_items',
   monthly_allocations: 'monthly_allocations',
+  expired_balance_restorations: 'expired_balance_restorations',
   monthly_payment_schedules: 'monthly_payment_schedules',
   monthly_allocation_settings: 'monthly_allocation_settings',
   monthly_allocation_approvals: 'monthly_allocation_approvals',
@@ -113,7 +114,8 @@ export const Balance_transactionsScalarFieldEnum = {
   direction: 'direction',
   transaction_type: 'transaction_type',
   reference_note: 'reference_note',
-  created_at: 'created_at'
+  created_at: 'created_at',
+  restoration_id: 'restoration_id'
 } as const
 
 export type Balance_transactionsScalarFieldEnum = (typeof Balance_transactionsScalarFieldEnum)[keyof typeof Balance_transactionsScalarFieldEnum]
@@ -205,10 +207,32 @@ export const Monthly_allocationsScalarFieldEnum = {
   amount: 'amount',
   allocated_by: 'allocated_by',
   created_at: 'created_at',
-  updated_at: 'updated_at'
+  updated_at: 'updated_at',
+  cycle_start_at: 'cycle_start_at',
+  cycle_end_at: 'cycle_end_at',
+  cycle_label: 'cycle_label'
 } as const
 
 export type Monthly_allocationsScalarFieldEnum = (typeof Monthly_allocationsScalarFieldEnum)[keyof typeof Monthly_allocationsScalarFieldEnum]
+
+
+export const Expired_balance_restorationsScalarFieldEnum = {
+  id: 'id',
+  allocation_id: 'allocation_id',
+  employee_id: 'employee_id',
+  department_id: 'department_id',
+  manager_id: 'manager_id',
+  original_expiration_transaction_id: 'original_expiration_transaction_id',
+  reexpiration_transaction_id: 'reexpiration_transaction_id',
+  original_expired_amount: 'original_expired_amount',
+  restored_amount: 'restored_amount',
+  restored_at: 'restored_at',
+  expires_at: 'expires_at',
+  status: 'status',
+  created_at: 'created_at'
+} as const
+
+export type Expired_balance_restorationsScalarFieldEnum = (typeof Expired_balance_restorationsScalarFieldEnum)[keyof typeof Expired_balance_restorationsScalarFieldEnum]
 
 
 export const Monthly_payment_schedulesScalarFieldEnum = {

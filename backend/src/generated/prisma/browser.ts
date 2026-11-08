@@ -6,7 +6,7 @@
 /*
  * This file should be your main import to use Prisma-related types and utilities in a browser. 
  * Use it to get access to models, enums, and input types.
- * 
+ *
  * This file does not contain a `PrismaClient` class, nor several other helpers that are intended as server-side only.
  * See `client.ts` for the standard, server-side entry point.
  *
@@ -70,6 +70,11 @@ export type menu_items = Prisma.menu_itemsModel
  * This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
  */
 export type monthly_allocations = Prisma.monthly_allocationsModel
+/**
+ * Model expired_balance_restorations
+ *
+ */
+export type expired_balance_restorations = Prisma.expired_balance_restorationsModel
 /**
  * Model monthly_payment_schedules
  * 
