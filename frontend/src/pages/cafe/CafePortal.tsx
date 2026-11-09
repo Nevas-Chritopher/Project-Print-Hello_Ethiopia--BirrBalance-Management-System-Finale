@@ -32,6 +32,7 @@ import {
   PeakOrderTimesChart
 } from '../../components/charts/DashboardCharts';
 import { exportToExcel, getFileNameFromContentDisposition, downloadBlobFile } from '../../utils/exportHelpers';
+import { ETHIOPIAN_MONTH_NAMES, getCurrentEthiopianMonth, getEthiopianMonth } from '../../utils/ethiopianDate';
 
 export default function CafePortal() {
   const { user, apiGet, apiPost, apiPostForm, apiPut, apiPatch, apiDelete, apiDownload, setGlobalLoading } = useApp();
@@ -1119,7 +1120,7 @@ function CafeWaitersPerformance({
 function CafeEmployeeUsageAnalytics() {
   const { apiGet } = useApp();
 
-  const [dateRange, setDateRange] = useState('2026-06');
+  const [dateRange, setDateRange] = useState(() => getCurrentEthiopianMonth());
   const [analytics, setAnalytics] = useState<any>(null);
 
   useEffect(() => {
@@ -1168,13 +1169,7 @@ function CafeEmployeeUsageAnalytics() {
           <p className="text-xs text-subtle-text font-medium uppercase tracking-wider mt-1">Review dining spikes, top visitors, and top foods</p>
         </div>
         <div className="text-xs font-bold text-slate-700">
-          <input
-            id="analytics-month-picker"
-            type="month"
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="p-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none"
-          />
+          <EthiopianMonthPicker id="analytics-month-picker" value={dateRange} onChange={setDateRange} />
         </div>
       </div>
 
@@ -1233,7 +1228,7 @@ function CafeEmployeeUsageAnalytics() {
 // -----------------------------------------------------------
 function CafeOperationalReports({ orders }: { orders: any[] }) {
   const { apiDownload, apiGet, setGlobalLoading } = useApp();
-  const [reportMonth, setReportMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [reportMonth, setReportMonth] = useState(() => getCurrentEthiopianMonth());
   const [usageReport, setUsageReport] = useState<any>({ departments: [] });
   const [selectedDepartment, setSelectedDepartment] = useState('');
 
@@ -1249,13 +1244,13 @@ function CafeOperationalReports({ orders }: { orders: any[] }) {
     .filter(o => o.status === 'confirmed')
     .filter(o => {
       if (!reportMonth) return true;
-      const orderMonth = new Date(o.date).toISOString().slice(0, 7);
+      const orderMonth = getEthiopianMonth(new Date(o.date));
       return orderMonth === reportMonth;
     });
   const totalRevenue = reportOrders.reduce((sum, o) => sum + o.amount, 0);
 
   const exportOperationalReport = async (format: 'xlsx' | 'pdf' | 'csv') => {
-    const month = reportMonth || new Date().toISOString().slice(0, 7);
+    const month = reportMonth || getCurrentEthiopianMonth();
     try {
       setGlobalLoading(true);
       const { blob, contentDisposition } = await apiDownload(
@@ -1294,14 +1289,8 @@ function CafeOperationalReports({ orders }: { orders: any[] }) {
       {/* Date Pickers */}
       <div className="flex flex-col md:flex-row gap-4 items-end bg-white p-5 rounded-3xl border border-slate-100 shadow-sm text-xs">
         <div className="space-y-1.5 w-full md:w-auto">
-          <label className="font-bold text-slate-700">Report Month</label>
-          <input
-            id="ops-report-month"
-            type="month"
-            value={reportMonth}
-            onChange={(e) => setReportMonth(e.target.value)}
-            className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold w-full"
-          />
+          <label className="font-bold text-slate-700">Ethiopian Report Month</label>
+          <EthiopianMonthPicker id="ops-report-month" value={reportMonth} onChange={setReportMonth} />
         </div>
       </div>
 
@@ -1379,6 +1368,69 @@ function CafeOperationalReports({ orders }: { orders: any[] }) {
           </table>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EthiopianMonthPicker({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  onChange: (month: string) => void;
+}) {
+  const [year, month] = value.split('-');
+  const [yearText, setYearText] = useState(year);
+  const monthNumber = Number(month);
+
+  useEffect(() => {
+    setYearText(year);
+  }, [year]);
+
+  const commitYear = () => {
+    if (!/^\d{1,4}$/.test(yearText)) {
+      setYearText(year);
+      return;
+    }
+    const nextYear = Number(yearText);
+    if (nextYear < 1 || nextYear > 9999) {
+      setYearText(year);
+      return;
+    }
+    onChange(`${String(nextYear).padStart(4, '0')}-${month}`);
+  };
+
+  return (
+    <div className="flex gap-2">
+      <select
+        id={id}
+        aria-label="Ethiopian month"
+        value={monthNumber}
+        onChange={(event) => {
+          const nextYear = /^\d{1,4}$/.test(yearText) && Number(yearText) >= 1 && Number(yearText) <= 9999
+            ? String(Number(yearText)).padStart(4, '0')
+            : year;
+          onChange(`${nextYear}-${String(Number(event.target.value)).padStart(2, '0')}`);
+        }}
+        className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
+      >
+        {ETHIOPIAN_MONTH_NAMES.map((monthName, index) => (
+          <option key={monthName} value={index + 1}>{monthName}</option>
+        ))}
+      </select>
+      <input
+        id={`${id}-year`}
+        aria-label="Ethiopian year"
+        type="number"
+        min="1"
+        max="9999"
+        value={yearText}
+        onChange={(event) => setYearText(event.target.value)}
+        onBlur={commitYear}
+        className="w-24 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent font-semibold"
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   validateAllocationCreate,
   validateExpiredBalancePreviewQuery,
   validateExpiredBalanceRestoration,
+  validateEmployeeQrDepartmentFilter,
   validateGroupAllocation,
 } from "../src/validators/company.validators.js";
 import prisma from "../src/config/db.js";
@@ -113,6 +114,13 @@ test("expired balance preview requires a department and Ethiopian month", () => 
   });
   assert.throws(() => validateExpiredBalancePreviewQuery({ department_id: "2" }), { statusCode: 400 });
   assert.throws(() => validateExpiredBalancePreviewQuery({ department_id: "2", month: "2019-14" }), { statusCode: 400 });
+});
+
+test("employee QR department filter defaults to all and validates selected departments", () => {
+  assert.deepEqual(validateEmployeeQrDepartmentFilter({}), { department_id: undefined });
+  assert.deepEqual(validateEmployeeQrDepartmentFilter({ department_id: null }), { department_id: undefined });
+  assert.deepEqual(validateEmployeeQrDepartmentFilter({ department_id: "3" }), { department_id: 3 });
+  assert.throws(() => validateEmployeeQrDepartmentFilter({ department_id: "all" }), { statusCode: 400 });
 });
 
 test("expired balance preview respects the all-departments flag even when a department id is also present", async () => {

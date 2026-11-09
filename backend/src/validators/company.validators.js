@@ -220,6 +220,12 @@ export const validateMonthlyAllocationApproval = (body) => ({
 
 export const validateId = (params, fieldName = "id") => toPositiveInt(params.id, fieldName);
 
+export const validateEmployeeQrDepartmentFilter = (body) => ({
+  department_id: body.department_id === undefined || body.department_id === null || body.department_id === ""
+    ? undefined
+    : toPositiveInt(body.department_id, "department_id"),
+});
+
 export const validateCompanyReportQuery = (query) => ({
   month: validateMonth(query.month),
   format: validateFormat(query.format),

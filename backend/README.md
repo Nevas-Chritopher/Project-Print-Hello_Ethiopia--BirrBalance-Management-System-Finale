@@ -75,11 +75,31 @@ npm install
 
 ### Environment Setup
 
-```bash
-cp .env.example .env
+Create a local `.env` from the example, then set `DATABASE_URL` to your PostgreSQL
+connection string. Keep `.env` out of version control; do not use example credentials
+for a shared or production database.
+
+```powershell
+Copy-Item .env.example .env
 ```
 
-Fill in your values in `.env` before running the server.
+Set the required `JWT_SECRET` and `AES_SECRET` values in `.env` as well. Prisma CLI
+commands read this file from the `backend/` directory.
+
+### Change the QR Code Destination
+
+When the computer's IP address changes, edit `WAITER_PANEL_URL` in
+`backend/.env` (not the QR service source code). Set the host to the computer's
+current IPv4 address from `ipconfig`, keeping the frontend port and path:
+
+```env
+WAITER_PANEL_URL=http://<computer-LAN-IP>:3000/waiter/panel
+```
+
+For example, replace `<computer-LAN-IP>` with the IPv4 address of the Wi-Fi or
+Ethernet adapter that QR-scanning devices can reach. Restart the backend after
+changing this value, then generate and print the QR codes again; previously
+printed QR codes keep their old URL.
 
 ### Run in Development
 

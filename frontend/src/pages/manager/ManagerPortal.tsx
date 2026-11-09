@@ -1003,6 +1003,7 @@ function ManagerEmployeesPage({
   const [printQr, setPrintQr] = useState<any | null>(null);
   const [printAllQrs, setPrintAllQrs] = useState<any[] | null>(null);
   const [isPreparingBulkPrint, setIsPreparingBulkPrint] = useState(false);
+  const [bulkPrintDepartmentId, setBulkPrintDepartmentId] = useState('all');
   const [printPassword, setPrintPassword] = useState('');
   const [printPasswordsByEmployeeId, setPrintPasswordsByEmployeeId] = useState<Record<string, string>>({});
   const [printPasswordImportError, setPrintPasswordImportError] = useState('');
@@ -1260,7 +1261,10 @@ function ManagerEmployeesPage({
     setFormError('');
     setIsPreparingBulkPrint(true);
     try {
-      const response = await apiPost('/api/company-manager/employees/qr-codes', {});
+      const requestBody = bulkPrintDepartmentId === 'all'
+        ? {}
+        : { department_id: Number(bulkPrintDepartmentId) };
+      const response = await apiPost('/api/company-manager/employees/qr-codes', requestBody);
       const qrCodes = Array.isArray(response?.data) ? response.data : Array.isArray(response) ? response : [];
       const uniqueQrCodes = new Map<string, any>();
 
@@ -1280,7 +1284,10 @@ function ManagerEmployeesPage({
       });
 
       if (qrCodes.length === 0) {
-        setFormError('There are no active employee QR codes available to print.');
+        const selectedDepartment = departmentsList.find((department) => String(department.id) === bulkPrintDepartmentId);
+        setFormError(selectedDepartment
+          ? `There are no active employee QR codes available to print in ${selectedDepartment.name}.`
+          : 'There are no active employee QR codes available to print.');
         return;
       }
       if (uniqueQrCodes.size !== qrCodes.length) {
@@ -1486,6 +1493,21 @@ function ManagerEmployeesPage({
           <p className="text-xs text-subtle-text font-medium uppercase tracking-wider mt-1">Add, edit, or control staff meal allocations</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <label className="flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700">
+            Department
+            <select
+              aria-label="Department to print QR codes for"
+              value={bulkPrintDepartmentId}
+              onChange={(event) => setBulkPrintDepartmentId(event.target.value)}
+              disabled={isPreparingBulkPrint}
+              className="max-w-40 bg-transparent py-2 text-xs font-semibold outline-none disabled:opacity-60"
+            >
+              <option value="all">All Departments</option>
+              {departmentsList.map((department) => (
+                <option key={department.id} value={department.id}>{department.name}</option>
+              ))}
+            </select>
+          </label>
           <button disabled={isPreparingBulkPrint} onClick={generateAllPrintableQrs} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-xs font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-200 disabled:cursor-wait disabled:opacity-60">
             <Download className="w-4 h-4" /> {isPreparingBulkPrint ? 'Preparing QR Codes...' : 'Print All Employee QR Codes'}
           </button>

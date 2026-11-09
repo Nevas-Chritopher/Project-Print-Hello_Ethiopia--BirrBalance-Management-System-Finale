@@ -546,9 +546,13 @@ export const issuePrintableEmployeeQr = async (actor, employeeId, ipAddress) => 
   return prisma.$transaction((tx) => issueEmployeeQrCode(actor, employee, ipAddress, tx));
 };
 
-export const issueAllPrintableEmployeeQrs = async (actor, ipAddress) => {
+export const issueAllPrintableEmployeeQrs = async (actor, ipAddress, departmentId) => {
   const employees = await prisma.users.findMany({
-    where: { is_active: true, user_roles: { some: { roles: { name: "employee" } } } },
+    where: {
+      is_active: true,
+      user_roles: { some: { roles: { name: "employee" } } },
+      ...(departmentId === undefined ? {} : { department_id: departmentId }),
+    },
     select: { id: true, employee_external_id: true, fullname: true, departments: { select: { name: true } } },
     orderBy: { fullname: "asc" },
   });

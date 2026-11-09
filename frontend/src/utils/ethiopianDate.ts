@@ -15,11 +15,15 @@ const ETHIOPIAN_MONTHS = [
 ];
 
 export const getCurrentEthiopianMonth = () => {
+  return getEthiopianMonth(new Date());
+};
+
+export const getEthiopianMonth = (date: Date) => {
   const parts = new Intl.DateTimeFormat('en-u-ca-ethiopic-nu-latn', {
     timeZone: 'Africa/Addis_Ababa',
     year: 'numeric',
     month: 'numeric',
-  }).formatToParts(new Date());
+  }).formatToParts(date);
   const year = parts.find((part) => part.type === 'year')?.value;
   const month = parts.find((part) => part.type === 'month')?.value;
 

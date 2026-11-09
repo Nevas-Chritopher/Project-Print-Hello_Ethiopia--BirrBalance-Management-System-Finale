@@ -63,6 +63,7 @@ import {
   validateManagerPasswordChange,
   validateExpiredBalancePreviewQuery,
   validateExpiredBalanceRestoration,
+  validateEmployeeQrDepartmentFilter,
 } from "../validators/company.validators.js";
 
 export const addCafe = asyncHandler(async (req, res) => {
@@ -295,6 +296,7 @@ export const generateEmployeeQr = asyncHandler(async (req, res) => {
 });
 
 export const generateAllEmployeeQrs = asyncHandler(async (req, res) => {
-  const qrCodes = await issueAllPrintableEmployeeQrs(req.user, req.ip);
+  const { department_id } = validateEmployeeQrDepartmentFilter(req.body);
+  const qrCodes = await issueAllPrintableEmployeeQrs(req.user, req.ip, department_id);
   return successResponse(res, qrCodes, "Printable employee QR codes generated successfully");
 });

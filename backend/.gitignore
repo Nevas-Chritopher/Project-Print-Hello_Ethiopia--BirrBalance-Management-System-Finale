@@ -1,8 +1,5 @@
-PORT=
-DATABASE_URL=
-DIRECT_URL=
-JWT_SECRET=
-JWT_EXPIRES_IN=
-AES_SECRET=
-NODE_ENV=node_modules/
-node_modules/ 
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
