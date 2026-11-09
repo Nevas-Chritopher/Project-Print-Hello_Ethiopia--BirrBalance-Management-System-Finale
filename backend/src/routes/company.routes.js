@@ -33,6 +33,7 @@ import {
   generateEmployeeQr,
   generateAllEmployeeQrs,
   monthlyAllowancePreview,
+  previewExpiredBalances,
   requestMonthlyAllocationApproval,
   setAutomaticMonthlyAllocation,
 } from "../controllers/company.controller.js";
@@ -69,6 +70,7 @@ router.delete("/departments/:id", removeDepartment);
 router.post("/balances/allocations", allocateBalance);
 router.post("/balances/group-allocations", allocateGroupBalance);
 router.post("/balances/restore-expired", restoreExpiredBalances);
+router.get("/balances/restore-expired/preview", previewExpiredBalances);
 router.get("/balances/allowance-preview", monthlyAllowancePreview);
 router.get("/balances/automatic-allocation", automaticMonthlyAllocationStatus);
 router.patch("/balances/automatic-allocation", setAutomaticMonthlyAllocation);

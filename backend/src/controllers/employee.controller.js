@@ -16,7 +16,7 @@ import { AppError } from "../utils/AppError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const getProfile = asyncHandler(async (req, res) => {
-  const [user, allocations, ledgerEntries] = await Promise.all([
+  const [user, allocations, ledgerEntries, balance] = await Promise.all([
     prisma.users.findUnique({
       where: { id: req.user.id },
       select: {
@@ -38,6 +38,7 @@ export const getProfile = asyncHandler(async (req, res) => {
       select: { id: true, allocation_month: true, amount: true },
     }),
     getEmployeeLedgerEntries(req.user.id),
+    getEmployeeBalance(req.user.id),
   ]);
 
   const { token, expiresAt } = generateQRToken(req.user.id, null);
@@ -71,6 +72,7 @@ export const getProfile = asyncHandler(async (req, res) => {
     res,
     {
       ...user,
+      balance,
       allocations: allocations.map((allocation) => ({
         id: allocation.id,
         date: allocation.allocation_month,

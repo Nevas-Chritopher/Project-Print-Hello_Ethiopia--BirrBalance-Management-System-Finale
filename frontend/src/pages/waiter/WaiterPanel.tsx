@@ -156,7 +156,7 @@ export default function WaiterPanel() {
     try {
       const qrUrl = new URL(qrString);
       const employeeId = qrUrl.searchParams.get('id');
-      if (qrUrl.pathname === '/waiter/panel' && employeeId && /^\d+$/.test(employeeId)) {
+      if (qrUrl.pathname.replace(/\/+$/, '') === '/waiter/panel' && employeeId && /^\d+$/.test(employeeId)) {
         await handleLookupEmployee(employeeId, true);
         return;
       }

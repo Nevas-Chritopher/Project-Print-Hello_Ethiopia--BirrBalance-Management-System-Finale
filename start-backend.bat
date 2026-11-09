@@ -1,5 +1,5 @@
 @echo off
-cd /d "C:\Users\user\Print-Hello_world-BirrBalance-Management-system3\backend"
-echo Starting Print-Hello_world-BirrBalance-Management-system3 backend...
+cd /d "C:\Users\user\Project-Print-Hello_Ethiopia--BirrBalance-Management-System-Finale\backend"
+echo Starting Project-Print-Hello_Ethiopia--BirrBalance-Management-System-Finale backend...
 call npm run dev
 pause

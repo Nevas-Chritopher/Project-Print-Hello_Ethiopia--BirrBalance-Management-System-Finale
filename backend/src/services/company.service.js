@@ -15,6 +15,8 @@ import {
 import { buildCsv, buildPdf, buildXlsx } from "../utils/report.js";
 import crypto from "crypto";
 import { buildWaiterPanelUrl, generateQRToken, hashQRToken } from "./qr.service.js";
+import { capRestorationCandidate } from "../utils/restoration.js";
+import { getEmployeeBalances } from "./balance.service.js";
 
 const REPORT_FIELDS = [
   { key: "employee_id", header: "Employee ID", width: 18 },
@@ -343,32 +345,12 @@ export const listEmployees = async (actor, filters, pagination, ipAddress) => {
     prisma.users.count({ where }),
   ]);
 
-  // Fetch balances in three batched queries.  The previous per-employee
-  // lookup ran hundreds of queries when the overview opened, making the
-  // manager portal slow and prone to database timeouts.
+  // Keep the manager list in sync with employee spendable balances, including
+  // active restored funds from older allocation cycles, using batched queries.
   const employeeIds = items.map((employee) => employee.id);
-  const { start, startAt, endAt } = getMonthRange();
-  const [allocations, transactions] = employeeIds.length ? await Promise.all([
-    prisma.monthly_allocations.findMany({
-      where: { user_id: { in: employeeIds }, allocation_month: start },
-      select: { user_id: true, amount: true },
-    }),
-    prisma.balance_transactions.groupBy({
-      by: ["user_id", "direction"],
-      where: { user_id: { in: employeeIds }, created_at: { gte: startAt, lt: endAt } },
-      _sum: { amount: true },
-    }),
-  ]) : [[], []];
-  const balances = new Map(allocations.map((allocation) => [allocation.user_id, { credit: 0, debit: 0 }]));
-  transactions.forEach((transaction) => {
-    const balance = balances.get(transaction.user_id) ?? { credit: 0, debit: 0 };
-    if (transaction.direction === "credit") balance.credit = Number(transaction._sum.amount ?? 0);
-    if (transaction.direction === "debit") balance.debit = Number(transaction._sum.amount ?? 0);
-    balances.set(transaction.user_id, balance);
-  });
+  const balances = await getEmployeeBalances(employeeIds);
   const itemsWithBalance = items.map((employee) => {
-    const balance = balances.get(employee.id) ?? { credit: 0, debit: 0 };
-    return { ...formatEmployee(employee), balance: Math.max(balance.credit - balance.debit, 0) };
+    return { ...formatEmployee(employee), balance: balances.get(employee.id) ?? 0 };
   });
 
   await writeAuditLog({
@@ -757,10 +739,145 @@ export const assignGroupMonthlyBalance = async (actor, payload, ipAddress) => {
   return { allocated, skipped, total: employees.length };
 };
 
+export const previewExpiredBalancesForDepartment = async (actor, { department_id, all_departments, month }, ipAddress) => {
+  const allDepartments = department_id === undefined || all_departments === true;
+  if (!actor?.roles?.includes("company_manager")) {
+    throw new AppError("You are not authorized to preview expired balances", 403);
+  }
+  const manager = await prisma.users.findUnique({ where: { id: actor.id }, select: { department_id: true } });
+  if (manager?.department_id && (allDepartments || manager.department_id !== department_id)) {
+    throw new AppError("You are not authorized to preview balances for this department", 403);
+  }
+
+  const department = allDepartments ? null : await prisma.departments.findUnique({ where: { id: department_id } });
+  if (!allDepartments && !department) throw new AppError("Department not found", 404);
+
+  const allocationMonth = getMonthRange(month).start;
+  const employeeWhere = {
+    ...(allDepartments ? {} : { department_id }),
+    user_roles: { some: { roles: { name: "employee" } } },
+  };
+  const employeeIds = (await prisma.users.findMany({ where: employeeWhere, select: { id: true } })).map((user) => user.id);
+  const monthAllocations = employeeIds.length
+    ? await prisma.monthly_allocations.findMany({
+      where: { user_id: { in: employeeIds }, allocation_month: allocationMonth },
+      select: { id: true },
+    })
+    : [];
+  const monthAllocationIds = monthAllocations.map((allocation) => allocation.id);
+  const monthLedger = monthAllocationIds.length
+    ? await prisma.balance_transactions.findMany({
+      where: {
+        allocation_id: { in: monthAllocationIds },
+        OR: [
+          { transaction_type: "expiration", direction: "debit" },
+          { transaction_type: "restoration", direction: "credit" },
+        ],
+      },
+      select: { user_id: true, amount: true, transaction_type: true, restoration_id: true },
+    })
+    : [];
+  const gross_expired_amount = Number(monthLedger
+    .filter((entry) => entry.transaction_type === "expiration")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0).toFixed(2));
+  const previously_restored_amount = Number(monthLedger
+    .filter((entry) => entry.transaction_type === "restoration")
+    .reduce((sum, entry) => sum + Number(entry.amount), 0).toFixed(2));
+  const previously_restored_count = new Set(monthLedger
+    .filter((entry) => entry.transaction_type === "restoration" && entry.restoration_id !== null)
+    .map((entry) => entry.restoration_id)).size;
+  const restoredByEmployee = new Map();
+  for (const entry of monthLedger) {
+    if (entry.transaction_type !== "restoration") continue;
+    const key = String(entry.user_id);
+    restoredByEmployee.set(key, (restoredByEmployee.get(key) ?? 0) + Number(entry.amount));
+  }
+
+  const expirations = await prisma.balance_transactions.findMany({
+    where: {
+      transaction_type: "expiration",
+      direction: "debit",
+      allocation_id: { in: monthAllocationIds },
+      users: {
+        user_roles: { some: { roles: { name: "employee" } } },
+      },
+      expired_balance_restorations_original_expiration: null,
+      expired_balance_restorations_reexpiration: null,
+      restoration_id: null,
+    },
+    include: {
+      monthly_allocations: true,
+      users: {
+        select: {
+          id: true,
+          employee_external_id: true,
+          fullname: true,
+          departments: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { created_at: "asc" },
+  });
+  const monthExpirations = expirations.filter((expiration) => expiration.allocation_id && expiration.monthly_allocations);
+  const allocationIds = [...new Set(monthExpirations.map((expiration) => expiration.allocation_id))];
+  const balanceTransactions = allocationIds.length
+    ? await prisma.balance_transactions.findMany({
+      where: { allocation_id: { in: allocationIds } },
+      select: { allocation_id: true, amount: true, direction: true },
+    })
+    : [];
+  const balanceByAllocation = new Map();
+  for (const transaction of balanceTransactions) {
+    const balance = balanceByAllocation.get(transaction.allocation_id) ?? 0;
+    balanceByAllocation.set(
+      transaction.allocation_id,
+      balance + (transaction.direction === "credit" ? Number(transaction.amount) : -Number(transaction.amount)),
+    );
+  }
+
+  const uncappedCandidates = monthExpirations
+    .filter((expiration) => (balanceByAllocation.get(expiration.allocation_id) ?? 0) <= 0.00001)
+    .map((expiration) => ({
+      employee_key: String(expiration.user_id),
+      employee_id: expiration.users.employee_external_id ?? String(expiration.user_id),
+      employee_name: expiration.users.fullname,
+      department: expiration.users.departments?.name ?? "Unassigned",
+      allocation_id: expiration.allocation_id,
+      cycle_label: expiration.monthly_allocations.cycle_label || "Monthly Allocation Cycle",
+      expired_at: expiration.created_at,
+      amount: Number(Number(expiration.amount).toFixed(2)),
+    }));
+  const candidates = uncappedCandidates
+    .map((candidate) => capRestorationCandidate(candidate, restoredByEmployee))
+    .filter(Boolean)
+    .map(({ employee_key: _employeeKey, ...candidate }) => candidate);
+  const total_eligible = Number(candidates.reduce((sum, candidate) => sum + candidate.amount, 0).toFixed(2));
+
+  await writeAuditLog({
+    userId: actor.id,
+    action: "company.balance.expired.preview",
+    entityType: "expired_balance_restorations",
+    description: `Previewed eligible expired balances for ${department?.name ?? "all departments"}, Ethiopian allocation month ${month}: ETB ${total_eligible.toFixed(2)} across ${candidates.length} allocation(s)`,
+    ipAddress,
+  });
+
+  return {
+    department: department ? { id: department.id, name: department.name } : { id: null, name: "All departments" },
+    month,
+    gross_expired_amount,
+    previously_restored_amount,
+    previously_restored_count,
+    eligible_count: candidates.length,
+    total_eligible,
+    candidates,
+  };
+};
+
 export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddress) => {
+  const allDepartments = payload.all_departments === true || payload.department_id === undefined;
   const isManager = actor?.roles?.includes("company_manager");
   if (!isManager) throw new AppError("You are not authorized to restore expired balances", 403);
-  if (actor.department_id && actor.department_id !== payload.department_id) {
+  if (actor.department_id && (allDepartments || actor.department_id !== payload.department_id)) {
     throw new AppError("You are not authorized to restore balances for this department", 403);
   }
 
@@ -773,7 +890,7 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
     },
   });
   const stillManager = manager?.user_roles.some((userRole) => userRole.roles.name === "company_manager");
-  if (manager?.department_id && manager.department_id !== payload.department_id) {
+  if (manager?.department_id && (allDepartments || manager.department_id !== payload.department_id)) {
     throw new AppError("You are not authorized to restore balances for this department", 403);
   }
   const hasBcryptHash = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(manager?.password_hash ?? "");
@@ -782,19 +899,26 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
     throw new AppError("Manager password is incorrect", 401);
   }
 
-  const department = await prisma.departments.findUnique({ where: { id: payload.department_id } });
-  if (!department) throw new AppError("Department not found", 404);
+  const department = allDepartments ? null : await prisma.departments.findUnique({ where: { id: payload.department_id } });
+  if (!allDepartments && !department) throw new AppError("Department not found", 404);
+  const departmentName = department?.name ?? "all departments";
 
+  const allocationMonth = payload.month ? getMonthRange(payload.month).start : undefined;
   const expiresAt = new Date(Date.now() + payload.additional_days * 24 * 60 * 60 * 1000);
   return prisma.$transaction(async (tx) => {
-    // Serialise the batch as well as individual order deductions. The advisory
-    // locks and unique source-expiry key make a retry safe.
-    await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock($1)", -payload.department_id);
+    // Serialize return batches across scopes, then recheck each source after its
+    // employee lock. The unique original-expiration key is the final idempotency guard.
+    await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock($1)", 0);
+    if (!allDepartments) await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock($1)", -payload.department_id);
     const expirations = await tx.balance_transactions.findMany({
       where: {
         transaction_type: "expiration",
         direction: "debit",
-        users: { department_id: payload.department_id, user_roles: { some: { roles: { name: "employee" } } } },
+        users: {
+          ...(allDepartments ? {} : { department_id: payload.department_id }),
+          user_roles: { some: { roles: { name: "employee" } } },
+        },
+        ...(allocationMonth ? { monthly_allocations: { allocation_month: allocationMonth } } : {}),
         expired_balance_restorations_original_expiration: null,
         expired_balance_restorations_reexpiration: null,
         restoration_id: null,
@@ -804,9 +928,38 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
     });
 
     const details = [];
+    const employeeIds = [...new Set(expirations.map((expiration) => expiration.user_id))];
+    const previousRestorations = employeeIds.length
+      ? await tx.balance_transactions.findMany({
+        where: {
+          user_id: { in: employeeIds },
+          transaction_type: "restoration",
+          direction: "credit",
+          ...(allocationMonth ? { monthly_allocations: { allocation_month: allocationMonth } } : {}),
+        },
+        select: {
+          user_id: true,
+          amount: true,
+          monthly_allocations: { select: { allocation_month: true } },
+        },
+      })
+      : [];
+    const restoredByEmployeeMonth = new Map();
+    for (const previousRestoration of previousRestorations) {
+      const monthKey = previousRestoration.monthly_allocations?.allocation_month?.toISOString().slice(0, 10);
+      if (!monthKey) continue;
+      const key = `${previousRestoration.user_id}:${monthKey}`;
+      restoredByEmployeeMonth.set(key, (restoredByEmployeeMonth.get(key) ?? 0) + Number(previousRestoration.amount));
+    }
+
     for (const expiration of expirations) {
       if (!expiration.allocation_id || !expiration.monthly_allocations) continue;
       await tx.$executeRawUnsafe("SELECT pg_advisory_xact_lock($1)", expiration.user_id);
+      const alreadyRestored = await tx.expired_balance_restorations.findUnique({
+        where: { original_expiration_transaction_id: expiration.id },
+        select: { id: true },
+      });
+      if (alreadyRestored) continue;
       const balanceTransactions = await tx.balance_transactions.findMany({
         where: { allocation_id: expiration.allocation_id },
         select: { amount: true, direction: true },
@@ -816,15 +969,22 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
       const currentBalance = balanceTransactions.reduce((sum, entry) => sum + (entry.direction === "credit" ? Number(entry.amount) : -Number(entry.amount)), 0);
       if (currentBalance > 0.00001) continue;
 
-      const restoredAmount = Number(expiration.amount);
+      const allocationMonthKey = expiration.monthly_allocations.allocation_month.toISOString().slice(0, 10);
+      const restorationKey = `${expiration.user_id}:${allocationMonthKey}`;
+      const cappedRestoration = capRestorationCandidate({
+        employee_key: restorationKey,
+        amount: Number(expiration.amount),
+      }, restoredByEmployeeMonth);
+      if (!cappedRestoration) continue;
+      const restoredAmount = cappedRestoration.amount;
       const restoration = await tx.expired_balance_restorations.create({
         data: {
           allocation_id: expiration.allocation_id,
           employee_id: expiration.user_id,
-          department_id: payload.department_id,
+          department_id: allDepartments ? null : payload.department_id,
           manager_id: actor.id,
           original_expiration_transaction_id: expiration.id,
-          original_expired_amount: restoredAmount,
+          original_expired_amount: Number(expiration.amount),
           restored_amount: restoredAmount,
           expires_at: expiresAt,
         },
@@ -854,7 +1014,7 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
         action: "company.balance.expired.restore.employee",
         entityType: "expired_balance_restorations",
         entityId: restoration.id,
-        description: `Restored ETB ${restoredAmount.toFixed(2)} for employee ${expiration.user_id} in department ${department.id} from allocation ${expiration.allocation_id}; expires ${expiresAt.toISOString()} after ${payload.additional_days} additional day(s)`,
+        description: `Restored ETB ${restoredAmount.toFixed(2)} for employee ${expiration.user_id} in ${departmentName} from allocation ${expiration.allocation_id}; expires ${expiresAt.toISOString()} after ${payload.additional_days} additional day(s)`,
         ipAddress,
       }, tx);
     }
@@ -864,11 +1024,12 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
       userId: actor.id,
       action: "company.balance.expired.restore",
       entityType: "expired_balance_restorations",
-      description: `Restored ETB ${totalRestored.toFixed(2)} for ${details.length} employee(s) in ${department.name}; ${payload.additional_days} additional day(s), expires ${expiresAt.toISOString()}`,
+      description: `Restored ETB ${totalRestored.toFixed(2)} for ${details.length} employee(s) in ${departmentName}${payload.month ? ` for Ethiopian allocation month ${payload.month}` : " across all eligible months"}; ${payload.additional_days} additional day(s), expires ${expiresAt.toISOString()}`,
       ipAddress,
     }, tx);
     return {
-      department: { id: department.id, name: department.name },
+      department: department ? { id: department.id, name: department.name } : { id: null, name: "All departments" },
+      month: payload.month ?? null,
       expires_at: expiresAt,
       additional_days: payload.additional_days,
       restored_count: new Set(details.map((detail) => detail.employee_id)).size,
@@ -876,7 +1037,7 @@ export const restoreExpiredBalancesForDepartment = async (actor, payload, ipAddr
       total_restored: totalRestored,
       details,
     };
-  }, { timeout: 30000 });
+  }, { timeout: 120000 });
 };
 
 export const getMonthlyAllowancePreview = async (month) => {
@@ -1568,9 +1729,10 @@ export const generateDepartmentUsageReport = async (actor, params, ipAddress, ca
     const usedAfterRestoration = netAmount(allocationTransactions.filter((transaction) => transaction.restoration_id !== null
       && ((transaction.transaction_type === "order" && transaction.direction === "debit")
         || (transaction.transaction_type === "refund" && transaction.direction === "credit"))));
-    const initiallyExpired = netAmount(allocationTransactions.filter((transaction) => transaction.transaction_type === "expiration"
+    const expirationAmount = (items) => Number(items.reduce((sum, transaction) => sum + Number(transaction.amount), 0).toFixed(2));
+    const initiallyExpired = expirationAmount(allocationTransactions.filter((transaction) => transaction.transaction_type === "expiration"
       && transaction.direction === "debit" && transaction.restoration_id === null));
-    const reexpired = netAmount(allocationTransactions.filter((transaction) => transaction.transaction_type === "expiration"
+    const reexpired = expirationAmount(allocationTransactions.filter((transaction) => transaction.transaction_type === "expiration"
       && transaction.direction === "debit" && transaction.restoration_id !== null));
     const originalAllocated = allocationTransactions
       .filter((transaction) => transaction.transaction_type === "allocation" && transaction.direction === "credit")

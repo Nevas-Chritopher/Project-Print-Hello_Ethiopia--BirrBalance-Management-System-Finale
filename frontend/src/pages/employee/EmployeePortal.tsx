@@ -39,15 +39,31 @@ export default function EmployeePortal() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const lastFocusBalanceRefresh = useRef(0);
 
   useEffect(() => {
     const handleBalanceUpdate = () => {
       refreshData();
       loadEmployeeData();
     };
+    const refreshVisibleBalance = () => {
+      if (document.visibilityState === 'hidden' || Date.now() - lastFocusBalanceRefresh.current < 2000) return;
+      lastFocusBalanceRefresh.current = Date.now();
+      void refreshData();
+    };
 
     window.addEventListener('esrom-balance-updated', handleBalanceUpdate);
-    return () => window.removeEventListener('esrom-balance-updated', handleBalanceUpdate);
+    window.addEventListener('focus', refreshVisibleBalance);
+    document.addEventListener('visibilitychange', refreshVisibleBalance);
+    const balanceRefreshTimer = window.setInterval(() => {
+      if (document.visibilityState !== 'hidden') void refreshData();
+    }, 30000);
+    return () => {
+      window.removeEventListener('esrom-balance-updated', handleBalanceUpdate);
+      window.removeEventListener('focus', refreshVisibleBalance);
+      document.removeEventListener('visibilitychange', refreshVisibleBalance);
+      window.clearInterval(balanceRefreshTimer);
+    };
   }, [refreshData]);
 
   // Active sub tab

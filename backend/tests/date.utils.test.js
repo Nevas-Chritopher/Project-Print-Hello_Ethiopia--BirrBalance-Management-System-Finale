@@ -13,9 +13,12 @@ import {
 import { validateMonth } from "../src/validators/common.validators.js";
 import {
   validateAllocationCreate,
+  validateExpiredBalancePreviewQuery,
   validateExpiredBalanceRestoration,
   validateGroupAllocation,
 } from "../src/validators/company.validators.js";
+import prisma from "../src/config/db.js";
+import { previewExpiredBalancesForDepartment } from "../src/services/company.service.js";
 
 test("Gregorian-to-Ethiopian conversion matches the verified Ethiopian date mapping", () => {
   assert.deepEqual(gregorianToEthiopian(new Date(Date.UTC(2026, 10, 6))), { year: 2019, month: 2, day: 27 });
@@ -75,6 +78,58 @@ test("expired balance restoration validation bounds days and requires authorizat
     manager_password: "",
     additional_days: 5,
   }), { statusCode: 400 });
+  assert.deepEqual(validateExpiredBalanceRestoration({
+    department_id: 2,
+    month: "2019-02",
+    manager_password: "manager-secret",
+    additional_days: 5,
+  }), {
+    department_id: 2,
+    month: "2019-02",
+    manager_password: "manager-secret",
+    additional_days: 5,
+  });
+  assert.deepEqual(validateExpiredBalanceRestoration({
+    department_id: "all",
+    month: "2019-02",
+    manager_password: "manager-secret",
+    additional_days: 5,
+  }), {
+    all_departments: true,
+    month: "2019-02",
+    manager_password: "manager-secret",
+    additional_days: 5,
+  });
+});
+
+test("expired balance preview requires a department and Ethiopian month", () => {
+  assert.deepEqual(validateExpiredBalancePreviewQuery({ department_id: "2", month: "2019-02" }), {
+    department_id: 2,
+    month: "2019-02",
+  });
+  assert.deepEqual(validateExpiredBalancePreviewQuery({ department_id: "all", month: "2019-02" }), {
+    all_departments: true,
+    month: "2019-02",
+  });
+  assert.throws(() => validateExpiredBalancePreviewQuery({ department_id: "2" }), { statusCode: 400 });
+  assert.throws(() => validateExpiredBalancePreviewQuery({ department_id: "2", month: "2019-14" }), { statusCode: 400 });
+});
+
+test("expired balance preview respects the all-departments flag even when a department id is also present", async () => {
+  const originalFindUnique = prisma.users.findUnique;
+  prisma.users.findUnique = async () => ({ department_id: 2 });
+
+  await assert.rejects(() => previewExpiredBalancesForDepartment({
+    id: 1,
+    roles: ["company_manager"],
+    department_id: 2,
+  }, {
+    department_id: 2,
+    all_departments: true,
+    month: "2019-02",
+  }, "127.0.0.1"), { statusCode: 403 });
+
+  prisma.users.findUnique = originalFindUnique;
 });
 
 test("Ethiopian month calendar marks weekends and confirmed holidays as restricted", () => {

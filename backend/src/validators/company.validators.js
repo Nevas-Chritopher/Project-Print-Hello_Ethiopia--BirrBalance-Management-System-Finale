@@ -147,14 +147,24 @@ export const validateAllocationUpdate = (body) => ({
   ...(body.cycle_label !== undefined ? { cycle_label: optionalString(body.cycle_label, "cycle_label", 150) } : {}),
 });
 
+const validateExpiredBalanceScope = (value) => value === "all"
+  ? { all_departments: true }
+  : { department_id: toPositiveInt(value, "department_id") };
+
 export const validateExpiredBalanceRestoration = (body) => ({
-  department_id: toPositiveInt(body.department_id, "department_id"),
+  ...validateExpiredBalanceScope(body.department_id),
+  ...(body.month ? { month: validateMonth(body.month) } : {}),
   manager_password: requireString(body.manager_password, "manager_password", 100),
   additional_days: (() => {
     const days = toPositiveInt(body.additional_days, "additional_days");
     if (days > 365) throw new AppError("additional_days cannot exceed 365", 400);
     return days;
   })(),
+});
+
+export const validateExpiredBalancePreviewQuery = (query) => ({
+  ...validateExpiredBalanceScope(query.department_id),
+  month: validateMonth(requireString(query.month, "month", 7)),
 });
 
 export const validateMonthlyPaymentSchedule = (body) => {

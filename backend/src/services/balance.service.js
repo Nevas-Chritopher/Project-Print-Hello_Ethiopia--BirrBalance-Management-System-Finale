@@ -1,5 +1,6 @@
 import prisma from "../config/db.js";
 import { getAddisAbabaDateParts, getMonthRange, getEthiopianMonthRange, gregorianToEthiopian } from "../utils/date.js";
+import { capRestorationCandidate, MAX_EXPIRED_BALANCE_RESTORATION_ETB } from "../utils/restoration.js";
 
 const ETHIOPIAN_MONTH_NAMES = ["Meskerem", "Tikimt", "Hidar", "Tahsas", "Tir", "Yekatit", "Megabit", "Miazia", "Ginbot", "Sene", "Hamle", "Nehase", "Pagume"];
 const formatEthiopianDate = (date) => {
@@ -18,10 +19,106 @@ export const getAllocationBalance = async (allocationId, tx = prisma) => {
 };
 
 const toCents = (amount) => Math.round(Number(amount) * 100);
+const capEmployeeWalletBalance = (amount) => Math.min(
+  Math.max(0, Number(amount) || 0),
+  MAX_EXPIRED_BALANCE_RESTORATION_ETB,
+);
 export const calculateTransactionBalance = (transactions) => Number((transactions.reduce(
   (sum, transaction) => sum + (transaction.direction === "credit" ? toCents(transaction.amount) : -toCents(transaction.amount)),
   0,
 ) / 100).toFixed(2));
+
+const buildSpendableSources = (allocations, transactions, now) => {
+  const addisDate = getAddisAbabaDateParts(now);
+  const businessDate = Date.UTC(addisDate.year, addisDate.month - 1, addisDate.day);
+  const transactionsByAllocation = new Map();
+  for (const transaction of transactions) {
+    const bucket = transactionsByAllocation.get(transaction.allocation_id) ?? [];
+    bucket.push(transaction);
+    transactionsByAllocation.set(transaction.allocation_id, bucket);
+  }
+
+  const sources = [];
+  for (const allocation of allocations) {
+    const defaultCycle = getEthiopianMonthRange(gregorianToEthiopian(allocation.allocation_month));
+    const cycleStart = allocation.cycle_start_at ?? defaultCycle.start;
+    const cycleEnd = allocation.cycle_end_at ?? defaultCycle.end;
+    const inOriginalCycle = cycleStart.getTime() <= businessDate && cycleEnd.getTime() > businessDate;
+    const allocationTransactions = transactionsByAllocation.get(allocation.id) ?? [];
+
+    if (inOriginalCycle) {
+      const regularBalance = Math.round(calculateTransactionBalance(
+        allocationTransactions.filter((transaction) => transaction.restoration_id === null),
+      ) * 100);
+      if (regularBalance > 0) {
+        sources.push({ allocation, restoration_id: null, remaining: regularBalance / 100, expires_at: cycleEnd });
+      }
+    }
+
+    for (const restoration of allocation.expired_balance_restorations ?? []) {
+      const restorationBalance = Math.round(calculateTransactionBalance(
+        allocationTransactions.filter((transaction) => transaction.restoration_id === restoration.id),
+      ) * 100);
+      if (restorationBalance > 0) {
+        sources.push({ allocation, restoration_id: restoration.id, remaining: restorationBalance / 100, expires_at: restoration.expires_at });
+      }
+    }
+  }
+
+  const restoredByEmployeeMonth = new Map();
+  return sources
+    .sort((left, right) => left.expires_at.getTime() - right.expires_at.getTime())
+    .flatMap((source) => {
+      if (source.restoration_id === null) return [source];
+      const allocationMonth = source.allocation.allocation_month.toISOString().slice(0, 10);
+      const capped = capRestorationCandidate({
+        employee_key: `${source.allocation.user_id}:${allocationMonth}`,
+        amount: source.remaining,
+      }, restoredByEmployeeMonth);
+      return capped ? [{ ...source, remaining: capped.amount }] : [];
+    });
+};
+
+export const getEmployeeBalances = async (userIds, tx = prisma, now = new Date()) => {
+  const uniqueUserIds = [...new Set(userIds)];
+  if (!uniqueUserIds.length) return new Map();
+
+  const addisDate = getAddisAbabaDateParts(now);
+  const businessDate = new Date(Date.UTC(addisDate.year, addisDate.month - 1, addisDate.day));
+  const { start: currentMonthStart } = getMonthRange();
+  const allocations = await tx.monthly_allocations.findMany({
+    where: {
+      user_id: { in: uniqueUserIds },
+      OR: [
+        { cycle_end_at: { gt: businessDate } },
+        { cycle_end_at: null, allocation_month: { gte: currentMonthStart } },
+        { expired_balance_restorations: { some: { status: "active", expires_at: { gt: now } } } },
+      ],
+    },
+    include: {
+      expired_balance_restorations: {
+        where: { status: "active", expires_at: { gt: now } },
+        select: { id: true, expires_at: true },
+      },
+    },
+    orderBy: { cycle_start_at: "desc" },
+  });
+  const transactions = allocations.length
+    ? await tx.balance_transactions.findMany({
+      where: { allocation_id: { in: allocations.map((allocation) => allocation.id) } },
+      select: { allocation_id: true, restoration_id: true, amount: true, direction: true },
+    })
+    : [];
+  const balances = new Map(uniqueUserIds.map((userId) => [userId, 0]));
+  for (const source of buildSpendableSources(allocations, transactions, now)) {
+    const userId = source.allocation.user_id;
+    balances.set(userId, Number(((balances.get(userId) ?? 0) + source.remaining).toFixed(2)));
+  }
+  for (const [userId, value] of balances.entries()) {
+    balances.set(userId, capEmployeeWalletBalance(value));
+  }
+  return balances;
+};
 
 export const getSpendableAllocations = async (userId, tx = prisma, now = new Date()) => {
   const addisDate = getAddisAbabaDateParts(now);
@@ -51,51 +148,7 @@ export const getSpendableAllocations = async (userId, tx = prisma, now = new Dat
     where: { allocation_id: { in: allocations.map((allocation) => allocation.id) } },
     select: { allocation_id: true, restoration_id: true, amount: true, direction: true },
   });
-  const transactionsByAllocation = new Map();
-  for (const transaction of transactions) {
-    const bucket = transactionsByAllocation.get(transaction.allocation_id) ?? [];
-    bucket.push(transaction);
-    transactionsByAllocation.set(transaction.allocation_id, bucket);
-  }
-
-  const sources = [];
-  for (const allocation of allocations) {
-    const defaultCycle = getEthiopianMonthRange(gregorianToEthiopian(allocation.allocation_month));
-    const cycleStart = allocation.cycle_start_at ?? defaultCycle.start;
-    const cycleEnd = allocation.cycle_end_at ?? defaultCycle.end;
-    const inOriginalCycle = cycleStart.getTime() <= businessDate && cycleEnd.getTime() > businessDate;
-    const allocationTransactions = transactionsByAllocation.get(allocation.id) ?? [];
-
-    if (inOriginalCycle) {
-      const regularBalance = Math.round(calculateTransactionBalance(
-        allocationTransactions.filter((transaction) => transaction.restoration_id === null),
-      ) * 100);
-      if (regularBalance > 0) {
-        sources.push({
-          allocation,
-          restoration_id: null,
-          remaining: regularBalance / 100,
-          expires_at: cycleEnd,
-        });
-      }
-    }
-
-    for (const restoration of allocation.expired_balance_restorations) {
-      const restorationBalance = Math.round(calculateTransactionBalance(
-        allocationTransactions.filter((transaction) => transaction.restoration_id === restoration.id),
-      ) * 100);
-      if (restorationBalance > 0) {
-        sources.push({
-          allocation,
-          restoration_id: restoration.id,
-          remaining: restorationBalance / 100,
-          expires_at: restoration.expires_at,
-        });
-      }
-    }
-  }
-
-  return sources.sort((left, right) => left.expires_at.getTime() - right.expires_at.getTime());
+  return buildSpendableSources(allocations, transactions, now);
 };
 
 export const getEmployeeCurrentMonthSummary = async (userId, tx = prisma) => {
@@ -116,7 +169,7 @@ export const getEmployeeCurrentMonthSummary = async (userId, tx = prisma) => {
   return {
     allocated: allocation ? Number(allocation.amount) : 0,
     used: debitAmount,
-    remaining: Number(spendableSources.reduce((sum, source) => sum + source.remaining, 0).toFixed(2)),
+    remaining: capEmployeeWalletBalance(Number(spendableSources.reduce((sum, source) => sum + source.remaining, 0).toFixed(2))),
     monthStart: start,
     monthEnd: end,
   };

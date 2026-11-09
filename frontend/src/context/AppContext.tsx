@@ -281,7 +281,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const apiUser = normalizeApiData(res.data || res);
 
       const mappedRole = getPrimaryRole(apiUser.roles || apiUser.role);
-      const balance = Number(balanceRes?.data?.balance ?? balanceRes?.balance ?? 0);
+      let cachedBalance: number | undefined;
+      try {
+        const cachedUser = storedUserStr ? JSON.parse(storedUserStr) : null;
+        if (Number.isFinite(Number(cachedUser?.balance))) cachedBalance = Number(cachedUser.balance);
+      } catch {
+        cachedBalance = undefined;
+      }
+      const balanceValue = balanceRes?.data?.balance ?? balanceRes?.balance ?? apiUser.balance ?? cachedBalance;
+      const balance = balanceValue === undefined ? 0 : Number(balanceValue);
       const userData = { ...apiUser, balance, role: mappedRole || apiUser.role || 'employee' };
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
@@ -509,11 +517,11 @@ const login = async (employeeId: string, password: string): Promise<any> => {
     }
   }, [isOffline, offlineQueue, token]);
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     await fetchMe();
     await fetchNotifications();
     await fetchUnreadCount();
-  };
+  }, [fetchMe, fetchNotifications, fetchUnreadCount]);
 
   return (
     <AppContext.Provider

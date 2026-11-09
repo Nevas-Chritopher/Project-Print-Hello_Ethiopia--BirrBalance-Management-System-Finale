@@ -102,6 +102,7 @@ npm run prisma:generate
 - `REFRESH_TOKEN_EXPIRES_IN`: Refresh token lifetime, defaults to `30d`.
 - `AES_SECRET`: QR encryption secret, 32+ characters in production.
 - `CORS_ORIGIN`: Comma-separated allowed origins.
+- `WAITER_PANEL_URL`: Absolute waiter-panel URL encoded into employee QR codes (for example, `http://<computer-LAN-IP>:3000/waiter/panel`). It must be reachable from devices that scan the QR code; set it explicitly in production.
 - `PORT`: HTTP port, defaults to `5000`.
 
 ## Production API Notes

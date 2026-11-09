@@ -2321,9 +2321,12 @@ function ManagerBalancePage({
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [successAllocMsg, setSuccessAllocMsg] = useState('');
   const [restorationDepartment, setRestorationDepartment] = useState('');
+  const [restorationMonth, setRestorationMonth] = useState(() => getCurrentEthiopianMonth());
   const [restorationPassword, setRestorationPassword] = useState('');
   const [restorationDays, setRestorationDays] = useState('5');
   const [restorationBusy, setRestorationBusy] = useState(false);
+  const [restorationPreview, setRestorationPreview] = useState<any>(null);
+  const [restorationPreviewBusy, setRestorationPreviewBusy] = useState(false);
 
   const loadAutomaticAllocation = async () => {
     const response = await apiGet('/api/company-manager/balances/automatic-allocation');
@@ -2446,11 +2449,19 @@ function ManagerBalancePage({
 
   const restoreExpiredBalances = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!restorationPreview || restorationPreview.eligible_count === 0) {
+      setCalendarError('Preview eligible expired money before returning it.');
+      return;
+    }
+    const total = formatETB(Number(restorationPreview.total_eligible ?? 0));
+    if (!window.confirm(`Return ${total} from ${restorationPreview.eligible_count} eligible allocation(s) in Ethiopian month ${restorationMonth}?`)) return;
+
     setRestorationBusy(true);
     setCalendarError('');
     try {
       const response = await apiPost('/api/company-manager/balances/restore-expired', {
-        department_id: Number(restorationDepartment),
+        department_id: restorationDepartment === 'all' ? 'all' : Number(restorationDepartment),
+        month: restorationMonth,
         manager_password: restorationPassword,
         additional_days: Number(restorationDays),
       });
@@ -2459,6 +2470,7 @@ function ManagerBalancePage({
         `Returned ${formatETB(Number(result.total_restored ?? 0))} to ${result.restored_count ?? 0} employee(s); restored funds expire ${new Date(result.expires_at).toLocaleString()}.`,
       );
       setRestorationPassword('');
+      setRestorationPreview(null);
       await onReload();
       window.dispatchEvent(new Event('esrom-balance-updated'));
     } catch (error: any) {
@@ -2466,6 +2478,22 @@ function ManagerBalancePage({
     } finally {
       setRestorationPassword('');
       setRestorationBusy(false);
+    }
+  };
+
+  const loadExpiredBalancePreview = async () => {
+    if (!restorationDepartment || !restorationMonth) return;
+    setRestorationPreviewBusy(true);
+    setCalendarError('');
+    try {
+      const query = new URLSearchParams({ department_id: restorationDepartment, month: restorationMonth });
+      const response = await apiGet(`/api/company-manager/balances/restore-expired/preview?${query.toString()}`);
+      setRestorationPreview(response?.data ?? response ?? null);
+    } catch (error: any) {
+      setRestorationPreview(null);
+      setCalendarError(error.message || 'Could not preview eligible expired money.');
+    } finally {
+      setRestorationPreviewBusy(false);
     }
   };
 
@@ -2818,7 +2846,7 @@ function ManagerBalancePage({
       <section className="rounded-3xl border border-amber-200 bg-white p-6 shadow-sm space-y-4" aria-labelledby="return-expired-money-heading">
         <div>
           <h2 id="return-expired-money-heading" className="text-sm font-black text-primary">Return Expired Money</h2>
-          <p className="mt-1 text-xs text-slate-500">Return unused amounts from expired allocation cycles to employees in a department. The restored balance remains linked to its original month and expires again after the selected duration.</p>
+          <p className="mt-1 text-xs text-slate-500">Preview expired allocations for one Ethiopian month, then return only eligible unused amounts from that month. Restored money stays linked to its original allocation and expires after the selected duration.</p>
         </div>
         <form onSubmit={restoreExpiredBalances} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
@@ -2827,12 +2855,51 @@ function ManagerBalancePage({
               id="restore-expired-department"
               required
               value={restorationDepartment}
-              onChange={(event) => setRestorationDepartment(event.target.value)}
+              onChange={(event) => {
+                setRestorationDepartment(event.target.value);
+                setRestorationPreview(null);
+              }}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold"
             >
               <option value="">Select department</option>
+              <option value="all">All departments</option>
               {departmentsList.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}
             </select>
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="restore-expired-month" className="text-xs font-bold text-slate-700">Ethiopian Allocation Month</label>
+            <div className="flex gap-2">
+              <select
+                id="restore-expired-month"
+                required
+                value={Number(restorationMonth.split('-')[1])}
+                onChange={(event) => {
+                  const year = restorationMonth.split('-')[0];
+                  setRestorationMonth(`${year}-${String(Number(event.target.value)).padStart(2, '0')}`);
+                  setRestorationPreview(null);
+                }}
+                className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold"
+              >
+                {ETHIOPIAN_MONTH_NAMES.map((month, index) => <option key={month} value={index + 1}>{month}</option>)}
+              </select>
+              <input
+                id="restore-expired-year"
+                aria-label="Ethiopian allocation year"
+                type="number"
+                min="1"
+                max="9999"
+                required
+                value={Number(restorationMonth.split('-')[0])}
+                onChange={(event) => {
+                  const year = Number(event.target.value);
+                  if (Number.isInteger(year) && year >= 1 && year <= 9999) {
+                    setRestorationMonth(`${year}-${restorationMonth.split('-')[1]}`);
+                    setRestorationPreview(null);
+                  }
+                }}
+                className="w-24 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-semibold"
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <label htmlFor="restore-expired-days" className="text-xs font-bold text-slate-700">Additional days (1–365)</label>
@@ -2860,13 +2927,59 @@ function ManagerBalancePage({
             />
           </div>
           <button
+            type="button"
+            disabled={restorationPreviewBusy || !restorationDepartment || !restorationMonth}
+            onClick={loadExpiredBalancePreview}
+            className="rounded-xl border border-primary px-4 py-3 text-xs font-bold text-primary disabled:opacity-50 md:col-span-2"
+          >
+            {restorationPreviewBusy ? 'Loading eligible balances…' : `Preview ${ETHIOPIAN_MONTH_NAMES[Number(restorationMonth.split('-')[1]) - 1]} ${restorationMonth.split('-')[0]} Expired Money`}
+          </button>
+          <button
             type="submit"
-            disabled={restorationBusy || !restorationDepartment || !restorationPassword || !restorationDays}
+            disabled={restorationBusy || !restorationDepartment || !restorationPassword || !restorationDays || !restorationPreview || restorationPreview.eligible_count === 0}
             className="rounded-xl bg-primary px-4 py-3 text-xs font-bold text-white disabled:opacity-50 md:col-span-2"
           >
             {restorationBusy ? 'Returning expired money…' : 'Return Expired Money'}
           </button>
         </form>
+        {restorationPreview && (
+          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-bold text-slate-700">
+                {restorationPreview.eligible_count} eligible allocation(s) · {formatETB(Number(restorationPreview.total_eligible ?? 0))} total
+              </p>
+              <p className="text-[10px] text-slate-500">The restore action rechecks eligibility before crediting.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                <p className="text-[10px] font-bold uppercase text-slate-500">Gross expired</p>
+                <p className="mt-1 text-sm font-black text-slate-800">{formatETB(Number(restorationPreview.gross_expired_amount ?? 0))}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                <p className="text-[10px] font-bold uppercase text-slate-500">Previously returned ({restorationPreview.previously_restored_count ?? 0})</p>
+                <p className="mt-1 text-sm font-black text-green-700">{formatETB(Number(restorationPreview.previously_restored_amount ?? 0))}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                <p className="text-[10px] font-bold uppercase text-slate-500">Still eligible to return</p>
+                <p className="mt-1 text-sm font-black text-primary">{formatETB(Number(restorationPreview.total_eligible ?? 0))}</p>
+              </div>
+            </div>
+            {restorationPreview.candidates?.length ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <table className="w-full min-w-[660px] text-left text-xs">
+                  <thead><tr className="bg-slate-100 text-slate-600"><th className="p-3">Employee</th>{restorationDepartment === 'all' && <th className="p-3">Department</th>}<th className="p-3">Allocation cycle</th><th className="p-3">Expired on</th><th className="p-3 text-right">Eligible amount</th></tr></thead>
+                  <tbody>{restorationPreview.candidates.map((candidate: any, index: number) => <tr key={`${candidate.allocation_id}-${index}`} className="border-t">
+                    <td className="p-3 font-semibold">{candidate.employee_name}<div className="text-[10px] text-slate-500">{candidate.employee_id}</div></td>
+                    {restorationDepartment === 'all' && <td className="p-3">{candidate.department}</td>}
+                    <td className="p-3">{candidate.cycle_label}</td>
+                    <td className="p-3">{candidate.expired_at ? new Date(candidate.expired_at).toLocaleDateString() : '—'}</td>
+                    <td className="p-3 text-right font-bold">{formatETB(Number(candidate.amount))}</td>
+                  </tr>)}</tbody>
+                </table>
+              </div>
+            ) : <p className="text-xs text-amber-800">No additional expired money is eligible for return. Gross expired includes funds already returned or otherwise no longer available for another restoration.</p>}
+          </div>
+        )}
       </section>
 
       {/* Warning confirmation Modal */}
@@ -3029,8 +3142,9 @@ function ManagerReportsPage({
           <p className="text-2xl font-black text-secondary mt-1">{formatETB(totalUsed)}</p>
         </div>
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Expired Money</p>
+          <p className="text-[10px] font-bold text-subtle-text uppercase tracking-wider">Gross Expired Money</p>
           <p className="text-2xl font-black text-success mt-1">{formatETB(totalExpired)}</p>
+          <p className="mt-1 text-[10px] text-slate-500">Includes amounts already returned; preview shows what remains eligible.</p>
         </div>
       </div>
 
